@@ -41,7 +41,7 @@ class SpaceInvaders {
 
     const playerPosition = new Point(this.canvasSize.x / 2, this.lostY);
     const playerSize = new Point(this.canvasSize.x / this.ratio.x, this.canvasSize.y / this.ratio.y)
-    this.player = new Player("red", playerPosition, playerSize);
+    this.player = new Player("red", playerPosition, playerSize, 10, 300);
 
     this.spawnInvaders();
     this.addEventListeners();
@@ -69,11 +69,25 @@ class SpaceInvaders {
         const shotSize = new Point(10, 10);
         this.shots.push(new Shot("purple", shotPosition, shotSize));
       }
-      if (event.key === Direction.ArrowRight && this.player.testNewPosition(new Point(0,0), this.canvasSize, Point.add(this.player.position, 10, 0))) {
-        this.player.position.x += 10;
+      if (event.key === Direction.ArrowRight) {
+        for (let i = 0; i < this.player.movementSpeed; i++) {
+          if(this.player.testNewPosition(new Point(0,0), this.canvasSize, Point.add(this.player.position, 1, 0))){
+            this.player.position.x += 1;
+          }
+          else{
+            break;
+          }          
+        }
       }
-      if (event.key === Direction.ArrowLeft && this.player.testNewPosition(new Point(0,0), this.canvasSize, Point.add(this.player.position, -10, 0))) {
-        this.player.position.x += -10;
+      if (event.key === Direction.ArrowLeft ) {
+        for (let i = 0; i < this.player.movementSpeed; i++) {
+          if(this.player.testNewPosition(new Point(0,0), this.canvasSize, Point.add(this.player.position, -1, 0))){
+            this.player.position.x += -1;
+          }
+          else {
+            break;
+          }          
+        }
       }
     });
   }
@@ -185,13 +199,15 @@ class Player {
   size = new Point(-1, -1);
   lastTick = -1;
   tickSpeed = -1;
+  movementSpeed = -1;
 
-  constructor(color, position, size) {
+  constructor(color, position, size, movementSpeed, tickSpeed) {
     this.color = color;
     this.position = position;
     this.size = size;
-    this.tickSpeed = 500;
-    this.lastTick = Date.now();
+    this.movementSpeed = movementSpeed;
+    this.tickSpeed = tickSpeed;
+    this.lastTick = Date.now() - tickSpeed;
   }
 
   canShoot() {
