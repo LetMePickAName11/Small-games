@@ -250,7 +250,7 @@ class Tetris {
 
   spawnPiece() {
     if (this.nextPiece.pieceSymbol === "e") {
-      switch (5){//this.getRandomInt(7)) {
+      switch (this.getRandomInt(7)) {
         case 0: this.nextPiece = Piece.square(3, 3); break;
         case 1: this.nextPiece = Piece.line(3, 3); break;
         case 2: this.nextPiece = Piece.t(3, 3); break;
@@ -263,7 +263,7 @@ class Tetris {
 
     this.currentPiece = this.nextPiece.cloneFull({ x: 4, y: 0 });
 
-    switch (5){//(this.getRandomInt(7)) {
+    switch (this.getRandomInt(7)) {
       case 0: this.nextPiece = Piece.square(3, 3); break;
       case 1: this.nextPiece = Piece.line(3, 3); break;
       case 2: this.nextPiece = Piece.t(3, 3); break;
