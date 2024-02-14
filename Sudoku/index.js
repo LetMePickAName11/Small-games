@@ -86,6 +86,21 @@ class AutoSolver {
       return;
     }
 
+    // Iterate through all cells and set value if there is only 1 possible value
+    for (let i = 0; i < this.cellData.length; i++) {
+      const cell = this.cellData[i];
+      // Only check if value has not been set
+      if (cell.value !== -1 || cell.possibleValues.length !== 1) {
+        continue;
+      }
+      
+      // Update the internal data
+      this.updatePlayerSolution(cell.id, cell.possibleValues[0]);
+      // Temp for debugging
+      dispatchEvent(new KeyboardEvent('keyup', { key: `${cell.value}` }));
+      sudokuTileElementRefs[cell.id].dispatchEvent(new MouseEvent('mousedown'));
+    }
+
     // Simple row, column and chunk comparison
     for (let i = 0; i < this.cellData.length; i++) {
       const cell = this.cellData[i];
@@ -102,19 +117,106 @@ class AutoSolver {
       // Inverse so we get the remaining possible values
       cell.possibleValues = [1, 2, 3, 4, 5, 6, 7, 8, 9].filter(v => !usedNumbers.includes(v));
       // If there is only 1 remaining possible value
-      if (cell.possibleValues.length === 1) {
-        // Update the internal data
-        this.updatePlayerSolution(cell.id, cell.possibleValues[0]);
-
-        // Temp for debugging
-        dispatchEvent(new KeyboardEvent('keyup', { key: `${cell.value}` }));
-        sudokuTileElementRefs[cell.id].dispatchEvent(new MouseEvent('mousedown'));
+      if (cell.possibleValues.length === 1) {        
         // Recursively start again
         return this.solve();
       }
     }
 
-    let nakedPairFound = false;
+
+    // Nake triple pair rows
+    for (let rowId = 0; rowId < 9; rowId++) {
+      // Current row cells
+      const rowCells = this.getRow(rowId);
+      // Filter out any cell that has a value or does not have exactly 2 or 3 possible values.
+      const potentialPairs = rowCells.filter(rowCell => rowCell.value === -1 && (rowCell.possibleValues.length === 2 || rowCell.possibleValues.length === 3));
+      // If there are no potential pairs continue to next chunk
+      if (potentialPairs.length === 0) {
+        continue;
+      }
+      // Iterate through the potential pairs
+      for (let i = 0; i < potentialPairs.length; i++) {
+        const cell = potentialPairs[i];
+        const potentialPairsForNumber = [cell];
+
+        for (let j = 0; j < cell.possibleValues.length; j++) {
+          const ppw = potentialPairs.filter(pp => pp.id !== cell.id && pp.possibleValues.includes(cell.possibleValues[j]) && potentialPairsForNumber.every(ppfn => ppfn.id !== pp.id));
+          potentialPairsForNumber.push(...ppw);
+        }
+
+        if (!(potentialPairsForNumber.length === 3 && new Set(...potentialPairsForNumber.map(pp => pp.possibleValues)).size === 3)) {
+          continue;
+        }
+
+        // Remove naked pair possible values from the rest of the row and also exclude the pair cell (we have already excluded current cell earlier)
+        for (const rowCell of rowCells.filter(rc => !potentialPairsForNumber.includes(rc.id) && rc.value === -1)) {
+          rowCell.possibleValues = rowCell.possibleValues.filter(pv => !cell.possibleValues.includes(pv));
+        }
+      }
+    }
+
+    // Nake triple pair columns
+    for (let colId = 0; colId < 9; colId++) {
+      // Current column cells
+      const columnCells = this.getColumn(colId);
+      // Filter out any cell that has a value or does not have exactly 2 or 3 possible values.
+      const potentialPairs = columnCells.filter(colCell => colCell.value === -1 && (colCell.possibleValues.length === 2 || colCell.possibleValues.length === 3));
+      // If there are no potential pairs continue to next chunk
+      if (potentialPairs.length === 0) {
+        continue;
+      }
+      // Iterate through the potential pairs
+      for (let i = 0; i < potentialPairs.length; i++) {
+        const cell = potentialPairs[i];
+        const potentialPairsForNumber = [cell];
+
+        for (let j = 0; j < cell.possibleValues.length; j++) {
+          const ppw = potentialPairs.filter(pp => pp.id !== cell.id && pp.possibleValues.includes(cell.possibleValues[j]) && potentialPairsForNumber.every(ppfn => ppfn.id !== pp.id));
+          potentialPairsForNumber.push(...ppw);
+        }
+
+        if (!(potentialPairsForNumber.length === 3 && new Set(...potentialPairsForNumber.map(pp => pp.possibleValues)).size === 3)) {
+          continue;
+        }
+
+        // Remove naked pair possible values from the rest of the column and also exclude the pair cell (we have already excluded current cell earlier)
+        for (const columnCell of columnCells.filter(cc => !potentialPairsForNumber.includes(cc.id) && cc.value === -1)) {
+          columnCell.possibleValues = columnCell.possibleValues.filter(pv => !cell.possibleValues.includes(pv));
+        }
+      }
+    }
+
+    // Nake triple pair chunks
+    for (let chunkId = 0; chunkId < 9; chunkId++) {
+      // Current chunk cells
+      const chunkCells = this.getChunk(chunkId);
+      // Filter out any cell that has a value or does not have exactly 2 or 3 possible values.
+      const potentialPairs = chunkCells.filter(chunkCell => chunkCell.value === -1 && (chunkCell.possibleValues.length === 2 || chunkCell.possibleValues.length === 3));
+      // If there are no potential pairs continue to next chunk
+      if (potentialPairs.length === 0) {
+        continue;
+      }
+      // Iterate through the potential pairs
+      for (let i = 0; i < potentialPairs.length; i++) {
+        const cell = potentialPairs[i];
+        const potentialPairsForNumber = [cell];
+
+        for (let j = 0; j < cell.possibleValues.length; j++) {
+          const ppw = potentialPairs.filter(pp => pp.id !== cell.id && pp.possibleValues.includes(cell.possibleValues[j]) && potentialPairsForNumber.every(ppfn => ppfn.id !== pp.id));
+          potentialPairsForNumber.push(...ppw);
+        }
+
+        if (!(potentialPairsForNumber.length === 3 && new Set(...potentialPairsForNumber.map(pp => pp.possibleValues)).size === 3)) {
+          continue;
+        }
+
+        // Remove naked pair possible values from the rest of the chunk and also exclude the pair cell (we have already excluded current cell earlier)
+        for (const chunkCell of chunkCells.filter(cc => !potentialPairsForNumber.includes(cc.id) && cc.value === -1)) {
+          chunkCell.possibleValues = chunkCell.possibleValues.filter(pv => !cell.possibleValues.includes(pv));
+        }
+      }
+    }
+
 
     // Naked pairs rows
     for (let rowId = 0; rowId < 9; rowId++) {
@@ -138,8 +240,6 @@ class AutoSolver {
         for (const rowCell of rowCells.filter(rc => rc.id !== pairCell.id && rc.value === -1)) {
           rowCell.possibleValues = rowCell.possibleValues.filter(pv => !cell.possibleValues.includes(pv));
         }
-        // Set nakedPairFound flag so we can call Solve() recursively afterwards
-        nakedPairFound = true;
       }
     }
 
@@ -165,8 +265,6 @@ class AutoSolver {
         for (const columnCell of columnCells.filter(cc => cc.id !== pairCell.id && cc.value === -1)) {
           columnCell.possibleValues = columnCell.possibleValues.filter(pv => !cell.possibleValues.includes(pv));
         }
-        // Set nakedPairFound flag so we can call Solve() recursively afterwards
-        nakedPairFound = true;
       }
     }
 
@@ -192,12 +290,10 @@ class AutoSolver {
         for (const chunkCell of chunkCells.filter(cc => cc.id !== pairCell.id && cc.value === -1)) {
           chunkCell.possibleValues = chunkCell.possibleValues.filter(pv => !cell.possibleValues.includes(pv));
         }
-        // Set nakedPairFound flag so we can call Solve() recursively afterwards
-        nakedPairFound = true;
       }
     }
 
-    if (nakedPairFound) {
+    if (this.cellData.some(cell => cell.possibleValues?.length === 1) || this.cellData.every(v => v.value !== -1)) {
       return this.solve();
     }    
   }
