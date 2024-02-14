@@ -89,117 +89,107 @@ class AutoSolver {
     // Simple row, column and chunk comparison
     for (let i = 0; i < this.cellData.length; i++) {
       const cell = this.cellData[i];
-
+      // Only check if value has not been set
       if (cell.value !== -1) {
         continue;
       }
-
+      // Get the corresponding row, column and chunk values
       const usedNumbers = [
         ...this.getRow(cell.rowId).map(c => c.value),
         ...this.getColumn(cell.colId).map(c => c.value),
         ...this.getChunk(cell.chunkId).map(c => c.value)
       ];
-      const usedNumbersNoDub = Array(...new Set(usedNumbers)).filter(v => v !== -1);
-
-      cell.possibleValues = [1, 2, 3, 4, 5, 6, 7, 8, 9].filter(v => !usedNumbersNoDub.includes(v));
-
+      // Inverse so we get the remaining possible values
+      cell.possibleValues = [1, 2, 3, 4, 5, 6, 7, 8, 9].filter(v => !usedNumbers.includes(v));
+      // If there is only 1 remaining possible value
       if (cell.possibleValues.length === 1) {
+        // Update the internal data
         this.updatePlayerSolution(cell.id, cell.possibleValues[0]);
 
         // Temp for debugging
         dispatchEvent(new KeyboardEvent('keyup', { key: `${cell.value}` }));
         sudokuTileElementRefs[cell.id].dispatchEvent(new MouseEvent('mousedown'));
-        
-
+        // Recursively start again
         return this.solve();
       }
     }
 
     let nakedPairFound = false;
 
-    // Naked pairs
-    for (let i = 0; i < this.cellData.length; i++) {
-      const cell = this.cellData[i];
-      // Only check if value has not been set and possible values length is 2
-      if (cell.value !== -1 || cell.possibleValues.length !== 2) {
+    // Naked pairs rows
+    for (let rowId = 0; rowId < 9; rowId++) {
+      // Current row cells
+      const rowCells = this.getRow(rowId);
+      // Filter out any cell that has a value or does not have exactly 2 possible values.
+      const potentialPairs = rowCells.filter(rowCell => rowCell.value === -1 && rowCell.possibleValues.length === 2);
+      // If there are no potential pairs continue to next row
+      if (potentialPairs.length === 0) {
         continue;
       }
-      // Get current row without the current cell
-      const rowCells = this.getRow(cell.rowId).filter(c => c.id !== cell.id);
-      // Used to keep track if we have found a pair cell
-      let pairCell;
-
-      // Interate through each cell in row and check if they have indentical possible values
-      for (let j = 0; j < rowCells.length; j++) {
-        const rowCell = rowCells[j];
-        // Check if possible values array contains 2 elements
-        if (rowCell.possibleValues.length !== 2) {
+      // Iterate through the potential pairs
+      for (let i = 0; i < potentialPairs.length; i++) {
+        const cell = potentialPairs[i];
+        let pairCell = potentialPairs.filter(pp => pp.id !== cell.id).find(pp => cell.possibleValues.every(pv => pp.possibleValues.includes(pv)))
+        // If there is no match continue to next cell
+        if (pairCell === undefined) {
           continue;
         }
-        // Check if they have the same values and break out of checking row (there can only be one pair)
-        if (cell.possibleValues.every(pv => rowCell.possibleValues.includes(pv))) {
-          pairCell = rowCell;
-          break;
-        }
-      }
-      // Continue seaching if a pair was found
-      if (pairCell !== undefined) {
         // Remove naked pair possible values from the rest of the row and also exclude the pair cell (we have already excluded current cell earlier)
-        for (const rowCell of rowCells.filter(rc => rc.id !== pairCell.id)) {
+        for (const rowCell of rowCells.filter(rc => rc.id !== pairCell.id && rc.value === -1)) {
           rowCell.possibleValues = rowCell.possibleValues.filter(pv => !cell.possibleValues.includes(pv));
         }
         // Set nakedPairFound flag so we can call Solve() recursively afterwards
         nakedPairFound = true;
-        // Continue to next cell, there can only be one naked pair per row/column/chunk
+      }
+    }
+
+    // Naked pairs columns
+    for (let columnId = 0; columnId < 9; columnId++) {
+      // Current column cells
+      const columnCells = this.getColumn(columnId);
+      // Filter out any cell that has a value or does not have exactly 2 possible values.
+      const potentialPairs = columnCells.filter(columnCell => columnCell.value === -1 && columnCell.possibleValues.length === 2);
+      // If there are no potential pairs continue to next column
+      if (potentialPairs.length === 0) {
         continue;
       }
-
-      // Get current column without the current cell
-      const columnCells = this.getColumn(cell.colId).filter(c => c.id !== cell.id);
-      // Interate through each cell in column and check if they have indentical possible values
-      for (let j = 0; j < columnCells.length; j++) {
-        const columnCell = columnCells[j];
-        // Check if possible values array contains 2 elements
-        if (columnCell.possibleValues.length !== 2) {
+      // Iterate through the potential pairs
+      for (let i = 0; i < potentialPairs.length; i++) {
+        const cell = potentialPairs[i];
+        let pairCell = potentialPairs.filter(pp => pp.id !== cell.id).find(pp => cell.possibleValues.every(pv => pp.possibleValues.includes(pv)))
+        // If there is no match continue to next cell
+        if (pairCell === undefined) {
           continue;
         }
-        // Check if they have the same values and break out of checking column (there can only be one pair)
-        if (cell.possibleValues.every(pv => columnCell.possibleValues.includes(pv))) {
-          pairCell = columnCell;
-          break;
-        }
-      }
-      // Continue seaching if a pair was found
-      if (pairCell !== undefined) {
         // Remove naked pair possible values from the rest of the column and also exclude the pair cell (we have already excluded current cell earlier)
-        for (const columnCell of columnCells.filter(cc => cc.id !== pairCell.id)) {
+        for (const columnCell of columnCells.filter(cc => cc.id !== pairCell.id && cc.value === -1)) {
           columnCell.possibleValues = columnCell.possibleValues.filter(pv => !cell.possibleValues.includes(pv));
         }
         // Set nakedPairFound flag so we can call Solve() recursively afterwards
         nakedPairFound = true;
-        // Continue to next cell, there can only be one naked pair per row/column/chunk
+      }
+    }
+
+    // Naked pairs chunk
+    for (let chunkId = 0; chunkId < 9; chunkId++) {
+      // Current chunk cells
+      const chunkCells = this.getChunk(chunkId);
+      // Filter out any cell that has a value or does not have exactly 2 possible values.
+      const potentialPairs = chunkCells.filter(chunkCell => chunkCell.value === -1 && chunkCell.possibleValues.length === 2);
+      // If there are no potential pairs continue to next chunk
+      if (potentialPairs.length === 0) {
         continue;
       }
-      
-      // Get current chunk without the current cell
-      const chunkCells = this.getChunk(cell.chunkId).filter(c => c.id !== cell.id);
-      // Interate through each cell in chunk and check if they have indentical possible values
-      for (let j = 0; j < chunkCells.length; j++) {
-        const chunkCell = chunkCells[j];
-        // Check if possible values array contains 2 elements
-        if (chunkCell.possibleValues.length !== 2) {
+      // Iterate through the potential pairs
+      for (let i = 0; i < potentialPairs.length; i++) {
+        const cell = potentialPairs[i];
+        let pairCell = potentialPairs.filter(pp => pp.id !== cell.id).find(pp => cell.possibleValues.every(pv => pp.possibleValues.includes(pv)))
+        // If there is no match continue to next cell
+        if (pairCell === undefined) {
           continue;
         }
-        // Check if they have the same values and break out of checking chunk (there can only be one pair)
-        if (cell.possibleValues.every(pv => chunkCell.possibleValues.includes(pv))) {
-          pairCell = chunkCell;
-          break;
-        }
-      }
-      // Continue seaching if a pair was found
-      if (pairCell !== undefined) {
         // Remove naked pair possible values from the rest of the chunk and also exclude the pair cell (we have already excluded current cell earlier)
-        for (const chunkCell of chunkCells.filter(cc => cc.id !== pairCell.id)) {
+        for (const chunkCell of chunkCells.filter(cc => cc.id !== pairCell.id && cc.value === -1)) {
           chunkCell.possibleValues = chunkCell.possibleValues.filter(pv => !cell.possibleValues.includes(pv));
         }
         // Set nakedPairFound flag so we can call Solve() recursively afterwards
@@ -209,7 +199,7 @@ class AutoSolver {
 
     if (nakedPairFound) {
       return this.solve();
-    }
+    }    
   }
 }
 
