@@ -68,12 +68,21 @@ class AutoSolver {
     return this.cellData.filter(v => v.chunkId === chunkId);
   }
 
-  updatePlayerSolution(index, value){
+  updatePlayerSolution(index, value) {
     this.cellData[index].value = value;
     this.cellData[index].possibleValues = null;
   }
 
   solve() {
+
+    for (let index = 0; index < this.cellData.length; index++) {
+      const element = this.cellData[index];
+
+      if (element.possibleValues?.length === 0) {
+        console.log(JSON.parse(JSON.stringify(element)));
+      }
+    }
+
     // If every cell has been filled out stop
     if (this.cellData.every(v => v.value !== -1)) {
       for (let i = 0; i < this.cellData.length; i++) {
@@ -93,7 +102,7 @@ class AutoSolver {
       if (cell.value !== -1 || cell.possibleValues.length !== 1) {
         continue;
       }
-      
+
       // Update the internal data
       this.updatePlayerSolution(cell.id, cell.possibleValues[0]);
       // Temp for debugging
@@ -117,14 +126,14 @@ class AutoSolver {
       // Inverse so we get the remaining possible values
       cell.possibleValues = [1, 2, 3, 4, 5, 6, 7, 8, 9].filter(v => !usedNumbers.includes(v));
       // If there is only 1 remaining possible value
-      if (cell.possibleValues.length === 1) {        
+      if (cell.possibleValues.length === 1) {
         // Recursively start again
         return this.solve();
       }
     }
 
 
-    // Nake triple pair rows
+    // Naked triple pair rows
     for (let rowId = 0; rowId < 9; rowId++) {
       // Current row cells
       const rowCells = this.getRow(rowId);
@@ -158,7 +167,7 @@ class AutoSolver {
       }
     }
 
-    // Nake triple pair columns
+    // Naked triple pair columns
     for (let colId = 0; colId < 9; colId++) {
       // Current column cells
       const columnCells = this.getColumn(colId);
@@ -192,7 +201,7 @@ class AutoSolver {
       }
     }
 
-    // Nake triple pair chunks
+    // Naked triple pair chunks
     for (let chunkId = 0; chunkId < 9; chunkId++) {
       // Current chunk cells
       const chunkCells = this.getChunk(chunkId);
@@ -240,13 +249,14 @@ class AutoSolver {
       // Iterate through the potential pairs
       for (let i = 0; i < potentialPairs.length; i++) {
         const cell = potentialPairs[i];
-        let pairCell = potentialPairs.filter(pp => pp.id !== cell.id).find(pp => cell.possibleValues.every(pv => pp.possibleValues.includes(pv)))
+        let pairCell = potentialPairs.filter(pp => pp.id !== cell.id).find(pp => cell.possibleValues.every(pv => pp.possibleValues.includes(pv)));
         // If there is no match continue to next cell
         if (pairCell === undefined) {
           continue;
         }
-        // Remove naked pair possible values from the rest of the row and also exclude the pair cell (we have already excluded current cell earlier)
-        for (const rowCell of rowCells.filter(rc => rc.id !== pairCell.id && rc.value === -1)) {
+
+        // Remove naked pair possible values from the rest of the row and also exclude the pair cell and cell
+        for (const rowCell of rowCells.filter(rc => rc.id !== pairCell.id && rc.id !== cell.id && rc.value === -1)) {
           rowCell.possibleValues = rowCell.possibleValues.filter(pv => !cell.possibleValues.includes(pv));
         }
       }
@@ -270,8 +280,8 @@ class AutoSolver {
         if (pairCell === undefined) {
           continue;
         }
-        // Remove naked pair possible values from the rest of the column and also exclude the pair cell (we have already excluded current cell earlier)
-        for (const columnCell of columnCells.filter(cc => cc.id !== pairCell.id && cc.value === -1)) {
+        // Remove naked pair possible values from the rest of the column and also exclude the pair cell and cell
+        for (const columnCell of columnCells.filter(cc => cc.id !== pairCell.id && cc.id !== cell.id && cc.value === -1)) {
           columnCell.possibleValues = columnCell.possibleValues.filter(pv => !cell.possibleValues.includes(pv));
         }
       }
@@ -295,16 +305,110 @@ class AutoSolver {
         if (pairCell === undefined) {
           continue;
         }
-        // Remove naked pair possible values from the rest of the chunk and also exclude the pair cell (we have already excluded current cell earlier)
-        for (const chunkCell of chunkCells.filter(cc => cc.id !== pairCell.id && cc.value === -1)) {
+        // Remove naked pair possible values from the rest of the chunk and also exclude the pair cell and cell
+        for (const chunkCell of chunkCells.filter(cc => cc.id !== pairCell.id && cc.id !== cell.id && cc.value === -1)) {
           chunkCell.possibleValues = chunkCell.possibleValues.filter(pv => !cell.possibleValues.includes(pv));
         }
       }
     }
 
+    // Hidden single row
+    for (let rowId = 0; rowId < 9; rowId++) {
+      // Get current row cells
+      const rowCells = this.getRow(rowId);
+      // Iterate through the row
+      for (let i = 0; i < rowCells.length; i++) {
+        const cell = rowCells[i];
+        // If the cell already has a value continue to next cell
+        if (cell.value !== -1) {
+          continue;
+        }
+        // Iterate through all posible values for the cell
+        for (let j = 0; j < cell.possibleValues.length; j++) {
+          const possibleValue = cell.possibleValues[j];
+          // Calculate how many times the possible value is used in the row
+          const occurrenceAmount = rowCells.reduce((accu, currentCell) => accu + (currentCell.possibleValues?.includes(possibleValue) ? 1 : 0), 0);
+          // If the possible value is used more than exactly one continue to next number
+          if (occurrenceAmount !== 1) {
+            continue;
+          }
+          // Set the possible value to the number
+          cell.possibleValues = [possibleValue];
+          // Update possible value for the other cells in the row that do not have a value yet
+          for (const rowCell of rowCells.filter(rc => rc.id !== cell.id && rc.value === -1)) {
+            rowCell.possibleValues = rowCell.possibleValues.filter(pv => pv !== possibleValue);
+          }
+          // Break out of checking the current cells possible values as we have found a match
+          break;
+        }
+      }
+    }
+
+
+    // Hidden single column
+    for (let colId = 0; colId < 9; colId++) {
+      const columnCells = this.getColumn(colId);
+
+      for (let i = 0; i < columnCells.length; i++) {
+        const cell = columnCells[i];
+
+        if (cell.value !== -1) {
+          continue;
+        }
+
+        for (let j = 0; j < cell.possibleValues.length; j++) {
+          const possibleValue = cell.possibleValues[j];
+          const occurrenceAmount = columnCells.reduce((accu, currentCell) => accu + (currentCell.possibleValues?.includes(possibleValue) ? 1 : 0), 0);
+
+          if (occurrenceAmount !== 1) {
+            continue;
+          }
+
+          cell.possibleValues = [possibleValue];
+
+          for (const columnCell of columnCells.filter(cc => cc.id !== cell.id && cc.value === -1)) {
+            columnCell.possibleValues = columnCell.possibleValues.filter(pv => pv !== possibleValue);
+          }
+
+          break;
+        }
+      }
+    }
+
+    // Hidden single chunk
+    for (let chunkId = 0; chunkId < 9; chunkId++) {
+      const chunkCells = this.getChunk(chunkId);
+
+      for (let i = 0; i < chunkCells.length; i++) {
+        const cell = chunkCells[i];
+
+        if (cell.value !== -1) {
+          continue;
+        }
+
+        for (let j = 0; j < cell.possibleValues.length; j++) {
+          const possibleValue = cell.possibleValues[j];
+          const occurrenceAmount = chunkCells.reduce((accu, currentCell) => accu + (currentCell.possibleValues?.includes(possibleValue) ? 1 : 0), 0);
+
+          if (occurrenceAmount !== 1) {
+            continue;
+          }
+
+          cell.possibleValues = [possibleValue];
+
+          for (const chunkCell of chunkCells.filter(cc => cc.id !== cell.id && cc.value === -1)) {
+            chunkCell.possibleValues = chunkCell.possibleValues.filter(pv => pv !== possibleValue);
+          }
+
+          break;
+        }
+      }
+    }
+
+
     if (this.cellData.some(cell => cell.possibleValues?.length === 1) || this.cellData.every(v => v.value !== -1)) {
       return this.solve();
-    }    
+    }
   }
 }
 
@@ -330,9 +434,9 @@ class Sudoku {
     this.addVisibleNumbers();
     this.addTileListeners();
 
-    if(useAutoSolverRef.checked){
-      const autoSolver = new AutoSolver(this.solution, this.playerBoard); 
-      autoSolver.solve();      
+    if (useAutoSolverRef.checked) {
+      const autoSolver = new AutoSolver(this.solution, this.playerBoard);
+      autoSolver.solve();
     }
   }
 
@@ -358,7 +462,7 @@ class Sudoku {
     const ids = [...Array(sudokuTileElementRefs.length).keys()];
 
     for (let i = 0; i < sudokuTileElementRefs.length; i++) {
-      sudokuTileElementRefs[i]["locked"] = false;      
+      sudokuTileElementRefs[i]["locked"] = false;
     }
 
     for (let i = 0; i < this.clueAmount; i++) {
@@ -482,7 +586,7 @@ class Sudoku {
     return Math.floor(Math.random() * max);
   }
 
-  onDestroy(){
+  onDestroy() {
     removeEventListener("keyup", this.boundEventHandler);
   }
 }
