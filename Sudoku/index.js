@@ -134,23 +134,26 @@ class AutoSolver {
       if (potentialPairs.length === 0) {
         continue;
       }
-      // Iterate through the potential pairs
-      for (let i = 0; i < potentialPairs.length; i++) {
-        const cell = potentialPairs[i];
-        const potentialPairsForNumber = [cell];
 
-        for (let j = 0; j < cell.possibleValues.length; j++) {
-          const ppw = potentialPairs.filter(pp => pp.id !== cell.id && pp.possibleValues.includes(cell.possibleValues[j]) && potentialPairsForNumber.every(ppfn => ppfn.id !== pp.id));
-          potentialPairsForNumber.push(...ppw);
+      const combinations = []
+
+      for (let i = 0; i < potentialPairs.length - 2; i++) {
+        for (let j = i + 1; j < potentialPairs.length - 1; j++) {
+          for (let k = j + 1; k < potentialPairs.length; k++) {
+            combinations.push([potentialPairs[i], potentialPairs[j], potentialPairs[k]])
+          }
         }
+      }
 
-        if (!(potentialPairsForNumber.length === 3 && new Set(...potentialPairsForNumber.map(pp => pp.possibleValues)).size === 3)) {
+      for (let i = 0; i < combinations.length; i++) {
+        const cellCombination = combinations[i];
+        const possibleNumbers = new Set(cellCombination.flatMap(cc => cc.possibleValues));
+        if (possibleNumbers.size > 3) {
           continue;
         }
 
-        // Remove naked pair possible values from the rest of the row and also exclude the pair cell (we have already excluded current cell earlier)
-        for (const rowCell of rowCells.filter(rc => !potentialPairsForNumber.includes(rc.id) && rc.value === -1)) {
-          rowCell.possibleValues = rowCell.possibleValues.filter(pv => !cell.possibleValues.includes(pv));
+        for (const rowCell of rowCells.filter(rc => !cellCombination.includes(rc) && rc.value === -1)) {
+          rowCell.possibleValues = rowCell.possibleValues.filter(pv => !possibleNumbers.has(pv));
         }
       }
     }
@@ -160,28 +163,31 @@ class AutoSolver {
       // Current column cells
       const columnCells = this.getColumn(colId);
       // Filter out any cell that has a value or does not have exactly 2 or 3 possible values.
-      const potentialPairs = columnCells.filter(colCell => colCell.value === -1 && (colCell.possibleValues.length === 2 || colCell.possibleValues.length === 3));
+      const potentialPairs = columnCells.filter(columnCell => columnCell.value === -1 && (columnCell.possibleValues.length === 2 || columnCell.possibleValues.length === 3));
       // If there are no potential pairs continue to next chunk
       if (potentialPairs.length === 0) {
         continue;
       }
-      // Iterate through the potential pairs
-      for (let i = 0; i < potentialPairs.length; i++) {
-        const cell = potentialPairs[i];
-        const potentialPairsForNumber = [cell];
 
-        for (let j = 0; j < cell.possibleValues.length; j++) {
-          const ppw = potentialPairs.filter(pp => pp.id !== cell.id && pp.possibleValues.includes(cell.possibleValues[j]) && potentialPairsForNumber.every(ppfn => ppfn.id !== pp.id));
-          potentialPairsForNumber.push(...ppw);
+      const combinations = []
+
+      for (let i = 0; i < potentialPairs.length - 2; i++) {
+        for (let j = i + 1; j < potentialPairs.length - 1; j++) {
+          for (let k = j + 1; k < potentialPairs.length; k++) {
+            combinations.push([potentialPairs[i], potentialPairs[j], potentialPairs[k]])
+          }
         }
+      }
 
-        if (!(potentialPairsForNumber.length === 3 && new Set(...potentialPairsForNumber.map(pp => pp.possibleValues)).size === 3)) {
+      for (let i = 0; i < combinations.length; i++) {
+        const cellCombination = combinations[i];
+        const possibleNumbers = new Set(cellCombination.flatMap(cc => cc.possibleValues));
+        if (possibleNumbers.size > 3) {
           continue;
         }
 
-        // Remove naked pair possible values from the rest of the column and also exclude the pair cell (we have already excluded current cell earlier)
-        for (const columnCell of columnCells.filter(cc => !potentialPairsForNumber.includes(cc.id) && cc.value === -1)) {
-          columnCell.possibleValues = columnCell.possibleValues.filter(pv => !cell.possibleValues.includes(pv));
+        for (const columnCell of columnCells.filter(cc => !cellCombination.includes(cc) && cc.value === -1)) {
+          columnCell.possibleValues = columnCell.possibleValues.filter(pv => !possibleNumbers.has(pv));
         }
       }
     }
@@ -196,23 +202,26 @@ class AutoSolver {
       if (potentialPairs.length === 0) {
         continue;
       }
-      // Iterate through the potential pairs
-      for (let i = 0; i < potentialPairs.length; i++) {
-        const cell = potentialPairs[i];
-        const potentialPairsForNumber = [cell];
 
-        for (let j = 0; j < cell.possibleValues.length; j++) {
-          const ppw = potentialPairs.filter(pp => pp.id !== cell.id && pp.possibleValues.includes(cell.possibleValues[j]) && potentialPairsForNumber.every(ppfn => ppfn.id !== pp.id));
-          potentialPairsForNumber.push(...ppw);
+      const combinations = []
+
+      for (let i = 0; i < potentialPairs.length - 2; i++) {
+        for (let j = i + 1; j < potentialPairs.length - 1; j++) {
+          for (let k = j + 1; k < potentialPairs.length; k++) {
+            combinations.push([potentialPairs[i], potentialPairs[j], potentialPairs[k]])
+          }
         }
+      }
 
-        if (!(potentialPairsForNumber.length === 3 && new Set(...potentialPairsForNumber.map(pp => pp.possibleValues)).size === 3)) {
+      for (let i = 0; i < combinations.length; i++) {
+        const cellCombination = combinations[i];
+        const possibleNumbers = new Set(cellCombination.flatMap(cc => cc.possibleValues));
+        if (possibleNumbers.size > 3) {
           continue;
         }
 
-        // Remove naked pair possible values from the rest of the chunk and also exclude the pair cell (we have already excluded current cell earlier)
-        for (const chunkCell of chunkCells.filter(cc => !potentialPairsForNumber.includes(cc.id) && cc.value === -1)) {
-          chunkCell.possibleValues = chunkCell.possibleValues.filter(pv => !cell.possibleValues.includes(pv));
+        for (const chunkCell of chunkCells.filter(cc => !cellCombination.includes(cc) && cc.value === -1)) {
+          chunkCell.possibleValues = chunkCell.possibleValues.filter(pv => !possibleNumbers.has(pv));
         }
       }
     }
@@ -492,21 +501,3 @@ document.addEventListener('DOMContentLoaded', (event) => {
   // Your initialization code here, such as creating a new game instance
   game = new Sudoku();
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
