@@ -406,6 +406,104 @@ class AutoSolver {
     }
 
 
+    // Hidden pair rows
+    for (let rowId = 0; rowId < this.cellData.length; rowId++) {
+      // Get current row cells
+      const rowCells = this.getRow(rowId);
+      // Get all possible values used in current row and how often they are used
+      const valueToCellsMap = {};
+      for (let i = 0; i < rowCells.length; i++) {
+        const cell = rowCells[i];
+
+        for (let j = 0; j < cell.possibleValues?.length; j++) {
+          const pv = cell.possibleValues[j];
+          if (!valueToCellsMap[pv]) {
+            valueToCellsMap[pv] = [];
+          }
+
+          valueToCellsMap[pv].push(cell);
+        }
+      }
+
+      for (const cells of Object.values(valueToCellsMap)) {
+        if (cells.length !== 2) {
+          continue;
+        }
+
+        const uniquePotentialValues = new Set([...cells[0].possibleValues, ...cells[1].possibleValues]);
+        if (uniquePotentialValues.size === 2) {
+          cells[0].possibleValues = [...uniquePotentialValues];
+          cells[1].possibleValues = [...uniquePotentialValues];
+        }
+      }
+    }
+
+    // Hidden pair columns
+    for (let colId = 0; colId < this.cellData.length; colId++) {
+      // Get current row cells
+      const columnCells = this.getColumn(colId);
+      // Get all possible values used in current column and how often they are used
+      const valueToCellsMap = {};
+      for (let i = 0; i < columnCells.length; i++) {
+        const cell = columnCells[i];
+
+        for (let j = 0; j < cell.possibleValues?.length; j++) {
+          const pv = cell.possibleValues[j];
+          if (!valueToCellsMap[pv]) {
+            valueToCellsMap[pv] = [];
+          }
+
+          valueToCellsMap[pv].push(cell);
+        }
+      }
+
+      for (const cells of Object.values(valueToCellsMap)) {
+        if (cells.length !== 2) {
+          continue;
+        }
+
+        const uniquePotentialValues = new Set([...cells[0].possibleValues, ...cells[1].possibleValues]);
+        if (uniquePotentialValues.size === 2) {
+          cells[0].possibleValues = [...uniquePotentialValues];
+          cells[1].possibleValues = [...uniquePotentialValues];
+        }
+      }
+    }
+
+    
+    // Hidden pair chunks
+    for (let chunkId = 0; chunkId < this.cellData.length; chunkId++) {
+      // Get current chunk cells
+      const chunkCells = this.getChunk(chunkId);
+      // Get all possible values used in current chunk and how often they are used
+      const valueToCellsMap = {};
+      for (let i = 0; i < chunkCells.length; i++) {
+        const cell = chunkCells[i];
+
+        for (let j = 0; j < cell.possibleValues?.length; j++) {
+          const pv = cell.possibleValues[j];
+          if (!valueToCellsMap[pv]) {
+            valueToCellsMap[pv] = [];
+          }
+
+          valueToCellsMap[pv].push(cell);
+        }
+      }
+
+      for (const cells of Object.values(valueToCellsMap)) {
+        if (cells.length !== 2) {
+          continue;
+        }
+
+        const uniquePotentialValues = new Set([...cells[0].possibleValues, ...cells[1].possibleValues]);
+        if (uniquePotentialValues.size === 2) {
+          cells[0].possibleValues = [...uniquePotentialValues];
+          cells[1].possibleValues = [...uniquePotentialValues];
+        }
+      }
+    }
+
+
     if (this.cellData.some(cell => cell.possibleValues?.length === 1) || this.cellData.every(v => v.value !== -1)) {
       return this.solve();
     }
