@@ -35,7 +35,8 @@ class AutoSolver {
       value: -1,
       possibleValues: [],
     }
-  ]
+  ];
+  hiddenTripleCombinations = [];
 
   constructor(solution, clues) {
     this.solution = solution;
@@ -55,6 +56,15 @@ class AutoSolver {
         possibleValues: val !== -1 ? null : [1, 2, 3, 4, 5, 6, 7, 8, 9],
       };
     });
+    
+    const potentialPairs = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+    for (let i = 0; i < potentialPairs.length - 2; i++) {
+      for (let j = i + 1; j < potentialPairs.length - 1; j++) {
+        for (let k = j + 1; k < potentialPairs.length; k++) {
+          this.hiddenTripleCombinations.push([potentialPairs[i], potentialPairs[j], potentialPairs[k]])
+        }
+      }
+    }
   }
 
   // 0-8
@@ -74,7 +84,7 @@ class AutoSolver {
   }
 
   solve() {
-
+    // Debugging to check for too harsh potential value removal
     for (let index = 0; index < this.cellData.length; index++) {
       const element = this.cellData[index];
 
@@ -469,7 +479,6 @@ class AutoSolver {
         }
       }
     }
-
     
     // Hidden pair chunks
     for (let chunkId = 0; chunkId < this.cellData.length; chunkId++) {
@@ -504,6 +513,109 @@ class AutoSolver {
     }
 
 
+    // Hidden triplets row
+    for (let rowId = 0; rowId < this.cellData.length; rowId++) {
+      // Get current row cells
+      const rowCells = this.getRow(rowId).filter(rc => rc.value === -1);
+
+      for (let i = 0; i < this.hiddenTripleCombinations.length; i++) {
+        const combination = this.hiddenTripleCombinations[i];
+        const potentialTripleCells = rowCells.filter(rc => combination.every(pc => rc.possibleValues.includes(pc)));
+
+        if (potentialTripleCells.length !== 3) {
+          continue;
+        }
+
+        const remaningCellsPossibleValues = rowCells.filter(rc => !potentialTripleCells.includes(rc)).map(rc => rc.possibleValues);
+        let notUnique = false;
+
+        for (let j = 0; j < combination.length; j++) {
+          if (remaningCellsPossibleValues.some(rc => rc.includes(combination[j]))) {
+            notUnique = true;
+            break;
+          }
+        }
+
+        if (notUnique) {
+          continue;
+        }
+
+        for (let j = 0; j < potentialTripleCells.length; j++) {
+          const rowCell = potentialTripleCells[j];
+          rowCell.possibleValues = rowCell.possibleValues.filter(rc => combination.includes(rc));
+        }
+      }
+    }
+
+    // Hidden triplets colomn
+    for (let columnId = 0; columnId < this.cellData.length; columnId++) {
+      // Get current column cells
+      const columnCells = this.getColumn(columnId).filter(rc => rc.value === -1);
+
+      for (let i = 0; i < this.hiddenTripleCombinations.length; i++) {
+        const combination = this.hiddenTripleCombinations[i];
+        const potentialTripleCells = columnCells.filter(cc => combination.every(pc => cc.possibleValues.includes(pc)));
+
+        if (potentialTripleCells.length !== 3) {
+          continue;
+        }
+
+        const remaningCellsPossibleValues = columnCells.filter(cc => !potentialTripleCells.includes(cc)).map(cc => cc.possibleValues);
+        let notUnique = false;
+
+        for (let j = 0; j < combination.length; j++) {
+          if (remaningCellsPossibleValues.some(cc => cc.includes(combination[j]))) {
+            notUnique = true;
+            break;
+          }
+        }
+
+        if (notUnique) {
+          continue;
+        }
+
+        for (let j = 0; j < potentialTripleCells.length; j++) {
+          const columnCell = potentialTripleCells[j];
+          columnCell.possibleValues = columnCell.possibleValues.filter(cc => combination.includes(cc));
+        }
+      }
+    }
+
+    // Hidden triplets chunk
+    for (let chunkId = 0; chunkId < this.cellData.length; chunkId++) {
+      // Get current column cells
+      const chunkCells = this.getChunk(chunkId).filter(rc => rc.value === -1);
+
+      for (let i = 0; i < this.hiddenTripleCombinations.length; i++) {
+        const combination = this.hiddenTripleCombinations[i];
+        const potentialTripleCells = chunkCells.filter(cc => combination.every(pc => cc.possibleValues.includes(pc)));
+
+        if (potentialTripleCells.length !== 3) {
+          continue;
+        }
+
+        const remaningCellsPossibleValues = chunkCells.filter(cc => !potentialTripleCells.includes(cc)).map(cc => cc.possibleValues);
+        let notUnique = false;
+
+        for (let j = 0; j < combination.length; j++) {
+          if (remaningCellsPossibleValues.some(cc => cc.includes(combination[j]))) {
+            notUnique = true;
+            break;
+          }
+        }
+
+        if (notUnique) {
+          continue;
+        }
+
+        for (let j = 0; j < potentialTripleCells.length; j++) {
+          const chunkCell = potentialTripleCells[j];
+          chunkCell.possibleValues = chunkCell.possibleValues.filter(cc => combination.includes(cc));
+        }
+      }
+    }
+
+
     if (this.cellData.some(cell => cell.possibleValues?.length === 1) || this.cellData.every(v => v.value !== -1)) {
       return this.solve();
     }
@@ -533,8 +645,10 @@ class Sudoku {
     this.addTileListeners();
 
     if (useAutoSolverRef.checked) {
+      console.time("Auto solver start");
       const autoSolver = new AutoSolver(this.solution, this.playerBoard);
       autoSolver.solve();
+      console.timeEnd("Auto solver start");
     }
   }
 
