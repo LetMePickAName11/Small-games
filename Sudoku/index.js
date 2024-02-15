@@ -616,6 +616,80 @@ class AutoSolver {
     }
 
 
+    // X-Wing rows
+    for (let rowId = 0; rowId < 9; rowId++) {
+      // Get current row
+      const rowCells = this.getRow(rowId);
+      // Iterate through all possible cell values
+      for (let i = 1; i < 10; i++) {
+        // Find the cells that do not have a value and with the number as a possible value
+        const rowCellsWithNumber = rowCells.filter(rc => rc.value === -1 && rc.possibleValues.includes(i));
+        // If there are more than 2 continue to next number
+        if (rowCellsWithNumber.length !== 2) {
+          continue;
+        }
+
+        // Get the two columns that the cells belong to, filter out cells already set and find the cells that has the number as a possible value
+        // This should find the cells from previous again
+        const firstColumn = this.getColumn(rowCellsWithNumber[0].colId).filter(cc => cc.value === -1);
+        const firstColumnn = firstColumn.filter(cc => cc.possibleValues.includes(i));
+        const secondColumn = this.getColumn(rowCellsWithNumber[1].colId).filter(cc => cc.value === -1);
+        const secondColumnn = secondColumn.filter(cc => cc.possibleValues.includes(i));
+        // Ensure that we have only found 2 rows
+        const exactlyTwoRows = new Set(firstColumnn.map(fc => fc.rowId).concat(secondColumn.map(sc => sc.rowId))).size === 2;
+        // If there are not exactly two cells in each column continue to next number
+        if (firstColumnn.length !== 2 || secondColumnn.length !== 2 || !exactlyTwoRows) {
+          continue;
+        }
+        
+        // Remove the number from the possible values of all other cells in the columns
+        for (const f of firstColumn.filter(fc => !firstColumnn.includes(fc))) {
+          f.possibleValues = f.possibleValues.filter(pv => pv !== i);
+        }
+        for (const f of secondColumn.filter(fc => !secondColumnn.includes(fc))) {
+          f.possibleValues = f.possibleValues.filter(pv => pv !== i);
+        }
+      }
+    }
+
+    // X-Wing columns
+    for (let colId = 0; colId < 9; colId++) {
+      // Get current column
+      const columnCells = this.getColumn(colId);
+      // Iterate through all possible cell values
+      for (let i = 1; i < 10; i++) {
+        // Find the cells that do not have a value and with the number as a possible value
+        const columnCellsWithNumber = columnCells.filter(cc => cc.value === -1 && cc.possibleValues.includes(i));
+        // If there are more than 2 continue to next number
+        if (columnCellsWithNumber.length !== 2) {
+          continue;
+        }
+
+        for (let secondColId = 0; secondColId < 9; secondColId++) {
+          if (secondColId === colId) {
+            continue;
+          }
+
+          const secondColumnCells = this.getColumn(secondColId).filter(cc => cc.value === -1);
+          const secondColumnCellsWithNumber = secondColumnCells.filter(sccwn => sccwn.possibleValues.includes(i));
+          const exactlyTwoColumns = new Set(columnCellsWithNumber.map(fc => fc.rowId).concat(secondColumnCellsWithNumber.map(sc => sc.rowId))).size === 2;
+
+          if (secondColumnCellsWithNumber.length !== 2 || !exactlyTwoColumns) {
+            continue;
+          }
+
+          // Remove the number from the possible values of all other cells in the columns
+          for (const f of columnCells.filter(fc => fc.value === -1 && !columnCellsWithNumber.includes(fc))) {
+            f.possibleValues = f.possibleValues.filter(pv => pv !== i);
+          }
+          for (const f of secondColumnCells.filter(fc => !secondColumnCellsWithNumber.includes(fc))) {
+            f.possibleValues = f.possibleValues.filter(pv => pv !== i);
+          }
+        }
+      }
+    }
+
+
     if (this.cellData.some(cell => cell.possibleValues?.length === 1) || this.cellData.every(v => v.value !== -1)) {
       return this.solve();
     }
