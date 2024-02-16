@@ -776,6 +776,94 @@ class AutoSolver {
       }
     }
 
+
+    // Jellyfish rows
+    for (let i = 1; i < 10; i++) {
+      const potentialCellsInRows = [];
+      // Iterate all rows
+      for (let rowId = 0; rowId < 9; rowId++) {
+        // Find all cells that do not have a value and has the current number in their possible values
+        const rowCells = this.getRow(rowId).filter(rc => rc.value === -1 && rc.possibleValues.includes(i));
+        // If there are not 2, 3 or 4 cells then continue to next row
+        if (![2, 3, 4].includes(rowCells.length)) {
+          continue;
+        }
+
+        potentialCellsInRows.push(rowCells);
+      }
+      // If there are more than 4 rows with the number continue to next number
+      if (potentialCellsInRows.length !== 4) {
+        continue;
+      }
+      // Flatten the rows to their cells
+      const potentialCellsInRowsFlattend = potentialCellsInRows.flat();
+      // Get all unique columns from the row cells
+      const uniqueColumnIds = potentialCellsInRowsFlattend.reduce((accu, val) => {
+        if (!accu.includes(val.colId)) {
+          accu.push(val.colId);
+        }
+
+        return accu;
+      }, []);
+      // If there are not exactly 4 columns continue to next number
+      if (uniqueColumnIds.length !== 4) {
+        continue;
+      }
+      // Iterate through the swordfish columns
+      for (let j = 0; j < uniqueColumnIds.length; j++) {
+        // Filter out cells that already have a value and the cells that are part of the swordfish
+        const columnCells = this.getColumn(uniqueColumnIds[j]).filter(cc => cc.value === -1 && !potentialCellsInRowsFlattend.includes(cc));
+        // Iterate through the cells and remove the current number from their possible values
+        for (let k = 0; k < columnCells.length; k++) {
+          columnCells[k].possibleValues = columnCells[k].possibleValues.filter(pv => pv !== i);
+        }
+      }
+    }
+
+    // Jellyfish columns
+    for (let i = 1; i < 10; i++) {
+      const potentialCellsInColumns = [];
+      // Iterate all columns
+      for (let colId = 0; colId < 9; colId++) {
+        // Find all cells that do not have a value and has the current number in their possible values
+        const columnCells = this.getColumn(colId).filter(cc => cc.value === -1 && cc.possibleValues.includes(i));
+        // If there are not 2, 3 or 4 cells then continue to next column
+        if (![2, 3, 4].includes(columnCells.length)) {
+          continue;
+        }
+
+        potentialCellsInColumns.push(columnCells);
+      }
+      // If there are more than 4 column with the number continue to next number
+      if (potentialCellsInColumns.length !== 4) {
+        continue;
+      }
+      // Flatten the columns to their cells
+      const potentialCellsInColumnsFlattend = potentialCellsInColumns.flat();
+      // Get all unique rows from the columns cells
+      const uniqueRowIds = potentialCellsInColumnsFlattend.reduce((accu, val) => {
+        if (!accu.includes(val.rowId)) {
+          accu.push(val.rowId);
+        }
+
+        return accu;
+      }, []);
+      // If there are not exactly 4 rows continue to next number
+      if (uniqueRowIds.length !== 4) {
+        continue;
+      }
+      // Iterate through the swordfish rows
+      for (let j = 0; j < uniqueRowIds.length; j++) {
+        // Filter out cells that already have a value and the cells that are part of the swordfish
+        const columnCells = this.getRow(uniqueRowIds[j]).filter(cc => cc.value === -1 && !potentialCellsInColumnsFlattend.includes(cc));
+        // Iterate through the cells and remove the current number from their possible values
+        for (let k = 0; k < columnCells.length; k++) {
+          columnCells[k].possibleValues = columnCells[k].possibleValues.filter(pv => pv !== i);
+        }
+      }
+    }
+
+
     if (this.cellData.some(cell => cell.possibleValues?.length === 1) || this.cellData.every(v => v.value !== -1)) {
       return this.solve();
     }
