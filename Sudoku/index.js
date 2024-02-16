@@ -733,6 +733,49 @@ class AutoSolver {
       }
     }
 
+    // Swordfish columns
+    for (let i = 1; i < 10; i++) {
+      const potentialCellsInColumns = [];
+      // Iterate all columns
+      for (let colId = 0; colId < 9; colId++) {
+        // Find all cells that do not have a value and has the current number in their possible values
+        const columnCells = this.getColumn(colId).filter(cc => cc.value === -1 && cc.possibleValues.includes(i));
+        // If there are not 2 or 3 cells then continue to next column
+        if (columnCells.length !== 2 && columnCells.length !== 3) {
+          continue;
+        }
+
+        potentialCellsInColumns.push(columnCells);
+      }
+      // If there are more than 3 column with the number continue to next number
+      if (potentialCellsInColumns.length !== 3) {
+        continue;
+      }
+      // Flatten the columns to their cells
+      const potentialCellsInColumnsFlattend = potentialCellsInColumns.flat();
+      // Get all unique rows from the columns cells
+      const uniqueRowIds = potentialCellsInColumnsFlattend.reduce((accu, val) => {
+        if (!accu.includes(val.rowId)) {
+          accu.push(val.rowId);
+        }
+
+        return accu;
+      }, []);
+      // If there are not exactly 3 rows continue to next number
+      if (uniqueRowIds.length !== 3) {
+        continue;
+      }
+      // Iterate through the swordfish rows
+      for (let j = 0; j < uniqueRowIds.length; j++) {
+        // Filter out cells that already have a value and the cells that are part of the swordfish
+        const columnCells = this.getRow(uniqueRowIds[j]).filter(cc => cc.value === -1 && !potentialCellsInColumnsFlattend.includes(cc));
+        // Iterate through the cells and remove the current number from their possible values
+        for (let k = 0; k < columnCells.length; k++) {
+          columnCells[k].possibleValues = columnCells[k].possibleValues.filter(pv => pv !== i);
+        }
+      }
+    }
+
     if (this.cellData.some(cell => cell.possibleValues?.length === 1) || this.cellData.every(v => v.value !== -1)) {
       return this.solve();
     }
