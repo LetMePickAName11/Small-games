@@ -690,9 +690,55 @@ class AutoSolver {
     }
 
 
+    // Swordfish rows
+    for (let i = 1; i < 10; i++) {
+      const potentialCellsInRows = [];
+      // Iterate all rows
+      for (let rowId = 0; rowId < 9; rowId++) {
+        // Find all cells that do not have a value and has the current number in their possible values
+        const rowCells = this.getRow(rowId).filter(rc => rc.value === -1 && rc.possibleValues.includes(i));
+        // If there are not 2 or 3 cells then continue to next row
+        if (rowCells.length !== 2 && rowCells.length !== 3) {
+          continue;
+        }
+
+        potentialCellsInRows.push(rowCells);
+      }
+      // If there are more than 3 rows with the number continue to next number
+      if (potentialCellsInRows.length !== 3) {
+        continue;
+      }
+      // Flatten the rows to their cells
+      const potentialCellsInRowsFlattend = potentialCellsInRows.flat();
+      // Get all unique columns from the row cells
+      const uniqueColumnIds = potentialCellsInRowsFlattend.reduce((accu, val) => {
+        if (!accu.includes(val.colId)) {
+          accu.push(val.colId);
+        }
+
+        return accu;
+      }, []);
+      // If there are not exactly 3 columns continue to next number
+      if (uniqueColumnIds.length !== 3) {
+        continue;
+      }
+      // Iterate through the swordfish columns
+      for (let j = 0; j < uniqueColumnIds.length; j++) {
+        // Filter out cells that already have a value and the cells that are part of the swordfish
+        const columnCells = this.getColumn(uniqueColumnIds[j]).filter(cc => cc.value === -1 && !potentialCellsInRowsFlattend.includes(cc));
+        // Iterate through the cells and remove the current number from their possible values
+        for (let k = 0; k < columnCells.length; k++) {
+          columnCells[k].possibleValues = columnCells[k].possibleValues.filter(pv => pv !== i);
+        }
+      }
+    }
+
     if (this.cellData.some(cell => cell.possibleValues?.length === 1) || this.cellData.every(v => v.value !== -1)) {
       return this.solve();
     }
+
+    console.log(this.cellData.filter(c => c.possibleValues !== null).flatMap(c => c.possibleValues));
+
   }
 }
 
