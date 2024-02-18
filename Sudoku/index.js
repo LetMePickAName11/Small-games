@@ -9,19 +9,31 @@ const sudokuTileElementRefs = boardContainerElementRef.children;
 
 const boardStates = [
   [
-    4, 9, 8, 1, 7, 2, 6, 3, 5,
-    7, 5, 3, 8, 9, 6, 4, 2, 1,
-    6, 2, 1, 3, 5, 4, 8, 9, 7,
-    9, 1, 7, 6, 2, 3, 5, 4, 8,
-    8, 3, 5, 7, 4, 1, 2, 6, 9,
-    2, 6, 4, 5, 8, 9, 1, 7, 3,
-    3, 8, 6, 2, 1, 7, 9, 5, 4,
-    1, 4, 2, 9, 3, 5, 7, 8, 6,
-    5, 7, 9, 4, 6, 8, 3, 1, 2
+    2, 3, 7, -8, 4, -1, 5, 6, 9,
+    1, 8, 6, 7, 9, 5, 2, -4, -3,
+    -5, 9, 4, 3, 2, 6, 7, 1, 8,
+    3, 1, 5, 6, -7, 4, -8, 9, 2,
+    4, 6, 9, 5, 8, 2, -1, 3, 7,
+    7, -2, 8, 1, -3, 9, 4, 5, 6,
+    -6, 4, 2, 9, 1, 8, 3, -7, -5,
+    8, 5, -3, -4, 6, 7, 9, 2, 1,
+    9, 7, 1, -2, 5, 3, -6, 8, 4
   ],
+  [
+    8, 6, 5, 4, 7, -2, 9, 1, -3,
+    2, -4, 3, 9, 5, -1, -6, 8, -7,
+    7, 9, -1, 6, 3, 8, 2, 5, -4,
+    5, -8, 6, -1, 2, 3, 4, 7, 9,
+    -4, -3, 7, 5, 8, 9, 1, -6, -2,
+    9, 1, 2, -7, 4, 6, 5, 3, 8,
+    3, 7, 4, 2, 6, 5, 8, 9, 1,
+    -6, 2, -9, -8, 1, -7, -3, 4, 5,
+    1, 5, 8, -3, 9, -4, -7, 2, 6
+  ]
   // Insert next solution here
 ];
 
+//.....2..3.4...16.7..1.....4.8.1.....43.....62...7..............6.98.73.....3.47..
 
 class AutoSolver {
   solution = [];
@@ -56,7 +68,7 @@ class AutoSolver {
         possibleValues: val !== -1 ? null : [1, 2, 3, 4, 5, 6, 7, 8, 9],
       };
     });
-    
+
     const potentialPairs = [1, 2, 3, 4, 5, 6, 7, 8, 9];
     for (let i = 0; i < potentialPairs.length - 2; i++) {
       for (let j = i + 1; j < potentialPairs.length - 1; j++) {
@@ -89,7 +101,7 @@ class AutoSolver {
       const element = this.cellData[index];
 
       if (element.possibleValues?.length === 0) {
-        console.log(JSON.parse(JSON.stringify(element)));
+        console.error(JSON.parse(JSON.stringify(element)));
       }
     }
 
@@ -479,7 +491,7 @@ class AutoSolver {
         }
       }
     }
-    
+
     // Hidden pair chunks
     for (let chunkId = 0; chunkId < this.cellData.length; chunkId++) {
       // Get current chunk cells
@@ -641,7 +653,7 @@ class AutoSolver {
         if (firstColumnn.length !== 2 || secondColumnn.length !== 2 || !exactlyTwoRows) {
           continue;
         }
-        
+
         // Remove the number from the possible values of all other cells in the columns
         for (const f of firstColumn.filter(fc => !firstColumnn.includes(fc))) {
           f.possibleValues = f.possibleValues.filter(pv => pv !== i);
@@ -868,8 +880,43 @@ class AutoSolver {
       return this.solve();
     }
 
-    console.log(this.cellData.filter(c => c.possibleValues !== null).flatMap(c => c.possibleValues));
+    console.time("Bruteforce");
+    console.log(`Cells to bruteforce: ${this.cellData.filter(cell => cell.value === -1).length}`)
+    this.bruteForce(this.cellData);
+    this.solve();
+    console.timeEnd("Bruteforce");
+  }
 
+
+  bruteForce(cells) {
+    const unfilledCells = cells.filter(cell => cell.value === -1).sort((a, b) => a.possibleValues.length - b.possibleValues.length);
+
+    if (unfilledCells.length === 0) {
+      return true;
+    }
+
+    const cell = unfilledCells[0];
+    const usedNumbers = new Set([
+      ...this.getRow(cell.rowId).map(c => c.value),
+      ...this.getColumn(cell.colId).map(c => c.value),
+      ...this.getChunk(cell.chunkId).map(c => c.value)
+    ]);
+
+    for (const possibleValue of cell.possibleValues) {
+      if (usedNumbers.has(possibleValue)) {
+        continue;
+      }
+
+      cell.value = possibleValue;
+
+      if (this.bruteForce(cells)) {
+        return true;
+      }
+
+      cell.value = -1;
+    }
+
+    return false;
   }
 }
 
@@ -922,18 +969,21 @@ class Sudoku {
   }
 
   addVisibleNumbers() {
-    const ids = [...Array(sudokuTileElementRefs.length).keys()];
-
     for (let i = 0; i < sudokuTileElementRefs.length; i++) {
       sudokuTileElementRefs[i]["locked"] = false;
     }
 
-    for (let i = 0; i < this.clueAmount; i++) {
-      const id = ids.splice(this.getRandomInt(ids.length), 1)[0];
-      const sudokuTile = sudokuTileElementRefs[id];
+    for (let index = 0; index < this.solution.length; index++) {
+      const cellNumber = this.solution[index];
+      this.solution[index] = Math.abs(cellNumber);
+
+      if (cellNumber > 0) {
+        continue;
+      }
+      const sudokuTile = sudokuTileElementRefs[index];
       sudokuTile["locked"] = true;
-      sudokuTile.innerHTML = this.solution[id];
-      this.playerBoard[id] = this.solution[id];
+      sudokuTile.innerHTML = Math.abs(cellNumber);
+      this.playerBoard[index] = Math.abs(cellNumber);
     }
   }
 
