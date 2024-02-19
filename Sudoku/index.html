@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sudoku</title>
+  <link rel="stylesheet" href="./index.css">
+</head>
+
+<body>  
+  <button id="resetBtn" style="margin-bottom: 1rem;">Reset</button>
+  <br>
+  <label>
+    Use auto solver 
+    <input id="useAutoSolver" type="checkbox" checked>
+  </label>
+  <br>
+  <label style="padding-bottom: 1rem;"> 
+    Clue amount: 
+    <input id="clueAmount" type="number" placeholder="Amount of clues" value="30" min="17" max="80">
+  </label>
+  <br>
+  <span style="padding-bottom: 1rem;" id="numberSelected">Selected number: 1</span>
+  <hr>
+  <div id="boardContainer" style="display: flex; flex-wrap: wrap;"></div>
+  <div id="confetti" class="confetti"></div>
+
+  <script src="./index.js"></script>
+</body>
+
+</html>
