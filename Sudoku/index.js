@@ -29,11 +29,22 @@ const boardStates = [
     3, 7, 4, 2, 6, 5, 8, 9, 1,
     -6, 2, -9, -8, 1, -7, -3, 4, 5,
     1, 5, 8, -3, 9, -4, -7, 2, 6
+  ],
+  [
+    8, 7, 9, -1, 4, 5, 2, -6, 3, 
+    3, -5, 6, 9, -8, 2, 1, 7, 4, 
+    2, 4, 1, 6, -7, -3, 5, 9, 8, 
+    9, 1, -3, 8, -5, 4, 7, 2, 6, 
+    6, 2, 5, 3, 1, -7, 4, -8, -9, 
+    4, -8, 7, -2, -6, -9, 3, -5, -1, 
+    -7, 9, 8, -5, -3, 1, -6, 4, -2, 
+    1, -6, 4, -7, -2, -8, 9, 3, -5, 
+    5, 3, 2, 4, 9, 6, 8, 1, 7
   ]
   // Insert next solution here
 ];
 
-//.....2..3.4...16.7..1.....4.8.1.....43.....62...7..............6.98.73.....3.47..
+//...1...6..5..8........73.....3.5.........7.89.8.269.517..53.6.2.6.728..5.........
 
 class AutoSolver {
   solution = [];
@@ -955,7 +966,7 @@ class Sudoku {
     boardContainerElementRef.style.width = `${this.boardDimension * this.tileSize}px`;
     boardContainerElementRef.style.height = `${this.boardDimension * this.tileSize}px`;
 
-    this.solution = boardStates[0];
+    this.solution = boardStates[2];
     this.playerBoard = new Array(this.solution.length).fill(-1);
 
     let boardChildElements = "";
@@ -985,6 +996,9 @@ class Sudoku {
       sudokuTile.innerHTML = Math.abs(cellNumber);
       this.playerBoard[index] = Math.abs(cellNumber);
     }
+
+    // https://www.thonky.com/sudoku/solution-count
+    // console.log(this.playerBoard.map(v => v === -1 ? '.' : `${v}`).join(''))
   }
 
   addTileListeners() {
