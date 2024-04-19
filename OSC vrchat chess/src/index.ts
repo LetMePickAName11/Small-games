@@ -377,12 +377,11 @@ class ChessGame implements OSCVrChatGameLogic {
   ]);
 }
 
-
 class OSCVrChat {
   constructor(gameLogic: OSCVrChatGameLogic) {
     this.gameLogic = gameLogic;
-    this.bitAllocationConfig = JSON.parse(fs.readFileSync('data.json', 'utf8'));
-    this.inputEventNames = JSON.parse(fs.readFileSync('input.json', 'utf8'));
+    this.bitAllocationConfig = JSON.parse(fs.readFileSync('configurations/data.jsondata.json', 'utf8'));
+    this.inputEventNames = JSON.parse(fs.readFileSync('configurations/data.jsoninput.json', 'utf8'));
     this.validateBitAllocation();
 
     this.oscHandler = new osc.UDPPort({
@@ -526,7 +525,7 @@ class OSCVrChat {
       throw new Error(`Too many bits allocated (limit 256): ${allocatedBitsSize}`);
     }
 
-    fs.writeFileSync("data_mapped.json", JSON.stringify(this.bitAllocations, null, 2));
+    fs.writeFileSync("auto_generated_files/data_mapped.json", JSON.stringify(this.bitAllocations, null, 2));
   }
 
   private getAllocatedBits(includeOverflow: 'all' | 'overflow' | 'noOverflow'): Array<BitAllocation> {
@@ -587,7 +586,7 @@ class OSCVrChat {
     '30': EightBitChunkName['7_LSBMiddleEightBit'],
     '31': EightBitChunkName['7_LSBEightBit']
   };
-  private readonly bitAllocationConfigNames: Array<string> = JSON.parse(fs.readFileSync('data.json', 'utf8')).map((bitAllocation: BitAllocationConfig) => bitAllocation.name);
+  private readonly bitAllocationConfigNames: Array<string> = JSON.parse(fs.readFileSync('configurations/data.json', 'utf8')).map((bitAllocation: BitAllocationConfig) => bitAllocation.name);
 }
 
 
