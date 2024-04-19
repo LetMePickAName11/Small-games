@@ -29,50 +29,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const osc_1 = __importDefault(require("osc"));
 const chess_js_1 = require("chess.js");
 const fs = __importStar(require("fs"));
-/**
- * Test castling, promotion, bishop capture, checks and checkmate
- * Make sure highlighting bits are send correctly to vrchat
- * Update input handling to work with new input system below
- * Ensure that chatbox messages are correct
- *
- * Unity
- * Hightlight shader, animations, layer blendtrees.
- * Add 2 orbs to each side with color and contact recievers for confirm and deny with !Input_1 & !Input_2
- * Align pieces to be centered
- * Add instruction plane with explanation of rules
- * Add some easier way to show file and rank orbs
- * Cleanup any old animations, materials, shaders, layers etc.
- * Check if moving the chessboard so it is centered makes more sense
- * Move all pieces to middle, then based on color rotate and displace. Should solve most rendering issues as well as knights facing the right direction
-*/
-/**
- * Start game
- *  Setup board
- *  Setup alive pieces
- *  Setup promotions
- *  Setup positions
- *
- * Send start data to vrchat
- *
- * Listen for input
- *  1-8 for file for selected piece
- *  1-8 for rank for selected piece
- *   if valid piece: show selected piece |
- *   else: show invalid piece message
- *  1-8 for file for selected position
- *  1-8 for rank for selected position
- *  if selected piece same as selected position: reset input |
- *  else if valid move display selected position
- *    if confirm move piece and display move but if promotion wait for input for queen or knight and then move
- *    else if deny: reset input
- *
- * Input 1-8
- * Input 1-8
- * Input 1-8
- * Input 1-8
- * if promotion Input 1|8
- * Input 1|8 to confirm or deny choice
- */
 class ChessGame {
     constructor() {
         this.input = {
@@ -81,7 +37,7 @@ class ChessGame {
             newPositionFile: '',
             newPositionRank: '',
             waitingForPromotionInput: false,
-            promotionInput: 0,
+            promotionInput: -1,
             selectedPath: null,
             selectedPiece: null,
         };
@@ -120,114 +76,146 @@ class ChessGame {
             ["Knight_Black_2" /* ChessIndexName.Knight_Black_2 */, 'g8'],
             ["Rook_Black_2" /* ChessIndexName.Rook_Black_2 */, 'h8']
         ]);
-        this.promotions = new Map([
-            ["Pawn_White_1" /* ChessIndexName.Pawn_White_1 */, [false, false]],
-            ["Pawn_White_2" /* ChessIndexName.Pawn_White_2 */, [false, false]],
-            ["Pawn_White_3" /* ChessIndexName.Pawn_White_3 */, [false, false]],
-            ["Pawn_White_4" /* ChessIndexName.Pawn_White_4 */, [false, false]],
-            ["Pawn_White_5" /* ChessIndexName.Pawn_White_5 */, [false, false]],
-            ["Pawn_White_6" /* ChessIndexName.Pawn_White_6 */, [false, false]],
-            ["Pawn_White_7" /* ChessIndexName.Pawn_White_7 */, [false, false]],
-            ["Pawn_White_8" /* ChessIndexName.Pawn_White_8 */, [false, false]],
-            ["Pawn_Black_1" /* ChessIndexName.Pawn_Black_1 */, [false, false]],
-            ["Pawn_Black_2" /* ChessIndexName.Pawn_Black_2 */, [false, false]],
-            ["Pawn_Black_3" /* ChessIndexName.Pawn_Black_3 */, [false, false]],
-            ["Pawn_Black_4" /* ChessIndexName.Pawn_Black_4 */, [false, false]],
-            ["Pawn_Black_5" /* ChessIndexName.Pawn_Black_5 */, [false, false]],
-            ["Pawn_Black_6" /* ChessIndexName.Pawn_Black_6 */, [false, false]],
-            ["Pawn_Black_7" /* ChessIndexName.Pawn_Black_7 */, [false, false]],
-            ["Pawn_Black_8" /* ChessIndexName.Pawn_Black_8 */, [false, false]],
+        this.pawnPromotions = new Map([
+            ["Pawn_White_1" /* ChessIndexName.Pawn_White_1 */, 0],
+            ["Pawn_White_2" /* ChessIndexName.Pawn_White_2 */, 0],
+            ["Pawn_White_3" /* ChessIndexName.Pawn_White_3 */, 0],
+            ["Pawn_White_4" /* ChessIndexName.Pawn_White_4 */, 0],
+            ["Pawn_White_5" /* ChessIndexName.Pawn_White_5 */, 0],
+            ["Pawn_White_6" /* ChessIndexName.Pawn_White_6 */, 0],
+            ["Pawn_White_7" /* ChessIndexName.Pawn_White_7 */, 0],
+            ["Pawn_White_8" /* ChessIndexName.Pawn_White_8 */, 0],
+            ["Pawn_Black_1" /* ChessIndexName.Pawn_Black_1 */, 0],
+            ["Pawn_Black_2" /* ChessIndexName.Pawn_Black_2 */, 0],
+            ["Pawn_Black_3" /* ChessIndexName.Pawn_Black_3 */, 0],
+            ["Pawn_Black_4" /* ChessIndexName.Pawn_Black_4 */, 0],
+            ["Pawn_Black_5" /* ChessIndexName.Pawn_Black_5 */, 0],
+            ["Pawn_Black_6" /* ChessIndexName.Pawn_Black_6 */, 0],
+            ["Pawn_Black_7" /* ChessIndexName.Pawn_Black_7 */, 0],
+            ["Pawn_Black_8" /* ChessIndexName.Pawn_Black_8 */, 0],
+        ]);
+        this.twinMap = new Map([
+            ["Rook_White_1" /* ChessIndexName.Rook_White_1 */, "Rook_White_2" /* ChessIndexName.Rook_White_2 */],
+            ["Knight_White_1" /* ChessIndexName.Knight_White_1 */, "Knight_White_2" /* ChessIndexName.Knight_White_2 */],
+            ["Bishop_White_1" /* ChessIndexName.Bishop_White_1 */, "Bishop_White_2" /* ChessIndexName.Bishop_White_2 */],
+            ["Bishop_White_2" /* ChessIndexName.Bishop_White_2 */, "Bishop_White_1" /* ChessIndexName.Bishop_White_1 */],
+            ["Knight_White_2" /* ChessIndexName.Knight_White_2 */, "Knight_White_1" /* ChessIndexName.Knight_White_1 */],
+            ["Rook_White_2" /* ChessIndexName.Rook_White_2 */, "Rook_White_1" /* ChessIndexName.Rook_White_1 */],
+            ["Rook_Black_1" /* ChessIndexName.Rook_Black_1 */, "Rook_Black_2" /* ChessIndexName.Rook_Black_2 */],
+            ["Knight_Black_1" /* ChessIndexName.Knight_Black_1 */, "Knight_Black_2" /* ChessIndexName.Knight_Black_2 */],
+            ["Bishop_Black_1" /* ChessIndexName.Bishop_Black_1 */, "Bishop_Black_2" /* ChessIndexName.Bishop_Black_2 */],
+            ["Bishop_Black_2" /* ChessIndexName.Bishop_Black_2 */, "Bishop_Black_1" /* ChessIndexName.Bishop_Black_1 */],
+            ["Knight_Black_2" /* ChessIndexName.Knight_Black_2 */, "Knight_Black_1" /* ChessIndexName.Knight_Black_1 */],
+            ["Rook_Black_2" /* ChessIndexName.Rook_Black_2 */, "Rook_Black_1" /* ChessIndexName.Rook_Black_1 */],
+        ]);
+        this.kingMap = new Map([
+            ["Rook_White_1" /* ChessIndexName.Rook_White_1 */, "King_White_1" /* ChessIndexName.King_White_1 */],
+            ["Knight_White_1" /* ChessIndexName.Knight_White_1 */, "King_White_1" /* ChessIndexName.King_White_1 */],
+            ["Bishop_White_1" /* ChessIndexName.Bishop_White_1 */, "King_White_1" /* ChessIndexName.King_White_1 */],
+            ["Queen_White_1" /* ChessIndexName.Queen_White_1 */, "King_White_1" /* ChessIndexName.King_White_1 */],
+            ["King_White_1" /* ChessIndexName.King_White_1 */, "King_White_1" /* ChessIndexName.King_White_1 */],
+            ["Bishop_White_2" /* ChessIndexName.Bishop_White_2 */, "King_White_1" /* ChessIndexName.King_White_1 */],
+            ["Knight_White_2" /* ChessIndexName.Knight_White_2 */, "King_White_1" /* ChessIndexName.King_White_1 */],
+            ["Rook_White_2" /* ChessIndexName.Rook_White_2 */, "King_White_1" /* ChessIndexName.King_White_1 */],
+            ["Pawn_White_1" /* ChessIndexName.Pawn_White_1 */, "King_White_1" /* ChessIndexName.King_White_1 */],
+            ["Pawn_White_2" /* ChessIndexName.Pawn_White_2 */, "King_White_1" /* ChessIndexName.King_White_1 */],
+            ["Pawn_White_3" /* ChessIndexName.Pawn_White_3 */, "King_White_1" /* ChessIndexName.King_White_1 */],
+            ["Pawn_White_4" /* ChessIndexName.Pawn_White_4 */, "King_White_1" /* ChessIndexName.King_White_1 */],
+            ["Pawn_White_5" /* ChessIndexName.Pawn_White_5 */, "King_White_1" /* ChessIndexName.King_White_1 */],
+            ["Pawn_White_6" /* ChessIndexName.Pawn_White_6 */, "King_White_1" /* ChessIndexName.King_White_1 */],
+            ["Pawn_White_7" /* ChessIndexName.Pawn_White_7 */, "King_White_1" /* ChessIndexName.King_White_1 */],
+            ["Pawn_White_8" /* ChessIndexName.Pawn_White_8 */, "King_White_1" /* ChessIndexName.King_White_1 */],
+            ["Pawn_Black_1" /* ChessIndexName.Pawn_Black_1 */, "King_Black_1" /* ChessIndexName.King_Black_1 */],
+            ["Pawn_Black_2" /* ChessIndexName.Pawn_Black_2 */, "King_Black_1" /* ChessIndexName.King_Black_1 */],
+            ["Pawn_Black_3" /* ChessIndexName.Pawn_Black_3 */, "King_Black_1" /* ChessIndexName.King_Black_1 */],
+            ["Pawn_Black_4" /* ChessIndexName.Pawn_Black_4 */, "King_Black_1" /* ChessIndexName.King_Black_1 */],
+            ["Pawn_Black_5" /* ChessIndexName.Pawn_Black_5 */, "King_Black_1" /* ChessIndexName.King_Black_1 */],
+            ["Pawn_Black_6" /* ChessIndexName.Pawn_Black_6 */, "King_Black_1" /* ChessIndexName.King_Black_1 */],
+            ["Pawn_Black_7" /* ChessIndexName.Pawn_Black_7 */, "King_Black_1" /* ChessIndexName.King_Black_1 */],
+            ["Pawn_Black_8" /* ChessIndexName.Pawn_Black_8 */, "King_Black_1" /* ChessIndexName.King_Black_1 */],
+            ["Rook_Black_1" /* ChessIndexName.Rook_Black_1 */, "King_Black_1" /* ChessIndexName.King_Black_1 */],
+            ["Knight_Black_1" /* ChessIndexName.Knight_Black_1 */, "King_Black_1" /* ChessIndexName.King_Black_1 */],
+            ["Bishop_Black_1" /* ChessIndexName.Bishop_Black_1 */, "King_Black_1" /* ChessIndexName.King_Black_1 */],
+            ["Queen_Black_1" /* ChessIndexName.Queen_Black_1 */, "King_Black_1" /* ChessIndexName.King_Black_1 */],
+            ["King_Black_1" /* ChessIndexName.King_Black_1 */, "King_Black_1" /* ChessIndexName.King_Black_1 */],
+            ["Bishop_Black_2" /* ChessIndexName.Bishop_Black_2 */, "King_Black_1" /* ChessIndexName.King_Black_1 */],
+            ["Knight_Black_2" /* ChessIndexName.Knight_Black_2 */, "King_Black_1" /* ChessIndexName.King_Black_1 */],
+            ["Rook_Black_2" /* ChessIndexName.Rook_Black_2 */, "King_Black_1" /* ChessIndexName.King_Black_1 */]
         ]);
     }
     getState() {
         const res = {
-            Pawn_White_1_Promotion: -1,
-            Pawn_White_2_Promotion: -1,
-            Pawn_White_3_Promotion: -1,
-            Pawn_White_4_Promotion: -1,
-            Pawn_White_5_Promotion: -1,
-            Pawn_White_6_Promotion: -1,
-            Pawn_White_7_Promotion: -1,
-            Pawn_White_8_Promotion: -1,
-            Pawn_Black_1_Promotion: -1,
-            Pawn_Black_2_Promotion: -1,
-            Pawn_Black_3_Promotion: -1,
-            Pawn_Black_4_Promotion: -1,
-            Pawn_Black_5_Promotion: -1,
-            Pawn_Black_6_Promotion: -1,
-            Pawn_Black_7_Promotion: -1,
-            Pawn_Black_8_Promotion: -1,
-            Pawn_White_1_Position: -1,
-            Pawn_White_2_Position: -1,
-            Pawn_White_3_Position: -1,
-            Pawn_White_4_Position: -1,
-            Pawn_White_5_Position: -1,
-            Pawn_White_6_Position: -1,
-            Pawn_White_7_Position: -1,
-            Pawn_White_8_Position: -1,
-            Pawn_Black_1_Position: -1,
-            Pawn_Black_2_Position: -1,
-            Pawn_Black_3_Position: -1,
-            Pawn_Black_4_Position: -1,
-            Pawn_Black_5_Position: -1,
-            Pawn_Black_6_Position: -1,
-            Pawn_Black_7_Position: -1,
-            Pawn_Black_8_Position: -1,
-            Rook_White_1_Position: -1,
-            Rook_White_2_Position: -1,
-            Rook_Black_1_Position: -1,
-            Rook_Black_2_Position: -1,
-            Bishop_White_1_Position: -1,
-            Bishop_White_2_Position: -1,
-            Bishop_Black_1_Position: -1,
-            Bishop_Black_2_Position: -1,
-            Knight_White_1_Position: -1,
-            Knight_White_2_Position: -1,
-            Knight_Black_1_Position: -1,
-            Knight_Black_2_Position: -1,
-            Queen_White_1_Position: -1,
-            King_White_1_Position: -1,
-            Queen_Black_1_Position: -1,
-            King_Black_1_Position: -1,
-            Rook_White_Both_Captured: -1,
-            Rook_Black_Both_Captured: -1,
-            Bishop_White_Both_Captured: -1,
-            Bishop_Black_Both_Captured: -1,
-            Knight_White_Both_Captured: -1,
-            Knight_Black_Both_Captured: -1,
-            Queen_White_1_Captured: -1,
-            Queen_Black_1_Captured: -1,
-            Selected_Piece_Bit_1: -1,
-            Selected_Piece_Bit_2: -1,
-            Selected_Piece_Bit_3: -1,
-            Selected_Piece_Bit_4: -1,
-            Selected_Piece_Bit_5: -1,
-            Selected_Position_Bit_1: -1,
-            Selected_Position_Bit_2: -1,
-            Selected_Position_Bit_3: -1,
-            Selected_Position_Bit_4: -1,
-            Selected_Position_Bit_5: -1,
-            Selected_Position_Bit_6: -1,
-            Selected_Piece_Shown: -1,
-            Selected_Position_Shown: -1
+            Pawn_White_1_Promotion: this.getPawnPromotion("Pawn_White_1" /* ChessIndexName['Pawn_White_1'] */),
+            Pawn_White_2_Promotion: this.getPawnPromotion("Pawn_White_2" /* ChessIndexName['Pawn_White_2'] */),
+            Pawn_White_3_Promotion: this.getPawnPromotion("Pawn_White_3" /* ChessIndexName['Pawn_White_3'] */),
+            Pawn_White_4_Promotion: this.getPawnPromotion("Pawn_White_4" /* ChessIndexName['Pawn_White_4'] */),
+            Pawn_White_5_Promotion: this.getPawnPromotion("Pawn_White_5" /* ChessIndexName['Pawn_White_5'] */),
+            Pawn_White_6_Promotion: this.getPawnPromotion("Pawn_White_6" /* ChessIndexName['Pawn_White_6'] */),
+            Pawn_White_7_Promotion: this.getPawnPromotion("Pawn_White_7" /* ChessIndexName['Pawn_White_7'] */),
+            Pawn_White_8_Promotion: this.getPawnPromotion("Pawn_White_8" /* ChessIndexName['Pawn_White_8'] */),
+            Pawn_Black_1_Promotion: this.getPawnPromotion("Pawn_Black_1" /* ChessIndexName['Pawn_Black_1'] */),
+            Pawn_Black_2_Promotion: this.getPawnPromotion("Pawn_Black_2" /* ChessIndexName['Pawn_Black_2'] */),
+            Pawn_Black_3_Promotion: this.getPawnPromotion("Pawn_Black_3" /* ChessIndexName['Pawn_Black_3'] */),
+            Pawn_Black_4_Promotion: this.getPawnPromotion("Pawn_Black_4" /* ChessIndexName['Pawn_Black_4'] */),
+            Pawn_Black_5_Promotion: this.getPawnPromotion("Pawn_Black_5" /* ChessIndexName['Pawn_Black_5'] */),
+            Pawn_Black_6_Promotion: this.getPawnPromotion("Pawn_Black_6" /* ChessIndexName['Pawn_Black_6'] */),
+            Pawn_Black_7_Promotion: this.getPawnPromotion("Pawn_Black_7" /* ChessIndexName['Pawn_Black_7'] */),
+            Pawn_Black_8_Promotion: this.getPawnPromotion("Pawn_Black_8" /* ChessIndexName['Pawn_Black_8'] */),
+            Pawn_White_1_Position: this.getPiecePosition("Pawn_White_1" /* ChessIndexName['Pawn_White_1'] */),
+            Pawn_White_2_Position: this.getPiecePosition("Pawn_White_2" /* ChessIndexName['Pawn_White_2'] */),
+            Pawn_White_3_Position: this.getPiecePosition("Pawn_White_3" /* ChessIndexName['Pawn_White_3'] */),
+            Pawn_White_4_Position: this.getPiecePosition("Pawn_White_4" /* ChessIndexName['Pawn_White_4'] */),
+            Pawn_White_5_Position: this.getPiecePosition("Pawn_White_5" /* ChessIndexName['Pawn_White_5'] */),
+            Pawn_White_6_Position: this.getPiecePosition("Pawn_White_6" /* ChessIndexName['Pawn_White_6'] */),
+            Pawn_White_7_Position: this.getPiecePosition("Pawn_White_7" /* ChessIndexName['Pawn_White_7'] */),
+            Pawn_White_8_Position: this.getPiecePosition("Pawn_White_8" /* ChessIndexName['Pawn_White_8'] */),
+            Pawn_Black_1_Position: this.getPiecePosition("Pawn_Black_1" /* ChessIndexName['Pawn_Black_1'] */),
+            Pawn_Black_2_Position: this.getPiecePosition("Pawn_Black_2" /* ChessIndexName['Pawn_Black_2'] */),
+            Pawn_Black_3_Position: this.getPiecePosition("Pawn_Black_3" /* ChessIndexName['Pawn_Black_3'] */),
+            Pawn_Black_4_Position: this.getPiecePosition("Pawn_Black_4" /* ChessIndexName['Pawn_Black_4'] */),
+            Pawn_Black_5_Position: this.getPiecePosition("Pawn_Black_5" /* ChessIndexName['Pawn_Black_5'] */),
+            Pawn_Black_6_Position: this.getPiecePosition("Pawn_Black_6" /* ChessIndexName['Pawn_Black_6'] */),
+            Pawn_Black_7_Position: this.getPiecePosition("Pawn_Black_7" /* ChessIndexName['Pawn_Black_7'] */),
+            Pawn_Black_8_Position: this.getPiecePosition("Pawn_Black_8" /* ChessIndexName['Pawn_Black_8'] */),
+            Rook_White_1_Position: this.getPiecePosition("Rook_White_1" /* ChessIndexName['Rook_White_1'] */),
+            Rook_White_2_Position: this.getPiecePosition("Rook_White_2" /* ChessIndexName['Rook_White_2'] */),
+            Rook_Black_1_Position: this.getPiecePosition("Rook_Black_1" /* ChessIndexName['Rook_Black_1'] */),
+            Rook_Black_2_Position: this.getPiecePosition("Rook_Black_2" /* ChessIndexName['Rook_Black_2'] */),
+            Bishop_White_1_Position: this.getPiecePosition("Bishop_White_1" /* ChessIndexName['Bishop_White_1'] */),
+            Bishop_White_2_Position: this.getPiecePosition("Bishop_White_2" /* ChessIndexName['Bishop_White_2'] */),
+            Bishop_Black_1_Position: this.getPiecePosition("Bishop_Black_1" /* ChessIndexName['Bishop_Black_1'] */),
+            Bishop_Black_2_Position: this.getPiecePosition("Bishop_Black_2" /* ChessIndexName['Bishop_Black_2'] */),
+            Knight_White_1_Position: this.getPiecePosition("Knight_White_1" /* ChessIndexName['Knight_White_1'] */),
+            Knight_White_2_Position: this.getPiecePosition("Knight_White_2" /* ChessIndexName['Knight_White_2'] */),
+            Knight_Black_1_Position: this.getPiecePosition("Knight_Black_1" /* ChessIndexName['Knight_Black_1'] */),
+            Knight_Black_2_Position: this.getPiecePosition("Knight_Black_2" /* ChessIndexName['Knight_Black_2'] */),
+            Queen_White_1_Position: this.getPiecePosition("Queen_White_1" /* ChessIndexName['Queen_White_1'] */),
+            King_White_1_Position: this.getPiecePosition("King_White_1" /* ChessIndexName['King_White_1'] */),
+            Queen_Black_1_Position: this.getPiecePosition("Queen_Black_1" /* ChessIndexName['Queen_Black_1'] */),
+            King_Black_1_Position: this.getPiecePosition("King_Black_1" /* ChessIndexName['King_Black_1'] */),
+            Rook_White_Both_Captured: this.getPieceTypeCaptured("Rook_White_1" /* ChessIndexName['Rook_White_1'] */),
+            Rook_Black_Both_Captured: this.getPieceTypeCaptured("Rook_Black_1" /* ChessIndexName['Rook_Black_1'] */),
+            Bishop_White_Both_Captured: this.getPieceTypeCaptured("Bishop_White_1" /* ChessIndexName['Bishop_White_1'] */),
+            Bishop_Black_Both_Captured: this.getPieceTypeCaptured("Bishop_Black_1" /* ChessIndexName['Bishop_Black_1'] */),
+            Knight_White_Both_Captured: this.getPieceTypeCaptured("Knight_White_1" /* ChessIndexName['Knight_White_1'] */),
+            Knight_Black_Both_Captured: this.getPieceTypeCaptured("Knight_Black_1" /* ChessIndexName['Knight_Black_1'] */),
+            Queen_White_1_Captured: this.getPieceTypeCaptured("Queen_White_1" /* ChessIndexName['Queen_White_1'] */),
+            Queen_Black_1_Captured: this.getPieceTypeCaptured("Queen_Black_1" /* ChessIndexName['Queen_Black_1'] */),
+            Selected_Piece: this.getSelectedPieceBit(),
+            Selected_Position: this.getSelectedPositionBit(),
+            Selected_Piece_Shown: this.getSelectedPieceShown(),
+            Selected_Position_Shown: this.getSelectedPositionShown()
         };
-        const missingBitAllocationConfigNames = JSON.parse(fs.readFileSync('data.json', 'utf8'))
-            .map((bitAllocation) => bitAllocation.name)
-            .filter((name) => !Object.keys(res).includes(name))
-            .join(", ");
-        if (missingBitAllocationConfigNames !== "") {
-            throw new Error(missingBitAllocationConfigNames);
-        }
         return res;
     }
     handleInput(inputString) {
         // get the input index from input string.
         // f.x. Input_1 -> 1 or Input_6 -> 6.
         const inputNumber = Number(inputString.split('_')[1]);
-        // finally if waitingForPromotionInput flag is true set the promotion input
+        // if waitingForPromotionInput flag is true set the promotion input
         if (this.input.waitingForPromotionInput) {
             this.input.promotionInput = inputNumber;
-            return { updateVrc: true, message: null };
+            return this.attemptMove();
         }
         // If first input; set the selected piece file and return false
         if (this.input.pieceFile === '') {
@@ -238,6 +226,7 @@ class ChessGame {
         if (this.input.pieceRank === '') {
             this.input.pieceRank = `${inputNumber}`;
             this.input.selectedPiece = this.chess.get(this.getSelectedPiece());
+            // If no piece was selected or it is the other persons piece. Then reset input
             if (this.input.selectedPiece === null || this.chess.turn() !== this.input.selectedPiece.color) {
                 this.resetInput();
                 return { updateVrc: false, message: "Invalid piece selected." };
@@ -253,20 +242,13 @@ class ChessGame {
         if (this.input.newPositionRank === '') {
             this.input.newPositionRank = `${inputNumber}`;
             this.input.selectedPath = this.chess.get(this.getSelectedPosition());
-            // If it is a pawn move and you are at the outer bounds set waitingForPromotionInput flag.
-            // We don't have to check color as a pawn can never reach it's own sides outer bound
-            if (this.input.selectedPiece.type === 'p' && (this.input.pieceRank === '1' || this.input.pieceRank === '8')) {
-                this.input.waitingForPromotionInput = true;
-                return { updateVrc: false, message: 'Please select a piece to promote to.' };
+            // If selected piece and position is the same. Reset input
+            if (this.input.pieceFile === this.input.newPositionFile && this.input.pieceRank === this.input.newPositionRank) {
+                this.resetInput();
+                return { updateVrc: false, message: 'Selected same position as piece, input reset.' };
             }
         }
-        // If selected piece is the same as new position then reset input and return false
-        if (this.input.pieceFile === this.input.newPositionFile && this.input.pieceRank === this.input.newPositionRank) {
-            this.resetInput();
-            return { updateVrc: false, message: 'Selected same position as piece, input reset.' };
-        }
-        // Otherwise return true since the selected inputs are valid. Afterwards we will check if the move is valid
-        return { updateVrc: true, message: null };
+        return this.attemptMove();
     }
     debugInfo() {
         console.warn("Debug info");
@@ -274,6 +256,10 @@ class ChessGame {
     }
     attemptMove() {
         try {
+            if (this.input.selectedPiece.type === 'p' && (this.input.newPositionRank === '1' || this.input.newPositionRank === '8') && this.chess.moves({ square: this.getSelectedPiece() }).length !== 0 && this.input.promotionInput === -1) {
+                this.input.waitingForPromotionInput = true;
+                return { updateVrc: false, message: 'Please select a piece to promote to.' };
+            }
             // Will throw an error is invalid move
             this.chess.move({ from: this.getSelectedPiece(), to: this.getSelectedPosition(), promotion: this.getPromotionMove() });
             const potentialCapturedPiece = [...this.alivePieces].find(([_key, val]) => val == this.getSelectedPosition());
@@ -292,12 +278,10 @@ class ChessGame {
             else {
                 this.alivePieces.set(movedPiece[0], this.getSelectedPosition());
             }
-            if (this.input.waitingForPromotionInput) {
-                //this.promotions.set(movedPiece[0], this.promotionMap.get(this.input.promotionInput));
-            }
         }
-        catch (_a) {
+        catch (e) {
             // Simply reset input and display invalid move
+            console.log(e);
             this.resetInput();
             return { updateVrc: false, message: 'Invalid move.' };
         }
@@ -310,6 +294,11 @@ class ChessGame {
     }
     getSelectedPosition() {
         return `${this.input.newPositionFile}${this.input.newPositionRank}`;
+    }
+    chessSquareToIndex(square) {
+        const file = square.charCodeAt(0) - 'a'.charCodeAt(0); // Calculates file index: 'a' -> 0, 'b' -> 1, ..., 'h' -> 7
+        const rank = parseInt(square[1]) - 1; // Converts rank to 0-based index: '1' -> 0, '2' -> 1, ..., '8' -> 7
+        return rank * 8 + file;
     }
     getPromotionMove() {
         switch (this.input.promotionInput) {
@@ -327,7 +316,7 @@ class ChessGame {
         this.input.newPositionFile = '';
         this.input.newPositionRank = '';
         this.input.waitingForPromotionInput = false;
-        this.input.promotionInput = 0;
+        this.input.promotionInput = -1;
         this.input.selectedPath = null;
         this.input.selectedPiece = null;
     }
@@ -350,6 +339,36 @@ class ChessGame {
             res += ' Draw.';
         } // Add fifty move rule
         return res;
+    }
+    getPawnPromotion(pawnName) {
+        return this.pawnPromotions[pawnName];
+    }
+    getPiecePosition(pieceName) {
+        let pieceSquare = this.alivePieces.get(pieceName) || this.alivePieces.get(this.twinMap.get(pieceName)) || this.alivePieces.get(this.kingMap.get(pieceName));
+        return this.chessSquareToIndex(pieceSquare);
+    }
+    getPieceTypeCaptured(pieceType) {
+        return (this.alivePieces.has(pieceType) || this.alivePieces.has(this.twinMap.get(pieceType))) ? 1 : 0;
+    }
+    getSelectedPieceBit() {
+        const square = this.getSelectedPiece();
+        if (square.length !== 2) {
+            return 0;
+        }
+        return this.chessSquareToIndex(square);
+    }
+    getSelectedPositionBit() {
+        const square = this.getSelectedPosition();
+        if (square.length !== 2) {
+            return 0;
+        }
+        return this.chessSquareToIndex(square);
+    }
+    getSelectedPieceShown() {
+        return this.getSelectedPiece().length === 2 ? 1 : 0;
+    }
+    getSelectedPositionShown() {
+        return this.getSelectedPosition().length === 2 ? 1 : 0;
     }
 }
 class OSCVrChat {
@@ -393,6 +412,7 @@ class OSCVrChat {
             '30': "7_LSBMiddleEightBit" /* EightBitChunkName['7_LSBMiddleEightBit'] */,
             '31': "7_LSBEightBit" /* EightBitChunkName['7_LSBEightBit'] */
         };
+        this.bitAllocationConfigNames = JSON.parse(fs.readFileSync('data.json', 'utf8')).map((bitAllocation) => bitAllocation.name);
         this.gameLogic = gameLogic;
         this.bitAllocationConfig = JSON.parse(fs.readFileSync('data.json', 'utf8'));
         this.inputEventNames = JSON.parse(fs.readFileSync('input.json', 'utf8'));
@@ -452,6 +472,10 @@ class OSCVrChat {
     }
     updateVrc() {
         const gameState = this.gameLogic.getState();
+        const missingBitAllocationConfigNames = this.bitAllocationConfigNames.filter((name) => !Object.keys(gameState).includes(name)).join(", ");
+        if (missingBitAllocationConfigNames !== "") {
+            throw new Error(missingBitAllocationConfigNames);
+        }
         this.piecePositionsToEightBitChunks(gameState).forEach((byte) => {
             this.sendUdpMessage(`${byte.name}`, [{ type: 'i', value: byte.value }]);
         });

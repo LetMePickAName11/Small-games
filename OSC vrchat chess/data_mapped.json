@@ -616,121 +616,22 @@
     "endName": "7_MSBMiddleEightBit"
   },
   {
-    "size": 1,
+    "size": 5,
     "type": "i",
-    "name": "Selected_Piece_Bit_1",
+    "name": "Selected_Piece",
     "range": {
       "start": 228,
-      "end": 229
-    },
-    "startName": "7_MSBEightBit",
-    "endName": "7_MSBMiddleEightBit"
-  },
-  {
-    "size": 1,
-    "type": "i",
-    "name": "Selected_Piece_Bit_2",
-    "range": {
-      "start": 229,
-      "end": 230
-    },
-    "startName": "7_MSBEightBit",
-    "endName": "7_MSBMiddleEightBit"
-  },
-  {
-    "size": 1,
-    "type": "i",
-    "name": "Selected_Piece_Bit_3",
-    "range": {
-      "start": 230,
-      "end": 231
-    },
-    "startName": "7_MSBEightBit",
-    "endName": "7_MSBMiddleEightBit"
-  },
-  {
-    "size": 1,
-    "type": "i",
-    "name": "Selected_Piece_Bit_4",
-    "range": {
-      "start": 231,
-      "end": 232
-    },
-    "startName": "7_MSBEightBit",
-    "endName": "7_MSBMiddleEightBit"
-  },
-  {
-    "size": 1,
-    "type": "i",
-    "name": "Selected_Piece_Bit_5",
-    "range": {
-      "start": 232,
       "end": 233
     },
-    "startName": "7_MSBMiddleEightBit",
-    "endName": "7_LSBMiddleEightBit"
+    "startName": "7_MSBEightBit",
+    "endName": "7_MSBMiddleEightBit"
   },
   {
-    "size": 1,
+    "size": 6,
     "type": "i",
-    "name": "Selected_Position_Bit_1",
+    "name": "Selected_Position",
     "range": {
       "start": 233,
-      "end": 234
-    },
-    "startName": "7_MSBMiddleEightBit",
-    "endName": "7_LSBMiddleEightBit"
-  },
-  {
-    "size": 1,
-    "type": "i",
-    "name": "Selected_Position_Bit_2",
-    "range": {
-      "start": 234,
-      "end": 235
-    },
-    "startName": "7_MSBMiddleEightBit",
-    "endName": "7_LSBMiddleEightBit"
-  },
-  {
-    "size": 1,
-    "type": "i",
-    "name": "Selected_Position_Bit_3",
-    "range": {
-      "start": 235,
-      "end": 236
-    },
-    "startName": "7_MSBMiddleEightBit",
-    "endName": "7_LSBMiddleEightBit"
-  },
-  {
-    "size": 1,
-    "type": "i",
-    "name": "Selected_Position_Bit_4",
-    "range": {
-      "start": 236,
-      "end": 237
-    },
-    "startName": "7_MSBMiddleEightBit",
-    "endName": "7_LSBMiddleEightBit"
-  },
-  {
-    "size": 1,
-    "type": "i",
-    "name": "Selected_Position_Bit_5",
-    "range": {
-      "start": 237,
-      "end": 238
-    },
-    "startName": "7_MSBMiddleEightBit",
-    "endName": "7_LSBMiddleEightBit"
-  },
-  {
-    "size": 1,
-    "type": "i",
-    "name": "Selected_Position_Bit_6",
-    "range": {
-      "start": 238,
       "end": 239
     },
     "startName": "7_MSBMiddleEightBit",
