@@ -1,0 +1,20 @@
+{
+  "name": "osc-vrchat",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "node dist/index.js",
+    "build": "tsc",
+    "test": "tsc && node dist/index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "chess.js": "^1.0.0-beta.8",
+    "osc": "^2.4.4"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  }
+}

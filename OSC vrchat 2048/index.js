@@ -88,6 +88,19 @@ const addPieceToBoard = () => {
 
 const gameOver = () => {
   isGameActive = false;
+  oscReciever.send({
+    address: `/chatbox/input`,
+    args: [
+      {
+        type: "s",
+        value: `Game over - Score: ${Object.values(gameBoard).reduce((accumulator, currentValue) => accumulator + currentValue, 0)}`,
+      },
+      {
+        type: "i",
+        value: true
+      }
+    ]
+  }, "127.0.0.1", 9000);
 };
 
 const canMoveUp = () => {
@@ -240,7 +253,6 @@ oscReciever.on("message", (oscMsg, _timeTag, _info) => {
   lastMessageDate = Date.now();
 
   if (eventType === 'ToggleGame') {
-    console.log("oi")
     return onToggleGame();
   }
 
@@ -287,19 +299,20 @@ const updateVrc = () => {
       ]
     }, "127.0.0.1", 9000);
   }
+
+  oscReciever.send({
+    address: `/chatbox/input`,
+    args: [
+      {
+        type: "s",
+        value: `Score: ${Object.values(gameBoard).reduce((accumulator, currentValue) => accumulator + currentValue, 0)}`,
+      },
+      {
+        type: "i",
+        value: true
+      }
+    ]
+  }, "127.0.0.1", 9000);
 };
 
 oscReciever.open();
-
-// For debugging
-/*
-oscReciever.send({
-  address: '/avatar/parameters/!ToggleGame',
-  args: [
-    {
-      type: "i",
-      value: 1,
-    }
-  ]
-}, url, vrChatUdpRecieverPort);
-*/

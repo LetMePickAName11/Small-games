@@ -9,6 +9,17 @@ const sudokuTileElementRefs = boardContainerElementRef.children;
 
 const boardStates = [
   [
+    -8, 1, 2, 7, 5, 3, 6, 4, 9,
+    9, 4, -3, -6, 8, 2, 1, 7, 5,
+    6, -7, 5, 4, -9, 1, -2, 8, 3,
+    1, -5, 4, 2, 3, -7, 8, 9, 6,
+    3, 6, 9, 8, -4, -5, -7, 2, 1,
+    2, 8, 7, -1, 6, 9, 5, -3, 4,
+    5, 2, -1, 9, 7, 4, 3, -6, -8,
+    4, 3, -8, -5, 2, 6, 9, -1, 7,
+    7, -9, 6, 3, 1, 8, -4, 5, 2
+  ],
+  [
     2, 3, 7, -8, 4, -1, 5, 6, 9,
     1, 8, 6, 7, 9, 5, 2, -4, -3,
     -5, 9, 4, 3, 2, 6, 7, 1, 8,
@@ -892,19 +903,27 @@ class AutoSolver {
     }
 
     console.time("Bruteforce");
-    console.log(`Cells to bruteforce: ${this.cellData.filter(cell => cell.value === -1).length}`)
-    this.bruteForce(this.cellData);
-    this.solve();
+    console.log(`Cells to bruteforce: ${this.cellData.filter(cell => cell.value === -1).length}`);
+    let stepsTaken = {count: 0};
+    this.bruteForce(this.cellData, stepsTaken);
+    console.log(stepsTaken.count);
     console.timeEnd("Bruteforce");
+    this.solve();
   }
 
 
-  bruteForce(cells) {
+  bruteForce(cells, stepsTaken) {
     const unfilledCells = cells.filter(cell => cell.value === -1).sort((a, b) => a.possibleValues.length - b.possibleValues.length);
 
     if (unfilledCells.length === 0) {
       return true;
     }
+
+    stepsTaken.count++;
+
+    //if(stepsTaken.count % 100000 === 0){
+    //  console.log(stepsTaken.count);
+    //}
 
     const cell = unfilledCells[0];
     const usedNumbers = new Set([
@@ -920,7 +939,7 @@ class AutoSolver {
 
       cell.value = possibleValue;
 
-      if (this.bruteForce(cells)) {
+      if (this.bruteForce(cells, stepsTaken)) {
         return true;
       }
 
@@ -966,7 +985,7 @@ class Sudoku {
     boardContainerElementRef.style.width = `${this.boardDimension * this.tileSize}px`;
     boardContainerElementRef.style.height = `${this.boardDimension * this.tileSize}px`;
 
-    this.solution = boardStates[2];
+    this.solution = boardStates[0];
     this.playerBoard = new Array(this.solution.length).fill(-1);
 
     let boardChildElements = "";

@@ -1,0 +1,302 @@
+[
+  {
+    "size": 2,
+    "type": "i",
+    "name": "Pawn_White_1_Promotion"
+  },
+  {
+    "size": 2,
+    "type": "i",
+    "name": "Pawn_White_2_Promotion"
+  },
+  {
+    "size": 2,
+    "type": "i",
+    "name": "Pawn_White_3_Promotion"
+  },
+  {
+    "size": 2,
+    "type": "i",
+    "name": "Pawn_White_4_Promotion"
+  },
+  {
+    "size": 2,
+    "type": "i",
+    "name": "Pawn_White_5_Promotion"
+  },
+  {
+    "size": 2,
+    "type": "i",
+    "name": "Pawn_White_6_Promotion"
+  },
+  {
+    "size": 2,
+    "type": "i",
+    "name": "Pawn_White_7_Promotion"
+  },
+  {
+    "size": 2,
+    "type": "i",
+    "name": "Pawn_White_8_Promotion"
+  },
+  {
+    "size": 2,
+    "type": "i",
+    "name": "Pawn_Black_1_Promotion"
+  },
+  {
+    "size": 2,
+    "type": "i",
+    "name": "Pawn_Black_2_Promotion"
+  },
+  {
+    "size": 2,
+    "type": "i",
+    "name": "Pawn_Black_3_Promotion"
+  },
+  {
+    "size": 2,
+    "type": "i",
+    "name": "Pawn_Black_4_Promotion"
+  },
+  {
+    "size": 2,
+    "type": "i",
+    "name": "Pawn_Black_5_Promotion"
+  },
+  {
+    "size": 2,
+    "type": "i",
+    "name": "Pawn_Black_6_Promotion"
+  },
+  {
+    "size": 2,
+    "type": "i",
+    "name": "Pawn_Black_7_Promotion"
+  },
+  {
+    "size": 2,
+    "type": "i",
+    "name": "Pawn_Black_8_Promotion"
+  },
+  {
+    "size": 6,
+    "type": "i",
+    "name": "Pawn_White_1_Position"
+  },
+  {
+    "size": 6,
+    "type": "i",
+    "name": "Pawn_White_2_Position"
+  },
+  {
+    "size": 6,
+    "type": "i",
+    "name": "Pawn_White_3_Position"
+  },
+  {
+    "size": 6,
+    "type": "i",
+    "name": "Pawn_White_4_Position"
+  },
+  {
+    "size": 6,
+    "type": "i",
+    "name": "Pawn_White_5_Position"
+  },
+  {
+    "size": 6,
+    "type": "i",
+    "name": "Pawn_White_6_Position"
+  },
+  {
+    "size": 6,
+    "type": "i",
+    "name": "Pawn_White_7_Position"
+  },
+  {
+    "size": 6,
+    "type": "i",
+    "name": "Pawn_White_8_Position"
+  },
+  {
+    "size": 6,
+    "type": "i",
+    "name": "Pawn_Black_1_Position"
+  },
+  {
+    "size": 6,
+    "type": "i",
+    "name": "Pawn_Black_2_Position"
+  },
+  {
+    "size": 6,
+    "type": "i",
+    "name": "Pawn_Black_3_Position"
+  },
+  {
+    "size": 6,
+    "type": "i",
+    "name": "Pawn_Black_4_Position"
+  },
+  {
+    "size": 6,
+    "type": "i",
+    "name": "Pawn_Black_5_Position"
+  },
+  {
+    "size": 6,
+    "type": "i",
+    "name": "Pawn_Black_6_Position"
+  },
+  {
+    "size": 6,
+    "type": "i",
+    "name": "Pawn_Black_7_Position"
+  },
+  {
+    "size": 6,
+    "type": "i",
+    "name": "Pawn_Black_8_Position"
+  },
+  {
+    "size": 6,
+    "type": "i",
+    "name": "Rook_White_1_Position"
+  },
+  {
+    "size": 6,
+    "type": "i",
+    "name": "Rook_White_2_Position"
+  },
+  {
+    "size": 6,
+    "type": "i",
+    "name": "Rook_Black_1_Position"
+  },
+  {
+    "size": 6,
+    "type": "i",
+    "name": "Rook_Black_2_Position"
+  },
+  {
+    "size": 5,
+    "type": "i",
+    "name": "Bishop_White_1_Position"
+  },
+  {
+    "size": 5,
+    "type": "i",
+    "name": "Bishop_White_2_Position"
+  },
+  {
+    "size": 5,
+    "type": "i",
+    "name": "Bishop_Black_1_Position"
+  },
+  {
+    "size": 5,
+    "type": "i",
+    "name": "Bishop_Black_2_Position"
+  },
+  {
+    "size": 6,
+    "type": "i",
+    "name": "Knight_White_1_Position"
+  },
+  {
+    "size": 6,
+    "type": "i",
+    "name": "Knight_White_2_Position"
+  },
+  {
+    "size": 6,
+    "type": "i",
+    "name": "Knight_Black_1_Position"
+  },
+  {
+    "size": 6,
+    "type": "i",
+    "name": "Knight_Black_2_Position"
+  },
+  {
+    "size": 6,
+    "type": "i",
+    "name": "Queen_White_1_Position"
+  },
+  {
+    "size": 6,
+    "type": "i",
+    "name": "King_White_1_Position"
+  },
+  {
+    "size": 6,
+    "type": "i",
+    "name": "Queen_Black_1_Position"
+  },
+  {
+    "size": 6,
+    "type": "i",
+    "name": "King_Black_1_Position"
+  },
+  {
+    "size": 1,
+    "type": "i",
+    "name": "Rook_White_Both_Captured"
+  },
+  {
+    "size": 1,
+    "type": "i",
+    "name": "Rook_Black_Both_Captured"
+  },
+  {
+    "size": 1,
+    "type": "i",
+    "name": "Bishop_White_Both_Captured"
+  },
+  {
+    "size": 1,
+    "type": "i",
+    "name": "Bishop_Black_Both_Captured"
+  },
+  {
+    "size": 1,
+    "type": "i",
+    "name": "Knight_White_Both_Captured"
+  },
+  {
+    "size": 1,
+    "type": "i",
+    "name": "Knight_Black_Both_Captured"
+  },
+  {
+    "size": 1,
+    "type": "i",
+    "name": "Queen_White_1_Captured"
+  },
+  {
+    "size": 1,
+    "type": "i",
+    "name": "Queen_Black_1_Captured"
+  },
+  {
+    "size": 5,
+    "type": "i",
+    "name": "Selected_Piece"
+  },
+  {
+    "size": 6,
+    "type": "i",
+    "name": "Selected_Position"
+  },
+  {
+    "size": 1,
+    "type": "i",
+    "name": "Selected_Piece_Shown"
+  },
+  {
+    "size": 1,
+    "type": "i",
+    "name": "Selected_Position_Shown"
+  }
+]
