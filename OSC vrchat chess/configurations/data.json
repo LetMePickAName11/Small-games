@@ -816,7 +816,7 @@
     ],
     "shaderParameters": [
       "FirstBitsSelectedPositionShown",
-      "LastBitsSelectedPositionSown"
+      "LastBitsSelectedPositionShown"
     ]
   }
 ]
