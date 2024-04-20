@@ -380,8 +380,9 @@ class ChessGame implements OSCVrChatGameLogic {
 class OSCVrChat {
   constructor(gameLogic: OSCVrChatGameLogic) {
     this.gameLogic = gameLogic;
-    this.bitAllocationConfig = JSON.parse(fs.readFileSync('configurations/data.jsondata.json', 'utf8'));
-    this.inputEventNames = JSON.parse(fs.readFileSync('configurations/data.jsoninput.json', 'utf8'));
+    this.bitAllocationConfig = JSON.parse(fs.readFileSync('configurations/data.json', 'utf8'));
+    this.bitAllocationConfigNames = this.bitAllocationConfig.map((bitAllocation: BitAllocationConfig) => bitAllocation.name);
+    this.inputEventNames = JSON.parse(fs.readFileSync('configurations/input.json', 'utf8'));
     this.validateBitAllocation();
 
     this.oscHandler = new osc.UDPPort({
@@ -503,6 +504,7 @@ class OSCVrChat {
         range: range,
         startName: this.bitIndexToEightBitName[((range.start - range.start % 8) / 8)],
         endName: this.bitIndexToEightBitName[((range.start - range.start % 8) / 8) + 1],
+        bitIndex: 0 // TODO implement this
       };
 
       startIndex += bitAllocation.size;
@@ -586,7 +588,7 @@ class OSCVrChat {
     '30': EightBitChunkName['7_LSBMiddleEightBit'],
     '31': EightBitChunkName['7_LSBEightBit']
   };
-  private readonly bitAllocationConfigNames: Array<string> = JSON.parse(fs.readFileSync('configurations/data.json', 'utf8')).map((bitAllocation: BitAllocationConfig) => bitAllocation.name);
+  private readonly bitAllocationConfigNames: Array<string>;
 }
 
 
@@ -625,12 +627,15 @@ interface BitAllocation {
   name: string;
   startName: string;
   endName: string;
+  bitIndex: number;
 }
 
 interface BitAllocationConfig {
   size: number; //1-16
   type: BitAllocationType;
   name: string; // paramater name
+  objectNames: Array<string>; // Unity object name which properties will be updated via generated animations
+  shaderParameters: Array<string>; // Shader paramter names [firstBits, lastBits]
 }
 
 const enum ChessIndexName {
