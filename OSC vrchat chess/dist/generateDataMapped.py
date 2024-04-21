@@ -36,7 +36,7 @@ bit_index_to_eight_bit_name = [
 ]
 
 # Load the configuration from JSON file
-with open('configurations/data.json', 'r') as file:
+with open('../configurations/data.json', 'r') as file:
     bit_allocation_config = json.load(file)
 
 start_index = 0
@@ -76,5 +76,5 @@ if allocated_bits_size > 256:
     raise ValueError(f"Too many bits allocated (limit 256): {allocated_bits_size}")
 
 # Write the output to a JSON file
-with open("auto_generated_files/data_mapped.json", "w") as file:
+with open("../auto_generated_files/data_mapped.json", "w") as file:
     json.dump(bit_allocations, file, indent=2)

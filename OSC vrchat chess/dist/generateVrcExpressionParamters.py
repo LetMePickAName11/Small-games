@@ -30,7 +30,7 @@ def generate_vrc_expression_paramter_string(name, value_type, saved, default_val
     )
 
 def read_json_config():
-    with open('auto_generated_files/data_mapped.json', 'r') as file:
+    with open('../auto_generated_files/data_mapped.json', 'r') as file:
         data = json.load(file)
     
     chunks = []
@@ -83,7 +83,7 @@ NETWORKSYNCEDDICTIONARY = {
 }
 
 
-create_file('templates/VRCExpressionParameters.asset', 'auto_generated_files/VRCExpressionParameters.asset')
+create_file('../templates/VRCExpressionParameters.asset', '../auto_generated_files/VRCExpressionParameters.asset')
 
 for row in read_json_config():
-    append_to_file('auto_generated_files/VRCExpressionParameters.asset', generate_vrc_expression_paramter_string(row[0], row[1], row[2], row[3], row[4]))
+    append_to_file('../auto_generated_files/VRCExpressionParameters.asset', generate_vrc_expression_paramter_string(row[0], row[1], row[2], row[3], row[4]))

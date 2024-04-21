@@ -160,8 +160,8 @@ AnimationClip:
     return template.format(name=name, float_curves=float_curves, generic_bindings=generic_bindings, editor_curves=editor_curves)
 
 
-TEMPLATE_PATH = 'templates/Animation.anim'
-JSON_MAPPED_PATH = 'auto_generated_files/data_mapped.json'
+TEMPLATE_PATH = '../templates/Animation.anim'
+JSON_MAPPED_PATH = '../auto_generated_files/data_mapped.json'
 
 mapped_json = read_json_config(JSON_MAPPED_PATH)
 
@@ -174,7 +174,7 @@ for key, value in mapped_json.items():
 
     attribute_id = generate_unique_id()
     path_id = generate_unique_id()
-    output_path = f"auto_generated_files/animations/{name}.anim"
+    output_path = f"../auto_generated_files/animations/{name}.anim"
     float_curves = ""
     generic_bindings = ""
     editor_curves = ""
@@ -196,7 +196,7 @@ for key, value in mapped_json.items():
 
     attribute_id = generate_unique_id()
     path_id = generate_unique_id()
-    output_path = f"auto_generated_files/animations/{name}.anim"
+    output_path = f"../auto_generated_files/animations/{name}.anim"
     float_curves = ""
     generic_bindings = ""
     editor_curves = ""

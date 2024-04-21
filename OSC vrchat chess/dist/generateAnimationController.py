@@ -198,9 +198,9 @@ AnimatorStateTransition:
   m_CanTransitionToSelf: 1"""
     return template.format(animator_state_transition_id=animator_state_transition_id)
 
-TEMPLATE_PATH = 'templates/Animator Controller.controller'
-OUTPUT_PATH = 'auto_generated_files/FX.controller'
-JSON_MAPPED_PATH = 'auto_generated_files/data_mapped.json'
+TEMPLATE_PATH = '../templates/Animator Controller.controller'
+OUTPUT_PATH = '../auto_generated_files/FX.controller'
+JSON_MAPPED_PATH = '../auto_generated_files/data_mapped.json'
 
 
 # TODO does not handle overflow bits correctly at the moment. Currently it simply treats it as a chunk
