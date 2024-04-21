@@ -380,8 +380,7 @@ class ChessGame implements OSCVrChatGameLogic {
 class OSCVrChat {
   constructor(gameLogic: OSCVrChatGameLogic) {
     this.gameLogic = gameLogic;
-    this.bitAllocationConfig = JSON.parse(fs.readFileSync('configurations/data.json', 'utf8'));
-    this.bitAllocationConfigNames = this.bitAllocationConfig.map((bitAllocation: BitAllocationConfig) => bitAllocation.name);
+    this.bitAllocationConfigNames = JSON.parse(fs.readFileSync('auto_generated_files/data_mapped.json', 'utf8')).map((bitAllocation: BitAllocation) => bitAllocation.name);
     this.inputEventNames = JSON.parse(fs.readFileSync('configurations/input.json', 'utf8'));
     this.validateBitAllocation();
 
@@ -495,39 +494,12 @@ class OSCVrChat {
   }
 
   private validateBitAllocation(): void {
-    let startIndex = 0;
-
-    this.bitAllocations = this.bitAllocationConfig.map((bitAllocation: BitAllocationConfig) => {
-      const range = { start: startIndex, end: startIndex + bitAllocation.size };
-      const res: BitAllocation = {
-        ...bitAllocation,
-        range: range,
-        startName: this.bitIndexToEightBitName[((range.start - range.start % 8) / 8)],
-        endName: this.bitIndexToEightBitName[((range.start - range.start % 8) / 8) + 1],
-        bitIndex: 0 // TODO implement this
-      };
-
-      startIndex += bitAllocation.size;
-      return res;
-    });
-
     const allocatedBitsSize: number = this.getAllocatedBitsSize(this.bitAllocations);
-    const oveflowBits: number = allocatedBitsSize % 8;
-    let overflowNumber = 1;
-    if (oveflowBits !== 0) {
-      for (let i = this.bitAllocations.length - oveflowBits; i < this.bitAllocations.length; i++) {
-        this.bitAllocations[i].startName = `Overflow_bit_${overflowNumber}`;
-        this.bitAllocations[i].endName = `Overflow_bit_${overflowNumber}`;
-        overflowNumber++;
-      }
-    }
 
     if (allocatedBitsSize > 256) {
       console.error(`Too many bits allocated (limit 256): ${allocatedBitsSize}`);
       throw new Error(`Too many bits allocated (limit 256): ${allocatedBitsSize}`);
     }
-
-    fs.writeFileSync("auto_generated_files/data_mapped.json", JSON.stringify(this.bitAllocations, null, 2));
   }
 
   private getAllocatedBits(includeOverflow: 'all' | 'overflow' | 'noOverflow'): Array<BitAllocation> {
@@ -552,7 +524,6 @@ class OSCVrChat {
   private readonly oscHandler;
   private readonly messageDelayMs = 250;
   private readonly gameLogic: OSCVrChatGameLogic;
-  private readonly bitAllocationConfig: Array<BitAllocationConfig>;
   private readonly inputEventNames: Array<string>;
   private readonly bitIndexToEightBitName: { [key in string]: EightBitChunkName } = {
     '0': EightBitChunkName['0_MSBEightBit'],
@@ -624,16 +595,10 @@ interface BitAllocation {
   };
   size: number;
   type: BitAllocationType;
-  name: string;
+  name: string; // paramater name
   startName: string;
   endName: string;
   bitIndex: number;
-}
-
-interface BitAllocationConfig {
-  size: number; //1-16
-  type: BitAllocationType;
-  name: string; // paramater name
   objectNames: Array<string>; // Unity object name which properties will be updated via generated animations
   shaderParameters: Array<string>; // Shader paramter names [firstBits, lastBits]
 }

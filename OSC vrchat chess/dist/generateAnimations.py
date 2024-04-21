@@ -181,10 +181,9 @@ for key, value in mapped_json.items():
 
     for path in value['game_objects']:
         for index, attribute in enumerate(value['shader_parameters']):
-            if index % 2 == 0: 
-                float_curves += generate_float_curve(0, attribute, path)
-                generic_bindings += generate_generic_binding(path_id, attribute_id)
-                editor_curves += generate_editor_curves(0, attribute, path)
+            float_curves += generate_float_curve(0, attribute, path)
+            generic_bindings += generate_generic_binding(path_id, attribute_id)
+            editor_curves += generate_editor_curves(0, attribute, path)
 
     create_file(TEMPLATE_PATH, output_path)
     append_to_file(output_path, generate_animation_clip(name, float_curves, generic_bindings, editor_curves))
@@ -204,10 +203,9 @@ for key, value in mapped_json.items():
 
     for path in value['game_objects']:
         for index, attribute in enumerate(value['shader_parameters']):
-            if index % 2 == 1: 
-                float_curves += generate_float_curve(255, attribute, path)
-                generic_bindings += generate_generic_binding(path_id, attribute_id)
-                editor_curves += generate_editor_curves(255, attribute, path)
+            float_curves += generate_float_curve(255, attribute, path)
+            generic_bindings += generate_generic_binding(path_id, attribute_id)
+            editor_curves += generate_editor_curves(255, attribute, path)
 
     create_file(TEMPLATE_PATH, output_path)
     append_to_file(output_path, generate_animation_clip(name, float_curves, generic_bindings, editor_curves))

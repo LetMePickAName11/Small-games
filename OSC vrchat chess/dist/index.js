@@ -413,8 +413,7 @@ class OSCVrChat {
             '31': "7_LSBEightBit" /* EightBitChunkName['7_LSBEightBit'] */
         };
         this.gameLogic = gameLogic;
-        this.bitAllocationConfig = JSON.parse(fs.readFileSync('configurations/data.json', 'utf8'));
-        this.bitAllocationConfigNames = this.bitAllocationConfig.map((bitAllocation) => bitAllocation.name);
+        this.bitAllocationConfigNames = JSON.parse(fs.readFileSync('auto_generated_files/data_mapped.json', 'utf8')).map((bitAllocation) => bitAllocation.name);
         this.inputEventNames = JSON.parse(fs.readFileSync('configurations/input.json', 'utf8'));
         this.validateBitAllocation();
         this.oscHandler = new osc_1.default.UDPPort({
@@ -508,29 +507,11 @@ class OSCVrChat {
         }, url, port);
     }
     validateBitAllocation() {
-        let startIndex = 0;
-        this.bitAllocations = this.bitAllocationConfig.map((bitAllocation) => {
-            const range = { start: startIndex, end: startIndex + bitAllocation.size };
-            const res = Object.assign(Object.assign({}, bitAllocation), { range: range, startName: this.bitIndexToEightBitName[((range.start - range.start % 8) / 8)], endName: this.bitIndexToEightBitName[((range.start - range.start % 8) / 8) + 1], bitIndex: 0 // TODO implement this
-             });
-            startIndex += bitAllocation.size;
-            return res;
-        });
         const allocatedBitsSize = this.getAllocatedBitsSize(this.bitAllocations);
-        const oveflowBits = allocatedBitsSize % 8;
-        let overflowNumber = 1;
-        if (oveflowBits !== 0) {
-            for (let i = this.bitAllocations.length - oveflowBits; i < this.bitAllocations.length; i++) {
-                this.bitAllocations[i].startName = `Overflow_bit_${overflowNumber}`;
-                this.bitAllocations[i].endName = `Overflow_bit_${overflowNumber}`;
-                overflowNumber++;
-            }
-        }
         if (allocatedBitsSize > 256) {
             console.error(`Too many bits allocated (limit 256): ${allocatedBitsSize}`);
             throw new Error(`Too many bits allocated (limit 256): ${allocatedBitsSize}`);
         }
-        fs.writeFileSync("auto_generated_files/data_mapped.json", JSON.stringify(this.bitAllocations, null, 2));
     }
     getAllocatedBits(includeOverflow) {
         switch (includeOverflow) {
