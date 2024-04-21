@@ -1,21 +1,8 @@
-import json
-import random
+from shared_functions import read_json, generate_unique_id, generate_guid, copy_file, append_to_file, replace_placeholder
+from shared_constants import TEMPLATE_DIRECTORY, OUTPUT_EXTERNAL_DIRECTORY, OUTPUT_INTERNAL_DIRECTORY
 
-def create_file(input_path, OUTPUT_PATH):
-    with open(input_path, 'r') as file:
-        content = file.read()
-
-    with open(OUTPUT_PATH, 'w') as file:
-      file.write(content)
-
-def append_to_file(input_path, text_to_append):
-    with open(input_path, 'a') as file:
-        file.write(text_to_append)
-
-def read_json_config(input_path):
-    with open(input_path, 'r') as file:
-        data = json.load(file)
-    
+def map_json_config(input_path):
+    data = read_json(input_path)
     unique_names = set()
 
     for item in data:
@@ -36,9 +23,6 @@ def read_json_config(input_path):
     }
     
     return animator_data
-
-def generate_unique_id():
-    return random.randint(100000000, 999999999)
 
 def generate_animator_parameter(name):
     template = """
@@ -198,20 +182,24 @@ AnimatorStateTransition:
   m_CanTransitionToSelf: 1"""
     return template.format(animator_state_transition_id=animator_state_transition_id)
 
-TEMPLATE_PATH = '../templates/Animator Controller.controller'
-OUTPUT_PATH = '../auto_generated_files/FX.controller'
-JSON_MAPPED_PATH = '../auto_generated_files/data_mapped.json'
 
+animatior_controller_output_path = OUTPUT_EXTERNAL_DIRECTORY + "FX.controller"
+animatior_controller_meta_output_path = OUTPUT_EXTERNAL_DIRECTORY + "FX.controller.meta"
 
 # TODO does not handle overflow bits correctly at the moment. Currently it simply treats it as a chunk
-# Generate output file from data from read_json_config
-create_file(TEMPLATE_PATH, OUTPUT_PATH)
-json_data = read_json_config(JSON_MAPPED_PATH)
+# generate meta file
+copy_file(TEMPLATE_DIRECTORY + "animator_controller_base.controller.meta", animatior_controller_meta_output_path)
+replace_placeholder(animatior_controller_meta_output_path, generate_guid())
+# generate controller file
+copy_file(TEMPLATE_DIRECTORY + "animator_controller_base.controller", animatior_controller_output_path)
+json_data = map_json_config(OUTPUT_INTERNAL_DIRECTORY + "data_mapped.json")
 
+# generate controller parameters and layers
 animator_parameters = "".join(generate_animator_parameter(name) for name in json_data['name'])
 animator_layers = "".join(generate_animator_layer(name, animator_state_machine_id) for name, animator_state_machine_id in zip(json_data['name'], json_data['animator_state_machine_id']))
-append_to_file(OUTPUT_PATH, generate_animator_controller(animator_parameters, animator_layers))
+append_to_file(animatior_controller_output_path, generate_animator_controller(animator_parameters, animator_layers))
 
+# generate transition, blend tree
 for i in range(len(json_data['name'])):
     name = json_data['name'][i]
     animator_state_machine_id = json_data['animator_state_machine_id'][i]
@@ -221,7 +209,8 @@ for i in range(len(json_data['name'])):
     minT = json_data['min_threshold'][i]
     maxT = json_data['max_threshold'][i]
     
-    append_to_file(OUTPUT_PATH, generate_animator_state_machine(name, animator_state_machine_id, animator_state_id))
-    append_to_file(OUTPUT_PATH, generate_animator_state(animator_state_id, animator_state_transition_id, blend_tree_id))
-    append_to_file(OUTPUT_PATH, generate_animator_state_transition(animator_state_transition_id))
-    append_to_file(OUTPUT_PATH, generate_blend_tree(name, blend_tree_id, minT, maxT))
+    append_to_file(animatior_controller_output_path, generate_animator_state_machine(name, animator_state_machine_id, animator_state_id))
+    append_to_file(animatior_controller_output_path, generate_animator_state(animator_state_id, animator_state_transition_id, blend_tree_id))
+    append_to_file(animatior_controller_output_path, generate_animator_state_transition(animator_state_transition_id))
+    append_to_file(animatior_controller_output_path, generate_blend_tree(name, blend_tree_id, minT, maxT))
+

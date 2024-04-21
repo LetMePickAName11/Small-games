@@ -1,6 +1,7 @@
-import json
+from shared_functions import read_json, create_and_write_to_file
+from shared_constants import USER_INPUT_DIRECTORY, OUTPUT_INTERNAL_DIRECTORY
 
-bit_index_to_eight_bit_name = [
+BIT_INDEX_TO_EIGHT_BIT_NAME = [
     '0_MSBEightBit',
     '0_MSBMiddleEightBit',
     '0_LSBMiddleEightBit',
@@ -35,31 +36,23 @@ bit_index_to_eight_bit_name = [
     '7_LSBEightBit'
 ]
 
-# Load the configuration from JSON file
-with open('../configurations/data.json', 'r') as file:
-    bit_allocation_config = json.load(file)
-
 start_index = 0
 bit_allocations = []
 
 # Iterate and create the bit allocations
-for bit_allocation in bit_allocation_config:
+for bit_allocation in read_json(USER_INPUT_DIRECTORY + 'data.json'):
     range_ = {'start': start_index, 'end': start_index + bit_allocation['size']}
     res = {
         **bit_allocation,
         'range': range_,
-        'startName': bit_index_to_eight_bit_name[(range_['start'] - range_['start'] % 8) // 8],
-        'endName': bit_index_to_eight_bit_name[(range_['start'] - range_['start'] % 8) // 8 + 1],
+        'startName': BIT_INDEX_TO_EIGHT_BIT_NAME[(range_['start'] - range_['start'] % 8) // 8],
+        'endName': BIT_INDEX_TO_EIGHT_BIT_NAME[(range_['start'] - range_['start'] % 8) // 8 + 1],
         'bitIndex': range_['start'] % 16
     }
     start_index += bit_allocation['size']
     bit_allocations.append(res)
 
-# Function to get the allocated bits size
-def get_allocated_bits_size(bit_allocations):
-    return sum(ba['size'] for ba in bit_allocations)
-
-allocated_bits_size = get_allocated_bits_size(bit_allocations)
+allocated_bits_size = sum(ba['size'] for ba in bit_allocations)
 overflow_bits = allocated_bits_size % 8
 overflow_number = 1
 
@@ -76,5 +69,4 @@ if allocated_bits_size > 256:
     raise ValueError(f"Too many bits allocated (limit 256): {allocated_bits_size}")
 
 # Write the output to a JSON file
-with open("../auto_generated_files/data_mapped.json", "w") as file:
-    json.dump(bit_allocations, file, indent=2)
+create_and_write_to_file(OUTPUT_INTERNAL_DIRECTORY + 'data_mapped.json', bit_allocations)

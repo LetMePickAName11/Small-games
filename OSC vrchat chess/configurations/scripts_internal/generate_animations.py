@@ -1,20 +1,8 @@
-import json
-import random
+from shared_functions import read_json, generate_unique_id, generate_guid, copy_file, append_to_file, replace_placeholder
+from shared_constants import TEMPLATE_DIRECTORY, OUTPUT_EXTERNAL_DIRECTORY, OUTPUT_INTERNAL_DIRECTORY
 
-def create_file(input_path, OUTPUT_PATH):
-    with open(input_path, 'r') as file:
-        content = file.read()
-
-    with open(OUTPUT_PATH, 'w') as file:
-      file.write(content)
-
-def append_to_file(input_path, text_to_append):
-    with open(input_path, 'a') as file:
-        file.write(text_to_append)
-
-def read_json_config(input_path):
-    with open(input_path, 'r') as file:
-        data = json.load(file)
+def map_json_config(input_path):
+    data = read_json(input_path)
     
     grouped_data = {}
     for item in data:
@@ -38,9 +26,6 @@ def read_json_config(input_path):
         grouped_data[shader]['shader_parameters'] = list(grouped_data[shader]['shader_parameters'])
 
     return grouped_data
-
-def generate_unique_id():
-    return random.randint(100000000, 999999999)
 
 def generate_float_curve(value, attribute, path):
     template = """
@@ -160,52 +145,23 @@ AnimationClip:
     return template.format(name=name, float_curves=float_curves, generic_bindings=generic_bindings, editor_curves=editor_curves)
 
 
-TEMPLATE_PATH = '../templates/Animation.anim'
-JSON_MAPPED_PATH = '../auto_generated_files/data_mapped.json'
-
-mapped_json = read_json_config(JSON_MAPPED_PATH)
-
 # TODO does not handle overflow bits correctly at the moment. Currently it simply treats it as a chunk
-for key, value in mapped_json.items():
-    if '_start' in key:
-        name = f"{key.split('_start')[0]}_Start"
-    if '_end' in key:
-        name = f"{key.split('_end')[0]}_Start"
+for key, value in map_json_config(OUTPUT_INTERNAL_DIRECTORY + 'data_mapped.json').items():
+    name_base = '_'.join(key.split('_start' if '_start' in key else '_end')[:-1])
 
-    attribute_id = generate_unique_id()
-    path_id = generate_unique_id()
-    output_path = f"../auto_generated_files/animations/{name}.anim"
-    float_curves = ""
-    generic_bindings = ""
-    editor_curves = ""
+    for suffix in ['Start', 'End']:
+        attribute_id = generate_unique_id()
+        path_id = generate_unique_id()
+        output_path = f"{OUTPUT_EXTERNAL_DIRECTORY}animations/{name_base}_{suffix}.anim" 
+        output_meta_path = f"{OUTPUT_EXTERNAL_DIRECTORY}animations/{name_base}_{suffix}.anim.meta"
+        float_curves = "".join(generate_float_curve(255, attribute, path) for path in value['game_objects'] for attribute in value['shader_parameters'])
+        generic_bindings = "".join(generate_generic_binding(path_id, attribute_id) for _ in value['game_objects'] for _ in value['shader_parameters'])
+        editor_curves = "".join(generate_editor_curves(255, attribute, path) for path in value['game_objects'] for attribute in value['shader_parameters'])
 
-    for path in value['game_objects']:
-        for index, attribute in enumerate(value['shader_parameters']):
-            float_curves += generate_float_curve(0, attribute, path)
-            generic_bindings += generate_generic_binding(path_id, attribute_id)
-            editor_curves += generate_editor_curves(0, attribute, path)
-
-    create_file(TEMPLATE_PATH, output_path)
-    append_to_file(output_path, generate_animation_clip(name, float_curves, generic_bindings, editor_curves))
-
-for key, value in mapped_json.items():
-    if '_start' in key:
-        name = f"{key.split('_start')[0]}_End"
-    if '_end' in key:
-        name = f"{key.split('_end')[0]}_End"
-
-    attribute_id = generate_unique_id()
-    path_id = generate_unique_id()
-    output_path = f"../auto_generated_files/animations/{name}.anim"
-    float_curves = ""
-    generic_bindings = ""
-    editor_curves = ""
-
-    for path in value['game_objects']:
-        for index, attribute in enumerate(value['shader_parameters']):
-            float_curves += generate_float_curve(255, attribute, path)
-            generic_bindings += generate_generic_binding(path_id, attribute_id)
-            editor_curves += generate_editor_curves(255, attribute, path)
-
-    create_file(TEMPLATE_PATH, output_path)
-    append_to_file(output_path, generate_animation_clip(name, float_curves, generic_bindings, editor_curves))
+        # Generate animation file
+        copy_file(TEMPLATE_DIRECTORY + "animation_base.anim", output_path)
+        append_to_file(output_path, generate_animation_clip(name_base, float_curves, generic_bindings, editor_curves))
+        
+        # Generate animation meta file
+        copy_file(TEMPLATE_DIRECTORY + "animation_base.anim.meta", output_meta_path)
+        replace_placeholder(output_meta_path, generate_guid())
