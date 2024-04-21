@@ -1,4 +1,4 @@
-from shared_functions import read_json, generate_unique_id, generate_guid, copy_file, append_to_file, replace_placeholder
+from shared_functions import read_json, generate_unique_id, generate_guid, copy_file, append_to_file, replace_placeholder, get_file_names_in_dir, get_text_from_file
 from shared_constants import TEMPLATE_DIRECTORY, OUTPUT_EXTERNAL_DIRECTORY, OUTPUT_INTERNAL_DIRECTORY
 
 def map_json_config(input_path):
@@ -121,7 +121,7 @@ AnimatorStateMachine:
   m_DefaultState: {{fileID: {animator_state_id}}}"""
     return template.format(name=name, animator_state_machine_id=animator_state_machine_id, animator_state_id=animator_state_id)
 
-def generate_blend_tree(name, blend_tree_id, min_threshold, max_threshold):
+def generate_blend_tree(name, blend_tree_id, motion_start_guid, motion_end_guid, min_threshold, max_threshold):
     template = """
 --- !u!206 &{blend_tree_id}
 BlendTree:
@@ -132,7 +132,7 @@ BlendTree:
   m_Name: Blend Tree
   m_Childs:
   - serializedVersion: 2
-    m_Motion: {{fileID: 0}}
+    m_Motion: {{fileID: 7400000, guid: {motion_start_guid}, type: 2}}
     m_Threshold: {min_threshold}
     m_Position: {{x: 0, y: 0}}
     m_TimeScale: 1
@@ -140,7 +140,7 @@ BlendTree:
     m_DirectBlendParameter: {name}
     m_Mirror: 0
   - serializedVersion: 2
-    m_Motion: {{fileID: 0}}
+    m_Motion: {{fileID: 7400000, guid: {motion_end_guid}, type: 2}}
     m_Threshold: {max_threshold}
     m_Position: {{x: 0, y: 0}}
     m_TimeScale: 1
@@ -154,7 +154,7 @@ BlendTree:
   m_UseAutomaticThresholds: 0
   m_NormalizedBlendValues: 0
   m_BlendType: 0"""
-    return template.format(name=name, blend_tree_id=blend_tree_id, min_threshold=min_threshold, max_threshold=max_threshold)
+    return template.format(name=name, blend_tree_id=blend_tree_id, motion_start_guid=motion_start_guid, motion_end_guid=motion_end_guid, min_threshold=min_threshold, max_threshold=max_threshold)
 
 def generate_animator_state_transition(animator_state_transition_id):
     template = """
@@ -199,6 +199,10 @@ animator_parameters = "".join(generate_animator_parameter(name) for name in json
 animator_layers = "".join(generate_animator_layer(name, animator_state_machine_id) for name, animator_state_machine_id in zip(json_data['name'], json_data['animator_state_machine_id']))
 append_to_file(animatior_controller_output_path, generate_animator_controller(animator_parameters, animator_layers))
 
+animation_names = [
+    s for s in get_file_names_in_dir(OUTPUT_EXTERNAL_DIRECTORY + 'animations') if '.meta' in s
+]
+
 # generate transition, blend tree
 for i in range(len(json_data['name'])):
     name = json_data['name'][i]
@@ -208,9 +212,12 @@ for i in range(len(json_data['name'])):
     blend_tree_id = json_data['blend_tree_id'][i]
     minT = json_data['min_threshold'][i]
     maxT = json_data['max_threshold'][i]
+    found_string = [s for s in animation_names if name in s]
+    motion_start_guid = get_text_from_file(f"{OUTPUT_EXTERNAL_DIRECTORY}animations/{[s for s in found_string if '_Start' in s][0]}", r'guid: ([a-f0-9]+)')
+    motion_end_guid = get_text_from_file(f"{OUTPUT_EXTERNAL_DIRECTORY}animations/{[s for s in found_string if '_End' in s][0]}", r'guid: ([a-f0-9]+)')
     
     append_to_file(animatior_controller_output_path, generate_animator_state_machine(name, animator_state_machine_id, animator_state_id))
     append_to_file(animatior_controller_output_path, generate_animator_state(animator_state_id, animator_state_transition_id, blend_tree_id))
     append_to_file(animatior_controller_output_path, generate_animator_state_transition(animator_state_transition_id))
-    append_to_file(animatior_controller_output_path, generate_blend_tree(name, blend_tree_id, minT, maxT))
+    append_to_file(animatior_controller_output_path, generate_blend_tree(name, blend_tree_id, motion_start_guid, motion_end_guid, minT, maxT))
 

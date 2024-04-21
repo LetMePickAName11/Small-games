@@ -1,6 +1,8 @@
 import json
 import random
 import uuid
+import os
+import re
 
 def copy_file(original_path, output_path):
     with open(original_path, 'r') as file:
@@ -33,6 +35,14 @@ def read_json(path):
     with open(path, 'r') as file:
         data = json.load(file)
     return data
+
+def get_text_from_file(path, regex):
+    with open(path, 'r') as file:
+        content = file.read()
+    return re.search(regex, content).group(1)
+
+def get_file_names_in_dir(path):
+    return os.listdir(path)
 
 def generate_unique_id():
     return random.randint(100000000, 999999999)
