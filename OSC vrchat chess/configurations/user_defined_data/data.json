@@ -116,9 +116,9 @@
     "type": "i",
     "name": "Pawn_Black_1_Promotion",
     "objectNames": [
-      "Pawn_Black1_/Pawn",
-      "Pawn_Black1_/Queen",
-      "Pawn_Black1_/Knight"
+      "Pawn_Black_1/Pawn",
+      "Pawn_Black_1/Queen",
+      "Pawn_Black_1/Knight"
     ],
     "shaderParameters": [
       "FirstBitsPromotion",
@@ -228,9 +228,9 @@
     "type": "i",
     "name": "Pawn_White_1_Position",
     "objectNames": [
-      "Pawn_Black_1/Pawn",
-      "Pawn_Black_1/Queen",
-      "Pawn_Black_1/Knight"
+      "Pawn_White_1/Pawn",
+      "Pawn_White_1/Queen",
+      "Pawn_White_1/Knight"
     ],
     "shaderParameters": [
       "FirstBitsPosition",

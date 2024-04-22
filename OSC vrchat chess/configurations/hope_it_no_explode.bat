@@ -1,6 +1,8 @@
 @echo off
 python scripts_internal/generate_data_mapped.py
 echo User defined data mapped.
+python scripts_internal/generate_game_object_map.py
+echo Mapped data mapped. Data gameobject to shader parameter mapped.
 python scripts_internal/generate_vrc_expression_paramters.py
 echo VRC expression paramters generated.
 python scripts_internal/generate_animations.py
