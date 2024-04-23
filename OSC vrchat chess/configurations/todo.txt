@@ -5,7 +5,4 @@ Copy folders via directory and not directly into unity program. Animations won't
   2.2 Test OSC code to see if it works
   2.3 Test Chess code to see if it works
 
-3. Make shader and materials script from data_game_object_shader_parameter_map.json
-
-
 4. Unify the way files are created and filled out <.<

@@ -380,9 +380,11 @@ class ChessGame implements OSCVrChatGameLogic {
 class OSCVrChat {
   constructor(gameLogic: OSCVrChatGameLogic) {
     this.gameLogic = gameLogic;
-    this.bitAllocationConfigNames = JSON.parse(fs.readFileSync('auto_generated_files/data_mapped.json', 'utf8')).map((bitAllocation: BitAllocation) => bitAllocation.name);
-    this.inputEventNames = JSON.parse(fs.readFileSync('configurations/input.json', 'utf8'));
-    this.validateBitAllocation();
+    this.bitAllocations = JSON.parse(fs.readFileSync('configurations/user_defined_data/data.json', 'utf8'));
+    this.bitAllocationConfigNames = this.bitAllocations.map((bitAllocation: BitAllocation) => bitAllocation.name);
+    this.inputEventNames = JSON.parse(fs.readFileSync('configurations/user_defined_data/input.json', 'utf8'));
+
+    this.validateBitAllocations()
 
     this.oscHandler = new osc.UDPPort({
       localAddress: this.url,
@@ -457,6 +459,8 @@ class OSCVrChat {
       throw new Error(missingBitAllocationConfigNames);
     }
 
+    console.log(gameState);
+
     this.piecePositionsToEightBitChunks(gameState).forEach((byte) => {
       this.sendUdpMessage(`${byte.name}`, [{ type: 'i', value: byte.value }]);
     });
@@ -493,7 +497,7 @@ class OSCVrChat {
     }, url, port);
   }
 
-  private validateBitAllocation(): void {
+  private validateBitAllocations(): void {
     const allocatedBitsSize: number = this.getAllocatedBitsSize(this.bitAllocations);
 
     if (allocatedBitsSize > 256) {
@@ -515,9 +519,8 @@ class OSCVrChat {
   }
 
 
-  private bitAllocations: Array<BitAllocation>;
   private lastMessageDate = Date.now() - 1000;
-
+  
   private readonly vrChatUdpReceiverPort: number = 9001;
   private readonly vrChatUdpSenderPort: number = 9000;
   private readonly url: string = 'localhost';
@@ -525,6 +528,7 @@ class OSCVrChat {
   private readonly messageDelayMs = 250;
   private readonly gameLogic: OSCVrChatGameLogic;
   private readonly inputEventNames: Array<string>;
+  private readonly bitAllocations: Array<BitAllocation>;
   private readonly bitIndexToEightBitName: { [key in string]: EightBitChunkName } = {
     '0': EightBitChunkName['0_MSBEightBit'],
     '1': EightBitChunkName['0_MSBMiddleEightBit'],
