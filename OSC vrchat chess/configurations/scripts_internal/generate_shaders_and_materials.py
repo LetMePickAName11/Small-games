@@ -12,10 +12,8 @@ for index, (key, values) in enumerate(read_json(OUTPUT_INTERNAL_DIRECTORY + 'dat
         shader_variables.append(f'float _{prop};')
         mat_floats.append(f'- _{prop}: 0')
 
-        if i % 2 == 1:
-            text = prop
-            for string in ['First', 'Last']:
-              text = text.replace(string, '')
+        if 'First' in prop:
+            text = prop.replace('First', '')
             shader_properties.append(f'_Index{text} ("Index{text}", Range(0,15)) = 0')
             shader_variables.append(f'float _Index{text};')
             mat_floats.append(f'- _Index{text}: 0')

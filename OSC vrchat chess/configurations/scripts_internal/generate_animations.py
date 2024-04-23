@@ -160,7 +160,7 @@ for key, value in map_json_config(OUTPUT_INTERNAL_DIRECTORY + 'data_mapped.json'
 
         # Generate animation file
         copy_file(TEMPLATE_DIRECTORY + "animation_base.anim", output_path)
-        append_to_file(output_path, generate_animation_clip(name_base, float_curves, generic_bindings, editor_curves))
+        append_to_file(output_path, generate_animation_clip(f'{name_base}_{suffix}', float_curves, generic_bindings, editor_curves))
         
         # Generate animation meta file
         copy_file(TEMPLATE_DIRECTORY + "animation_base.anim.meta", output_meta_path)

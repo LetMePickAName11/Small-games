@@ -1,3 +1,5 @@
+Copy folders via directory and not directly into unity program. Animations won't get linked correctly otherwise
+
 2. Test this fucking shit <.<
   2.1 Test that unity correctly recognizes files generated
   2.2 Test OSC code to see if it works

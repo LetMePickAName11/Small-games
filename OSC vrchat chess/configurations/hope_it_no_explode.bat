@@ -12,4 +12,5 @@ echo Animator controller generated.
 python scripts_internal/generate_shaders_and_materials.py
 echo Shaders and materials generated.
 echo All scripts have finished running. Files can be found under 'auto_generated_files_external'
-pause
+
+start .\auto_generated_files_external
