@@ -38,7 +38,7 @@ output_path = OUTPUT_EXTERNAL_DIRECTORY + 'vrchat/VRCExpressionParameters.asset'
 output_meta_path = OUTPUT_EXTERNAL_DIRECTORY + 'vrchat/VRCExpressionParameters.asset.meta'
 # generate meta file
 copy_file(TEMPLATE_DIRECTORY + "animator_controller_base.controller.meta", output_meta_path)
-replace_placeholder(output_meta_path, generate_guid())
+replace_placeholder(output_meta_path, generate_guid(), '__[REPLACEME]__')
 # generate vrcexpressionparameters file
 copy_file(TEMPLATE_DIRECTORY + 'vrc_expression_parameters.asset', output_path)
 

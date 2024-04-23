@@ -1,8 +1,9 @@
-1. Fix directory bullshit so scripts work again
 2. Test this fucking shit <.<
   2.1 Test that unity correctly recognizes files generated
   2.2 Test OSC code to see if it works
   2.3 Test Chess code to see if it works
 
-3. Make shader and materials script
-4. Update generate animator controller to read animations folder and link up animations to their motions
+3. Make shader and materials script from data_game_object_shader_parameter_map.json
+
+
+4. Unify the way files are created and filled out <.<

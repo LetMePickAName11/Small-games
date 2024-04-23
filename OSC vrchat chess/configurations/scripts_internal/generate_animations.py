@@ -164,4 +164,4 @@ for key, value in map_json_config(OUTPUT_INTERNAL_DIRECTORY + 'data_mapped.json'
         
         # Generate animation meta file
         copy_file(TEMPLATE_DIRECTORY + "animation_base.anim.meta", output_meta_path)
-        replace_placeholder(output_meta_path, generate_guid())
+        replace_placeholder(output_meta_path, generate_guid(), '__[REPLACEME]__')

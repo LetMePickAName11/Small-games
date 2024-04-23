@@ -19,15 +19,12 @@ def create_and_write_to_file(path, obj):
     with open(path, "w") as file:
         json.dump(obj, file, indent=2)
 
-def replace_placeholder(file_path, text):
-    # Read the content of the file
+def replace_placeholder(file_path, text, placeholder, overwrite_count = -1):
     with open(file_path, 'r') as file:
         content = file.read()
 
-    # Replace the placeholder with the provided value
-    updated_content = content.replace('__[REPLACEME]__', text)
+    updated_content = content.replace(placeholder, text, overwrite_count)
 
-    # Write the updated content back to the file
     with open(file_path, 'w') as file:
         file.write(updated_content)
 

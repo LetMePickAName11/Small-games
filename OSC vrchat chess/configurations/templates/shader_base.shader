@@ -2,11 +2,10 @@ Shader "Unlit/NewUnlitShader"
 {
     Properties {
         _MainTex ("Texture", 2D) = "white" {}
-        _startEightBitChunk ("Start 8-bit Chunk", Range(0,255)) = 0
-        _potentialOverFlowEightBitChunk ("Potential Overflow 8-bit Chunk", Range(0,255)) = 0
-        _bitStartIndex ("Bit Start Index", Range(0, 10)) = 0
         _Color ("Main Color", Color) = (1,1,1,1)
-    }
+
+        __[REPLACEME_PROPERTIES]__
+        }
     SubShader {
         Tags { "RenderType"="Opaque" }
 
@@ -18,14 +17,14 @@ Shader "Unlit/NewUnlitShader"
         };
 
         sampler2D _MainTex;
-
-        float _startEightBitChunk, _potentialOverFlowEightBitChunk, _bitStartIndex;
         fixed4 _Color;
-
-        uint ExtractBits() {
-            uint startChunk = (uint)(_startEightBitChunk + 0.1f);
-            uint potentialOverflowChunk = (uint)(_potentialOverFlowEightBitChunk + 0.1f);
-            uint bitStart = (uint)(_bitStartIndex + 0.1f);
+        
+        __[REPLACEME_VARIABLES]__
+        
+        uint ExtractBits(float stChunk, float poChunk, float index) {
+            uint startChunk = (uint)(stChunk + 0.1f); // + 0.1f to avoid float imprecission problems
+            uint potentialOverflowChunk = (uint)(poChunk + 0.1f); // + 0.1f to avoid float imprecission problems
+            uint bitStart = (uint)(index + 0.1f); // + 0.1f to avoid float imprecission problems
 
             uint combinedChunks = (startChunk << 8) | potentialOverflowChunk;
             uint shiftedForExtraction = combinedChunks >> bitStart;
@@ -35,8 +34,7 @@ Shader "Unlit/NewUnlitShader"
         }
 
         void vert (inout appdata_full v, out Input o) {
-            uint chunkValue = ExtractBits();
-
+            o.uv_MainTex = v.texcoord.xy;
         }
 
         void surf (Input IN, inout SurfaceOutput o) {

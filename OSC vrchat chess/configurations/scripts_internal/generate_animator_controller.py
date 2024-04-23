@@ -189,7 +189,7 @@ animatior_controller_meta_output_path = OUTPUT_EXTERNAL_DIRECTORY + "FX.controll
 # TODO does not handle overflow bits correctly at the moment. Currently it simply treats it as a chunk
 # generate meta file
 copy_file(TEMPLATE_DIRECTORY + "animator_controller_base.controller.meta", animatior_controller_meta_output_path)
-replace_placeholder(animatior_controller_meta_output_path, generate_guid())
+replace_placeholder(animatior_controller_meta_output_path, generate_guid(), '__[REPLACEME]__')
 # generate controller file
 copy_file(TEMPLATE_DIRECTORY + "animator_controller_base.controller", animatior_controller_output_path)
 json_data = map_json_config(OUTPUT_INTERNAL_DIRECTORY + "data_mapped.json")
