@@ -150,13 +150,14 @@ for key, value in map_json_config(OUTPUT_INTERNAL_DIRECTORY + 'data_mapped.json'
     name_base = '_'.join(key.split('_start' if '_start' in key else '_end')[:-1])
 
     for suffix in ['Start', 'End']:
+        default_value = 0 if suffix is 'Start' else 255
         attribute_id = generate_unique_id()
         path_id = generate_unique_id()
         output_path = f"{OUTPUT_EXTERNAL_DIRECTORY}animations/{name_base}_{suffix}.anim" 
         output_meta_path = f"{OUTPUT_EXTERNAL_DIRECTORY}animations/{name_base}_{suffix}.anim.meta"
-        float_curves = "".join(generate_float_curve(255, attribute, path) for path in value['game_objects'] for attribute in value['shader_parameters'])
+        float_curves = "".join(generate_float_curve(default_value, attribute, path) for path in value['game_objects'] for attribute in value['shader_parameters'])
         generic_bindings = "".join(generate_generic_binding(path_id, attribute_id) for _ in value['game_objects'] for _ in value['shader_parameters'])
-        editor_curves = "".join(generate_editor_curves(255, attribute, path) for path in value['game_objects'] for attribute in value['shader_parameters'])
+        editor_curves = "".join(generate_editor_curves(default_value, attribute, path) for path in value['game_objects'] for attribute in value['shader_parameters'])
 
         # Generate animation file
         copy_file(TEMPLATE_DIRECTORY + "animation_base.anim", output_path)
