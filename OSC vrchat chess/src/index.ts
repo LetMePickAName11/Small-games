@@ -223,7 +223,7 @@ class ChessGame implements OSCVrChatGameLogic {
   }
 
   private getPawnPromotion(pawnName: ChessIndexName): number {
-    return this.pawnPromotions[pawnName];
+    return this.pawnPromotions.get(pawnName);
   }
 
   private getPiecePosition(pieceName: ChessIndexName): number {
@@ -418,9 +418,11 @@ class OSCVrChat {
     }
 
     const bytes: Array<{ name: EightBitChunkName, value: number }> = [];
+    currentIndex = 0;
     for (let i = 0; i < positionBitsString.length; i += 8) {
       const byteString: string = positionBitsString.substring(i, i + 8).padEnd(8, '0');
-      bytes.push({ name: this.bitIndexToEightBitName[`${i}`], value: parseInt(byteString, 2) });
+      bytes.push({ name: this.bitIndexToEightBitName[`${currentIndex}`], value: parseInt(byteString, 2) });
+      currentIndex++;
     }
 
     return bytes;
@@ -458,8 +460,6 @@ class OSCVrChat {
     if (missingBitAllocationConfigNames !== "") {
       throw new Error(missingBitAllocationConfigNames);
     }
-
-    console.log(gameState);
 
     this.piecePositionsToEightBitChunks(gameState).forEach((byte) => {
       this.sendUdpMessage(`${byte.name}`, [{ type: 'i', value: byte.value }]);
