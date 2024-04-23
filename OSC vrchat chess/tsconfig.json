@@ -2,16 +2,24 @@
   "compilerOptions": {
     "module": "commonjs",
     "esModuleInterop": true,
-    "target": "es6",
-    "lib": [
-      "es2019"
-    ],
+    "lib": ["ES2022"],
+    "target": "ES2022",
     "moduleResolution": "node",
     "sourceMap": true,
-    "outDir": "dist"
+    "outDir": "dist",
+    "exactOptionalPropertyTypes": true,
+    "strictNullChecks": true,
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "removeComments": true,
   },
   "lib": ["es2019"],
-  "include": [
-    "./src/"
-  ],
+  "include": ["./src/"]  
 }

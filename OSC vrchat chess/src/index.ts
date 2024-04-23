@@ -1,3 +1,4 @@
+// @ts-ignore
 import osc from 'osc';
 import { Chess, Piece, Square } from 'chess.js'
 import * as fs from 'fs';
@@ -128,15 +129,19 @@ class ChessGame implements OSCVrChatGameLogic {
 
   private attemptMove(): GameLogicResponse {
     try {
-      if (this.input.selectedPiece.type === 'p' && (this.input.newPositionRank === '1' || this.input.newPositionRank === '8') && this.chess.moves({square: this.getSelectedPiece()}).length !== 0 && this.input.promotionInput === -1) {
+      if (this.input.selectedPiece?.type === 'p' && (this.input.newPositionRank === '1' || this.input.newPositionRank === '8') && this.chess.moves({ square: this.getSelectedPiece() }).length !== 0 && this.input.promotionInput === -1) {
         this.input.waitingForPromotionInput = true;
         return { updateVrc: false, message: 'Please select a piece to promote to.' };
       }
 
       // Will throw an error is invalid move
-      this.chess.move({ from: this.getSelectedPiece(), to: this.getSelectedPosition(), promotion: this.getPromotionMove() });
-      const potentialCapturedPiece: [ChessIndexName, Square] = [...this.alivePieces].find(([_key, val]: [ChessIndexName, Square]) => val == this.getSelectedPosition());
-      const movedPiece: [ChessIndexName, Square] = [...this.alivePieces].find(([_key, val]: [ChessIndexName, Square]) => val == this.getSelectedPiece());
+      this.chess.move({ from: this.getSelectedPiece<string>(), to: this.getSelectedPosition<string>(), promotion: this.getPromotionMove() });
+      const potentialCapturedPiece: [ChessIndexName, Square] | undefined = [...this.alivePieces].find(([_key, val]: [ChessIndexName, Square]) => val == this.getSelectedPosition());
+      const movedPiece: [ChessIndexName, Square] | undefined = [...this.alivePieces].find(([_key, val]: [ChessIndexName, Square]) => val == this.getSelectedPiece());
+
+      if (movedPiece === undefined) {
+        throw new Error(`private attemptMove() moved piece is null something fucked up big time`);
+      }
 
       if (potentialCapturedPiece !== undefined) {
         // Only time this will be a valid move is when castling
@@ -163,17 +168,22 @@ class ChessGame implements OSCVrChatGameLogic {
     return { updateVrc: true, message: message };
   }
 
-  private getSelectedPiece(): Square {
-    return `${this.input.pieceFile}${this.input.pieceRank}` as Square
+  private getSelectedPiece<t>(): t {
+    return `${this.input.pieceFile}${this.input.pieceRank}` as t
   }
 
-  private getSelectedPosition(): Square {
-    return `${this.input.newPositionFile}${this.input.newPositionRank}` as Square
+  private getSelectedPosition<t>(): t {
+    return `${this.input.newPositionFile}${this.input.newPositionRank}` as t
   }
 
-  private chessSquareToIndex(square: string): number {
-    const file = square.charCodeAt(0) - 'a'.charCodeAt(0); // Calculates file index: 'a' -> 0, 'b' -> 1, ..., 'h' -> 7
-    const rank = parseInt(square[1]) - 1; // Converts rank to 0-based index: '1' -> 0, '2' -> 1, ..., '8' -> 7
+  private chessSquareToIndex(square: Square): number {
+    const [squareFile, squareRank] = square;
+    if (squareFile === undefined || squareRank === undefined) {
+      return 0;
+    }
+
+    const file = squareFile.charCodeAt(0) - 'a'.charCodeAt(0); // Calculates file index: 'a' -> 0, 'b' -> 1, ..., 'h' -> 7
+    const rank = parseInt(squareRank) - 1; // Converts rank to 0-based index: '1' -> 0, '2' -> 1, ..., '8' -> 7
     return rank * 8 + file;
   }
 
@@ -183,9 +193,9 @@ class ChessGame implements OSCVrChatGameLogic {
         return 'n';
       case 2:
         return 'q';
-      default:
-        return null;
     }
+
+    return undefined!;
   }
 
   private resetInput(): void {
@@ -223,42 +233,34 @@ class ChessGame implements OSCVrChatGameLogic {
   }
 
   private getPawnPromotion(pawnName: ChessIndexName): number {
-    return this.pawnPromotions.get(pawnName);
+    return this.pawnPromotions.get(pawnName)!;
   }
 
   private getPiecePosition(pieceName: ChessIndexName): number {
-    let pieceSquare = this.alivePieces.get(pieceName) || this.alivePieces.get(this.twinMap.get(pieceName)) || this.alivePieces.get(this.kingMap.get(pieceName));
-    return this.chessSquareToIndex(pieceSquare)
+    const pieceSquare: Square = this.alivePieces.get(pieceName)! || this.alivePieces.get(this.twinMap.get(pieceName)!)! || this.alivePieces.get(this.kingMap.get(pieceName)!)!;
+    return this.chessSquareToIndex(pieceSquare);
   }
 
   private getPieceTypeCaptured(pieceType: ChessIndexName): number {
-    return (this.alivePieces.has(pieceType) || this.alivePieces.has(this.twinMap.get(pieceType))) ? 1 : 0;
+    return (this.alivePieces.has(pieceType)! || this.alivePieces.has(this.twinMap.get(pieceType)!)!) ? 1 : 0;
   }
-  
+
   private getSelectedPieceBit(): number {
     const square: Square = this.getSelectedPiece();
-    if (square.length !== 2) {
-      return 0;
-    }
-
     return this.chessSquareToIndex(square);
   }
 
   private getSelectedPositionBit(): number {
-    const square: Square = this.getSelectedPosition();
-    if (square.length !== 2) {
-      return 0;
-    }
-
+    const square: Square = this.getSelectedPosition<Square>();
     return this.chessSquareToIndex(square);
   }
 
   private getSelectedPieceShown(): number {
-    return this.getSelectedPiece().length === 2 ? 1 : 0;
+    return this.getSelectedPiece<string>().length === 2 ? 1 : 0;
   }
 
   private getSelectedPositionShown(): number {
-    return this.getSelectedPosition().length === 2 ? 1 : 0;
+    return this.getSelectedPosition<string>().length === 2 ? 1 : 0;
   }
 
 
@@ -398,6 +400,13 @@ class OSCVrChat {
     this.updateVrc();
   }
 
+  public async testOnMessageRecived(address: string) {
+    this.onMessageRecived({ address: address, args: [true] }, null, null);
+    this.gameLogic.debugInfo();
+
+    return new Promise(resolve => setTimeout(resolve, 251));
+  }
+
   private positionToBits(val: number, size: number): number {
     return val & (Math.pow(2, size) - 1);
   }
@@ -412,7 +421,7 @@ class OSCVrChat {
     let currentIndex: number = 0;
 
     for (const bitAllocation of chunkedBits) {
-      const positionBits: string = this.positionToBits(gameState[bitAllocation.name], bitAllocation.size).toString(2).padStart(bitAllocation.size, '0');
+      const positionBits: string = this.positionToBits(gameState[bitAllocation.name]!, bitAllocation.size).toString(2).padStart(bitAllocation.size, '0');
       positionBitsString = this.replaceAt(positionBitsString, currentIndex, positionBits);
       currentIndex += bitAllocation.size;
     }
@@ -421,19 +430,24 @@ class OSCVrChat {
     currentIndex = 0;
     for (let i = 0; i < positionBitsString.length; i += 8) {
       const byteString: string = positionBitsString.substring(i, i + 8).padEnd(8, '0');
-      bytes.push({ name: this.bitIndexToEightBitName[`${currentIndex}`], value: parseInt(byteString, 2) });
+      bytes.push({ name: this.bitIndexToEightBitName[`${currentIndex}`]!, value: parseInt(byteString, 2) });
       currentIndex++;
     }
 
     return bytes;
   }
 
-  private onMessageRecived(oscMsg: { address: string, args: Array<any> }, _timeTag, _info): void {
+  private onMessageRecived(oscMsg: { address: string, args: Array<any> }, _timeTag: string | null, _info: string | null): void {
     if (!oscMsg.address.includes('!') || Date.now() - this.lastMessageDate < this.messageDelayMs) {
       return;
     }
 
-    const eventType: string = oscMsg.address.split('!')[1];
+    const eventType: string | undefined = oscMsg.address.split('!')[1];
+
+    if (eventType === undefined) {
+      throw new Error(`Invalid message input ${oscMsg.address}`);
+    }
+
     this.lastMessageDate = Date.now();
 
     if (this.inputEventNames.includes(eventType)) {
@@ -470,7 +484,7 @@ class OSCVrChat {
     });
   }
 
-  private sendVrchatboxMessage(message: string): void {
+  private sendVrchatboxMessage(message: string | null): void {
     if (message === '' || message === null || message === undefined) {
       return;
     }
@@ -520,7 +534,7 @@ class OSCVrChat {
 
 
   private lastMessageDate = Date.now() - 1000;
-  
+
   private readonly vrChatUdpReceiverPort: number = 9001;
   private readonly vrChatUdpSenderPort: number = 9000;
   private readonly url: string = 'localhost';
@@ -566,8 +580,17 @@ class OSCVrChat {
   private readonly bitAllocationConfigNames: Array<string>;
 }
 
+async function main() {
+  const oscVrchat = new OSCVrChat(new ChessGame());
 
-const oscVrchat = new OSCVrChat(new ChessGame());
+  return; // tests
+  await oscVrchat.testOnMessageRecived('!Input_2');
+  await oscVrchat.testOnMessageRecived('!Input_2');
+  await oscVrchat.testOnMessageRecived('!Input_2');
+  await oscVrchat.testOnMessageRecived('!Input_3');
+}
+
+main();
 
 
 interface OSCVrChatGameLogic {
