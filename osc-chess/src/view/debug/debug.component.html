@@ -1,0 +1,41 @@
+<div class="container">
+  <div class="container-item " @fadeIn>
+    <h2 class="header-float">State | Last updated: {{debugInfo.timestamp | date:'HH:mm:ss'}} - ({{debugInfo.count}})</h2>
+    <h2 class="header-float-holder">State | {{debugInfo.timestamp | date:'HH:mm:ss'}} - ({{debugInfo.count}})</h2>
+    <div>
+      {{debugInfo.value}}
+    </div>
+  </div>
+  <div class="container-item ">
+    <h2 class="header-float">Inputs ({{inputs.length}})</h2>
+    <h2 class="header-float-holder">Inputs ({{inputs.length}})</h2>
+    <div *ngFor="let item of inputs; trackBy: trackByFunction" class="inputs-list" @fadeIn>
+      <span>
+        {{item.value}}
+      </span>
+      <span>{{item.timestamp | date:'HH:mm:ss'}}</span>
+    </div>
+  </div>
+  <div class="container-item " @fadeIn>
+    <h2 class="header-float">Controls</h2>
+    <h2 class="header-float-holder">Controls</h2>
+    <h3>Update game state</h3>
+    <div class="game-state-buttons-container">
+      <button (click)="sendResetGameClick()" [disabled]="disableResetStateButton">
+        <ng-container *ngIf="!disableResetStateButton">Reset state</ng-container>
+        <ng-container *ngIf="disableResetStateButton">Loading</ng-container>
+      </button>
+      <button (click)="sendPauseGameClick()" [disabled]="disablePauseStateButton">
+        <ng-container *ngIf="!disablePauseStateButton">Pause state</ng-container>
+        <ng-container *ngIf="disablePauseStateButton">Loading</ng-container>
+      </button>
+    </div>
+    <h3>Send input</h3>
+    <div class="mock-input-buttons-container">
+      <button *ngFor="let input of inputConfigurations" (click)="sendInputClick(input)" [disabled]="disableInputButtons">
+        <ng-container *ngIf="!disableInputButtons">{{input}}</ng-container>
+        <ng-container *ngIf="disableInputButtons">Loading</ng-container>
+      </button>
+    </div>
+  </div>
+</div>

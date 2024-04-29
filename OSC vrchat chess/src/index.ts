@@ -1,7 +1,12 @@
 // @ts-ignore
 import osc from 'osc';
 import { Chess, Piece, Square } from 'chess.js'
-import * as fs from 'fs';
+//import * as fs from 'fs';
+import express from 'express';
+import http from 'http';
+import { Server } from 'socket.io';
+// @ts-ignore
+import fs from 'fs-extra';
 
 class ChessGame implements OSCVrChatGameLogic {
   public getState(): { [key in string]: number } {
@@ -386,7 +391,12 @@ class OSCVrChat {
     this.bitAllocationConfigNames = this.bitAllocations.map((bitAllocation: BitAllocation) => bitAllocation.name);
     this.inputEventNames = JSON.parse(fs.readFileSync('configurations/user_defined_data/input.json', 'utf8'));
 
-    this.validateBitAllocations()
+    this.validateBitAllocations();
+    this.setupWebsocket();
+
+    this.express = express();
+    this.server = http.createServer(this.express);
+    this.io = new Server(this.server);
 
     this.oscHandler = new osc.UDPPort({
       localAddress: this.url,
@@ -532,6 +542,46 @@ class OSCVrChat {
     return bitAllocation.reduce((accumulator: number, obj: BitAllocation) => accumulator += obj.size, 0);
   }
 
+  private setupWebsocket(): void {
+    this.io.on('connection', (socket: SocketType) => {
+      socket.on(WebSockNamesOut.getconfigurations, (v) => this.getconfigurations(socket, v));
+      socket.on(WebSockNamesOut.getgamestate, (v) => this.getgamestate(socket, v));
+      socket.on(WebSockNamesOut.getinputs, (v) => this.getinputs(socket, v));
+      socket.on(WebSockNamesOut.mockinput, (v) => this.mockinput(socket, v));
+      socket.on(WebSockNamesOut.updateconfigurations, (v) => this.updateconfigurations(socket, v));
+      socket.on(WebSockNamesOut.updateinputs, (v) => this.updateinputs(socket, v));
+    });    
+  }
+
+  private getconfigurations(socket: SocketType, ...args: any[]): void {
+    const configuration = JSON.parse(fs.readFileSync('configurations/auto_generated_files_internal/data_mapped.json', 'utf8'));
+    socket.emit(WebSockNamesOut.getconfigurations, configuration);
+  } 
+
+  private getgamestate(socket: SocketType, ...args: any[]): void {
+
+  } 
+
+  private getinputs(socket: SocketType, ...args: any[]): void {
+    const inputs = JSON.parse(fs.readFileSync('configurations/user_defined_data/input.json', 'utf8'));
+    socket.emit(WebSockNamesOut.getinputs, inputs);
+  } 
+
+  private mockinput(socket: SocketType, ...args: any[]): void {
+    this.testOnMessageRecived(args[0]);
+  } 
+
+  private updateconfigurations(socket: SocketType, ...args: any[]): void {
+    const obj = JSON.stringify(args[0]);
+    fs.writeFile('configurations/user_defined_data/input.json', obj, 'utf8');
+  } 
+
+  private updateinputs(socket: SocketType, ...args: any[]): void {
+    const obj = JSON.stringify(args[0]);
+    fs.writeFile('configurations/user_defined_data/input.json', obj, 'utf8');
+  }
+
+
 
   private lastMessageDate = Date.now() - 1000;
 
@@ -578,17 +628,76 @@ class OSCVrChat {
     '31': EightBitChunkName['7_LSBEightBit']
   };
   private readonly bitAllocationConfigNames: Array<string>;
+  private readonly express;
+  private readonly server;
+  private readonly io;
 }
 
-async function main() {
+function main() {
   const oscVrchat = new OSCVrChat(new ChessGame());
+  if (oscVrchat === undefined) {
+    return;
+  }
+  console.log("Started up");
 
-  return; // tests
-  await oscVrchat.testOnMessageRecived('!Input_2');
-  await oscVrchat.testOnMessageRecived('!Input_2');
-  await oscVrchat.testOnMessageRecived('!Input_2');
-  await oscVrchat.testOnMessageRecived('!Input_3');
+  const app = express();
+  const server = http.createServer(app);
+  const io = new Server(server);
+
+  const port = 3000;
+
+  app.use(express.json());  // Middleware to parse JSON bodies
+
+  // Socket.IO for real-time communication
+  io.on('connection', (socket) => {
+    console.log("New connection:", socket.id);
+
+    socket.on('message', async (msg) => {
+      console.log("Received message:", msg);
+      socket.broadcast.emit('message', msg);
+
+      // Writing message to a file asynchronously
+      try {
+        await fs.appendFile('messages.txt', `${msg}\n`);
+      } catch (error) {
+        console.error('Failed to write message:', error);
+      }
+    });
+
+    socket.on(WebSockNamesOut.getconfigurations, async () => {
+      try {
+        const data = await fs.readFile('messages.txt', 'utf8');
+        socket.emit('fileContent', data);
+      } catch (error) {
+        socket.emit('fileError', 'Failed to read file');
+      }
+    });
+
+    socket.on(WebSockNamesOut.getinputs, async () => {
+      try {
+        const data = await fs.readFile('messages.txt', 'utf8');
+        socket.emit('fileContent', data);
+      } catch (error) {
+        socket.emit('fileError', 'Failed to read file');
+      }
+    });
+
+    socket.on(WebSockNamesOut.getgamestate, async () => {
+      try {
+        const data = await fs.readFile('messages.txt', 'utf8');
+        socket.emit('fileContent', data);
+      } catch (error) {
+        socket.emit('fileError', 'Failed to read file');
+      }
+    });
+  });
+
+  // Start the server
+  server.listen(port, () => {
+    console.log(`Server running on http://localhost:${port}`);
+  });
 }
+
 
 main();
 
@@ -629,6 +738,14 @@ interface BitAllocation {
   objectNames: Array<string>; // Unity object name which properties will be updated via generated animations
   shaderParameters: Array<string>; // Shader paramter names [firstBits, lastBits]
 }
+
+interface SocketType {
+   emit(getconfigurations: string, a: any): void; 
+   on: (arg0: string, arg1: (v: any) => any) => void;
+}
+
+type WebSockNamesOut = 'getconfigurations' | 'getgamestate' | 'getinputs' | 'mockinput' | 'updateconfigurations' | 'updateinputs';
+type WebSockNamesIn = 'inputrecieved' | 'gamestateupdated';
 
 const enum ChessIndexName {
   Empty_1 = "Empty_1",
@@ -705,6 +822,20 @@ const enum BitAllocationType {
   Int = 'i',
   Bool = 'i'
 }
+
+const WebSockNamesOut = {
+  'getconfigurations': 'getconfigurations' as WebSockNamesOut,
+  'getgamestate': 'getgamestate' as WebSockNamesOut,
+  'getinputs': 'getinputs' as WebSockNamesOut,
+  'mockinput': 'mockinput' as WebSockNamesOut,
+  'updateconfigurations': 'updateconfigurations' as WebSockNamesOut,
+  'updateinputs': 'updateinputs' as WebSockNamesOut
+};
+
+const WebSockNamesIn = {
+  'inputrecieved': 'inputrecieved' as WebSockNamesOut,
+  'gamestateupdated': 'inputrecieved' as WebSockNamesOut
+};
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 //  Data structure.

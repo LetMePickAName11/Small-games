@@ -1,0 +1,63 @@
+@import './variables.scss';
+
+body{
+  background-color: $aaaaaaaaaaaaa;
+  margin: 0!important;
+}
+
+main {
+  height: calc(100vh - 2rem - 46px);
+  width: calc(100vw - 2rem);
+  padding: 1rem;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+}
+
+button {
+  border-radius: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  background-color: $bbbbbbbbbbbbb;
+  color: $eeeeeeeeeeeee;
+  box-shadow: none;
+  border: 2px solid $ccccccccccccc;
+  cursor: pointer;
+
+  &:hover {
+    background-color: darken($bbbbbbbbbbbbb, 5%);
+  }
+
+  &:disabled {
+    background-color: darken($bbbbbbbbbbbbb, 15%);
+    cursor: progress;
+  }
+}
+
+p,
+div,
+span,
+a,
+button,
+input {
+  font-size: 1rem;
+}
+
+/* Styles for all browsers that support it */
+::-webkit-scrollbar {
+  width: 1.5rem;  /* width of the entire scrollbar */
+}
+
+::-webkit-scrollbar-track {
+  background: $ddddddddddddd;  /* light grey, matching the background */
+  border-radius: 0.5rem;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: $ccccccccccccc;  /* dark purple for the thumb */
+  border-radius: 0.5rem;
+  border: 3px solid $ddddddddddddd;  /* light lavender border around the thumb */
+  cursor:pointer;
+}
