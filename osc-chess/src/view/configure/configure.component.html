@@ -1,0 +1,53 @@
+<div>
+  <h1>Configuraiton ({{bitsUsed}} bits used out of 256)</h1>
+  <button (click)="resetForm()">Clear changes</button>
+  <form [formGroup]="myForm">
+    <table formArrayName="form">
+      <tr>
+        <th>Name</th>
+        <th>Size</th>
+        <th>Type</th>
+        <th>Object Names</th>
+        <th>Shader Parameters</th>
+        <th></th>
+      </tr>
+      <!-- Use the 'form' getter for iterating over the form array -->
+      <ng-container *ngFor="let group of form.controls; let i = index" [formGroupName]="i">
+        <tr>
+          <td><input type="text" formControlName="name"></td>
+          <td><input type="text" formControlName="size"></td>
+          <td><input type="text" formControlName="type"></td>
+          <td>
+            <!-- Use the 'getObjectNames' method for the nested array -->
+            <ng-container formArrayName="objectNames">
+              <div *ngFor="let objectName of getObjectNames(i).controls; let j = index">
+                <input type="text" [formControlName]="j">
+              </div>
+            </ng-container>
+          </td>
+          <td>
+            <!-- Use the 'getShaderParameters' method for the nested array -->
+            <ng-container formArrayName="shaderParameters">
+              <div *ngFor="let shaderParam of getShaderParameters(i).controls; let k = index">
+                <input type="text" [formControlName]="k">
+              </div>
+            </ng-container>
+          </td>
+          <td>
+            <button [disabled]="!form.dirty" (click)="saveChanges()">Save changes</button>
+          </td>
+        </tr>
+      </ng-container>
+      <tr>
+        <td><input type="text"></td>
+        <td><input type="text"></td>
+        <td><input type="text"></td>
+        <td><input type="text"></td>
+        <td><input type="text"></td>
+        <td>
+          <button [disabled]="bitsUsed > 256" (click)="addNewConfiguration()">Add row</button>
+        </td>
+      </tr>
+    </table>
+  </form>
+</div>
