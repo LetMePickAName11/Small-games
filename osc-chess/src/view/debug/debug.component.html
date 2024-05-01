@@ -7,9 +7,9 @@
     </div>
   </div>
   <div class="container-item ">
-    <h2 class="header-float">Inputs ({{inputs.length}})</h2>
-    <h2 class="header-float-holder">Inputs ({{inputs.length}})</h2>
-    <div *ngFor="let item of inputs; trackBy: trackByFunction" class="inputs-list" @fadeIn>
+    <h2 class="header-float">Inputs ({{oscInputs.length}})</h2>
+    <h2 class="header-float-holder">Inputs ({{oscInputs.length}})</h2>
+    <div *ngFor="let item of oscInputs; trackBy: trackByFunction" class="inputs-list" @fadeIn>
       <span>
         {{item.value}}
       </span>

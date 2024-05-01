@@ -125,9 +125,10 @@ class ChessGame implements OSCVrChatGameLogic {
     return this.attemptMove();
   }
 
-  public debugInfo(): void {
+  public debugInfo(): string {
     console.warn("Debug info");
     console.log(this.chess.ascii());
+    return this.chess.ascii();
   }
 
 
@@ -385,8 +386,9 @@ class ChessGame implements OSCVrChatGameLogic {
 }
 
 class OSCVrChat {
-  constructor(gameLogic: OSCVrChatGameLogic) {
-    this.gameLogic = gameLogic;
+  constructor(gameLogicCreator: () => OSCVrChatGameLogic) {
+    this.gameLogicCreator = gameLogicCreator;
+    this.gameLogic = this.gameLogicCreator();
     this.bitAllocations = JSON.parse(fs.readFileSync('configurations/user_defined_data/data.json', 'utf8'));
     this.bitAllocationConfigNames = this.bitAllocations.map((bitAllocation: BitAllocation) => bitAllocation.name);
     this.inputEventNames = JSON.parse(fs.readFileSync('configurations/user_defined_data/input.json', 'utf8'));
@@ -448,7 +450,7 @@ class OSCVrChat {
   }
 
   private onMessageRecived(oscMsg: { address: string, args: Array<any> }, _timeTag: string | null, _info: string | null): void {
-    if (!oscMsg.address.includes('!') || Date.now() - this.lastMessageDate < this.messageDelayMs) {
+    if (!oscMsg.address.includes('!') || Date.now() - this.lastMessageDate < this.messageDelayMs || this.gamePause) {
       return;
     }
 
@@ -464,6 +466,8 @@ class OSCVrChat {
       if (oscMsg.args[0] === false) {
         return;
       }
+
+      this.sendoscinput(eventType);
 
       const handleChessInputMessage: GameLogicResponse = this.gameLogic.handleInput(eventType);
       this.sendVrchatboxMessage(handleChessInputMessage.message);
@@ -492,6 +496,9 @@ class OSCVrChat {
     this.getAllocatedBits('overflow').forEach((bitAllocation: BitAllocation) => {
       this.sendUdpMessage(`${bitAllocation.startName}`, [{ type: 'i', value: gameState[bitAllocation.name] }]);
     });
+
+    this.getgamestate();
+    this.getdebuginfo();
   }
 
   private sendVrchatboxMessage(message: string | null): void {
@@ -544,53 +551,75 @@ class OSCVrChat {
 
   private setupWebsocket(): void {
     this.io.on('connection', (socket: SocketType) => {
-      socket.on(WebSockNamesOut.getconfigurations, (v) => this.getconfigurations(socket, v));
-      socket.on(WebSockNamesOut.getgamestate, (v) => this.getgamestate(socket, v));
-      socket.on(WebSockNamesOut.getinputs, (v) => this.getinputs(socket, v));
-      socket.on(WebSockNamesOut.mockinput, (v) => this.mockinput(socket, v));
-      socket.on(WebSockNamesOut.updateconfigurations, (v) => this.updateconfigurations(socket, v));
-      socket.on(WebSockNamesOut.updateinputs, (v) => this.updateinputs(socket, v));
+      this.connectedSocket = socket;
+      socket.on(WebsocketNames.server_recieve_mock_osc_input, (v) => this.mockoscinput(socket, v));
+      socket.on(WebsocketNames.server_recieve_input_configuration_update, (v) => this.updateinputconfiguration(socket, v));
+      socket.on(WebsocketNames.server_recieve_configuration_update, (v) => this.updateconfigurations(socket, v));
+      socket.on(WebsocketNames.server_recieve_pause_game, (_) => this.pausegame());
+      socket.on(WebsocketNames.server_recieve_reset_game, (_) => this.resetgame());
     });    
   }
 
-  private getconfigurations(socket: SocketType, ...args: any[]): void {
+  private getconfigurations(socket: SocketType): void {
     const configuration = JSON.parse(fs.readFileSync('configurations/auto_generated_files_internal/data_mapped.json', 'utf8'));
-    socket.emit(WebSockNamesOut.getconfigurations, configuration);
+    socket.emit(WebsocketNames.server_send_configurations, configuration);
   } 
 
-  private getgamestate(socket: SocketType, ...args: any[]): void {
-
+  private getgamestate(): void {
+    this.connectedSocket?.emit(WebsocketNames.server_send_game_state, this.gameLogic.getState());
   } 
 
-  private getinputs(socket: SocketType, ...args: any[]): void {
+  private getdebuginfo(): void {
+    this.connectedSocket?.emit(WebsocketNames.server_send_debug_info, this.gameLogic.debugInfo());
+  }
+
+  private getinputconfiguration(socket: SocketType): void {
     const inputs = JSON.parse(fs.readFileSync('configurations/user_defined_data/input.json', 'utf8'));
-    socket.emit(WebSockNamesOut.getinputs, inputs);
+    socket.emit(WebsocketNames.server_send_input_configurations, inputs);
   } 
 
-  private mockinput(socket: SocketType, ...args: any[]): void {
+  private mockoscinput(...args: any[]): void {
     this.testOnMessageRecived(args[0]);
   } 
+
+  private sendoscinput(...args: any[]): void {
+    this.connectedSocket?.emit(WebsocketNames.server_send_osc_input, args[0]);
+  }
 
   private updateconfigurations(socket: SocketType, ...args: any[]): void {
     const obj = JSON.stringify(args[0]);
     fs.writeFile('configurations/user_defined_data/input.json', obj, 'utf8');
+    this.getconfigurations(socket);
   } 
 
-  private updateinputs(socket: SocketType, ...args: any[]): void {
+  private updateinputconfiguration(socket: SocketType, ...args: any[]): void {
     const obj = JSON.stringify(args[0]);
     fs.writeFile('configurations/user_defined_data/input.json', obj, 'utf8');
+    this.getinputconfiguration(socket);
   }
 
+  private pausegame(): void {
+    this.gamePause = !this.gamePause; 
+  }
+
+  private resetgame(): void {
+    this.gameLogic = this.gameLogicCreator();
+    this.updateVrc();
+  }
+  
 
 
   private lastMessageDate = Date.now() - 1000;
+  private gamePause: boolean = false;
+  private gameLogic: OSCVrChatGameLogic;
+  private connectedSocket: SocketType | null = null;
 
   private readonly vrChatUdpReceiverPort: number = 9001;
   private readonly vrChatUdpSenderPort: number = 9000;
   private readonly url: string = 'localhost';
   private readonly oscHandler;
   private readonly messageDelayMs = 250;
-  private readonly gameLogic: OSCVrChatGameLogic;
+  private readonly gameLogicCreator: () => OSCVrChatGameLogic; 
   private readonly inputEventNames: Array<string>;
   private readonly bitAllocations: Array<BitAllocation>;
   private readonly bitIndexToEightBitName: { [key in string]: EightBitChunkName } = {
@@ -634,68 +663,12 @@ class OSCVrChat {
 }
 
 function main() {
-  const oscVrchat = new OSCVrChat(new ChessGame());
+  const oscVrchat = new OSCVrChat((): OSCVrChatGameLogic => new ChessGame());
   if (oscVrchat === undefined) {
     return;
   }
+
   console.log("Started up");
-
-  const app = express();
-  const server = http.createServer(app);
-  const io = new Server(server);
-
-  const port = 3000;
-
-  app.use(express.json());  // Middleware to parse JSON bodies
-
-  // Socket.IO for real-time communication
-  io.on('connection', (socket) => {
-    console.log("New connection:", socket.id);
-
-    socket.on('message', async (msg) => {
-      console.log("Received message:", msg);
-      socket.broadcast.emit('message', msg);
-
-      // Writing message to a file asynchronously
-      try {
-        await fs.appendFile('messages.txt', `${msg}\n`);
-      } catch (error) {
-        console.error('Failed to write message:', error);
-      }
-    });
-
-    socket.on(WebSockNamesOut.getconfigurations, async () => {
-      try {
-        const data = await fs.readFile('messages.txt', 'utf8');
-        socket.emit('fileContent', data);
-      } catch (error) {
-        socket.emit('fileError', 'Failed to read file');
-      }
-    });
-
-    socket.on(WebSockNamesOut.getinputs, async () => {
-      try {
-        const data = await fs.readFile('messages.txt', 'utf8');
-        socket.emit('fileContent', data);
-      } catch (error) {
-        socket.emit('fileError', 'Failed to read file');
-      }
-    });
-
-    socket.on(WebSockNamesOut.getgamestate, async () => {
-      try {
-        const data = await fs.readFile('messages.txt', 'utf8');
-        socket.emit('fileContent', data);
-      } catch (error) {
-        socket.emit('fileError', 'Failed to read file');
-      }
-    });
-  });
-
-  // Start the server
-  server.listen(port, () => {
-    console.log(`Server running on http://localhost:${port}`);
-  });
 }
 
 
@@ -705,7 +678,7 @@ main();
 interface OSCVrChatGameLogic {
   getState(): { [key in string]: number };
   handleInput(input: string): GameLogicResponse;
-  debugInfo(): void
+  debugInfo(): string;
 }
 
 interface ChessInput {
@@ -743,9 +716,6 @@ interface SocketType {
    emit(getconfigurations: string, a: any): void; 
    on: (arg0: string, arg1: (v: any) => any) => void;
 }
-
-type WebSockNamesOut = 'getconfigurations' | 'getgamestate' | 'getinputs' | 'mockinput' | 'updateconfigurations' | 'updateinputs';
-type WebSockNamesIn = 'inputrecieved' | 'gamestateupdated';
 
 const enum ChessIndexName {
   Empty_1 = "Empty_1",
@@ -823,19 +793,63 @@ const enum BitAllocationType {
   Bool = 'i'
 }
 
-const WebSockNamesOut = {
-  'getconfigurations': 'getconfigurations' as WebSockNamesOut,
-  'getgamestate': 'getgamestate' as WebSockNamesOut,
-  'getinputs': 'getinputs' as WebSockNamesOut,
-  'mockinput': 'mockinput' as WebSockNamesOut,
-  'updateconfigurations': 'updateconfigurations' as WebSockNamesOut,
-  'updateinputs': 'updateinputs' as WebSockNamesOut
+type WebsocketNames = 
+  'client_send_mock_osc_input' |
+  'client_send_input_configuration_update' |
+  'client_send_configuration_update' |
+  'client_send_pause_game' |
+  'client_send_reset_game' |
+
+  'client_recieve_debug_info' |
+  'client_recieve_osc_input' |
+  'client_recieve_configurations' |
+  'client_recieve_game_state' |
+  'client_recieve_input_configurations' |
+
+  'client_request_debug_info' |
+  'client_request_configurations' |
+  'client_request_input_configurations' |
+  'client_request_game_state' |
+
+  'server_send_debug_info' |
+  'server_send_configurations' |
+  'server_send_input_configurations' |
+  'server_send_game_state' |
+  'server_send_osc_input' |
+
+  'server_recieve_mock_osc_input' |
+  'server_recieve_input_configuration_update' |
+  'server_recieve_configuration_update' |
+  'server_recieve_pause_game' |
+  'server_recieve_reset_game';
+
+const WebsocketNames = {
+  'client_send_mock_osc_input': 'client_send_mock_osc_input' as WebsocketNames,
+  'client_send_input_configuration_update': 'client_send_input_configuration_update' as WebsocketNames,
+  'client_send_configuration_update': 'client_send_configuration_update' as WebsocketNames,
+  'client_send_pause_game': 'client_send_pause_game' as WebsocketNames,
+  'client_send_reset_game': 'client_send_reset_game' as WebsocketNames,
+  'client_recieve_debug_info': 'client_recieve_debug_info' as WebsocketNames,
+  'client_recieve_osc_input': 'client_recieve_osc_input' as WebsocketNames,
+  'client_recieve_configurations': 'client_recieve_configurations' as WebsocketNames,
+  'client_recieve_game_state': 'client_recieve_game_state' as WebsocketNames,
+  'client_recieve_input_configurations': 'client_recieve_input_configurations' as WebsocketNames,
+  'client_request_debug_info': 'client_request_debug_info' as WebsocketNames,
+  'client_request_configurations': 'client_request_configurations' as WebsocketNames,
+  'client_request_input_configurations': 'client_request_input_configurations' as WebsocketNames,
+  'client_request_game_state': 'client_request_game_state' as WebsocketNames,
+  'server_send_debug_info': 'server_send_debug_info' as WebsocketNames,
+  'server_send_configurations': 'server_send_configurations' as WebsocketNames,
+  'server_send_input_configurations': 'server_send_input_configurations' as WebsocketNames,
+  'server_send_game_state': 'server_send_game_state' as WebsocketNames,
+  'server_send_osc_input': 'server_send_osc_input' as WebsocketNames,
+  'server_recieve_mock_osc_input': 'server_recieve_mock_osc_input' as WebsocketNames,
+  'server_recieve_input_configuration_update': 'server_recieve_input_configuration_update' as WebsocketNames,
+  'server_recieve_configuration_update': 'server_recieve_configuration_update' as WebsocketNames,
+  'server_recieve_pause_game': 'server_recieve_pause_game' as WebsocketNames,
+  'server_recieve_reset_game': 'server_recieve_reset_game' as WebsocketNames,
 };
 
-const WebSockNamesIn = {
-  'inputrecieved': 'inputrecieved' as WebSockNamesOut,
-  'gamestateupdated': 'inputrecieved' as WebSockNamesOut
-};
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 //  Data structure.

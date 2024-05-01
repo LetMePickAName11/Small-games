@@ -53,7 +53,7 @@ export class ConfigureComponent implements OnDestroy {
   private subscriptions: Array<Subscription> = [];
 
   constructor(private webSocketService: WebSocketService) {
-    webSocketService.configurationUpdates.pipe(
+    webSocketService.$configuration.pipe(
       tap((configurations: Array<Configuration>) => this.configurations = configurations),
       tap((configurations: Array<Configuration>) => this.myForm.controls.form = this.generateFormArray(configurations)),
       tap((configurations: Array<Configuration>) => this.bitsUsed = configurations.reduce((acc: number, config: Configuration) => acc + config.size, 0)))
@@ -71,7 +71,7 @@ export class ConfigureComponent implements OnDestroy {
       return;
     }
 
-    this.webSocketService.updateConfigurations(this.form.getRawValue());
+    this.webSocketService.sendConfigurationUpdate(this.form.getRawValue());
   }
 
   public addNewConfiguration(): void {

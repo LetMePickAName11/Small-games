@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { WebSocketService } from '../../services/web-socket.service';
 import { Subscription, filter, tap } from 'rxjs';
 import { InputData } from '../../models/inputData';
-import { DebugInfo } from '../../models/debugInfo';
+import { WebsocketWrapper } from '../../models/debugInfo';
 
 @Component({
   selector: 'app-debug',
@@ -24,8 +24,13 @@ import { DebugInfo } from '../../models/debugInfo';
 })
 export class DebugComponent implements OnInit, OnDestroy {
   // Data properties
-  public inputs: Array<InputData> = [];
-  public debugInfo: DebugInfo = {
+  public oscInputs: Array<InputData> = [];
+  public debugInfo: WebsocketWrapper = {
+    value: 'Wating for first game state...',
+    timestamp: new Date(),
+    count: 0,
+  };
+  public gameState: WebsocketWrapper = {
     value: 'Wating for first game state...',
     timestamp: new Date(),
     count: 0,
@@ -57,7 +62,7 @@ export class DebugComponent implements OnInit, OnDestroy {
     }
 
     this.disableInputButtons = true;
-    await this.websocketService.mockInput(input);
+    await this.websocketService.sendMockOSCInput(input);
     this.disableInputButtons = false;
   }
 
@@ -67,7 +72,7 @@ export class DebugComponent implements OnInit, OnDestroy {
     }
 
     this.disablePauseStateButton = true;
-    await this.websocketService.pauseGame();
+    await this.websocketService.sendPauseGame();
     this.disablePauseStateButton = false;
   }
 
@@ -77,7 +82,7 @@ export class DebugComponent implements OnInit, OnDestroy {
     }
 
     this.disableResetStateButton = true;
-    await this.websocketService.resetGameState();
+    await this.websocketService.sendRestartGame();
     this.disableResetStateButton = false;
   }
 
@@ -88,29 +93,38 @@ export class DebugComponent implements OnInit, OnDestroy {
 
 
   private getWebsocketData(): void {
-    this.inputConfigurations = this.websocketService.inputConfiguration.value;
-    this.inputs = this.websocketService.allInputUpdates.value;
+    this.inputConfigurations = this.websocketService.$inputConfigurations.value;
+    this.oscInputs = this.websocketService.$cachedOscInput.value;
 
-    const cachedGameStates: Array<DebugInfo> = this.websocketService.allGameStateUpdates.value;
-    if (cachedGameStates.length === 0) {
-      return;
+    const cachedDebugInfo: Array<WebsocketWrapper> = this.websocketService.$cachedDebugInfo.value;
+    const cachedGameStates: Array<WebsocketWrapper> = this.websocketService.$cachedGameState.value;
+
+    if (cachedGameStates.length !== 0) {
+      this.debugInfo = cachedGameStates[cachedGameStates.length - 1];
     }
-
-    this.debugInfo = cachedGameStates[cachedGameStates.length - 1];
+    if (cachedDebugInfo.length !== 0) {
+      this.debugInfo = cachedDebugInfo[cachedDebugInfo.length - 1];
+    }
   }
 
   private setupSubscribers(): void {
-    const sub1: Subscription = this.websocketService.latestGameStateUpdate.pipe(
-      filter((gameState: DebugInfo | null) => gameState !== null),
-      tap((gameState: DebugInfo | null) => this.debugInfo = gameState!))
+    const sub1: Subscription = this.websocketService.$latestgameState.pipe(
+      filter((gameState: WebsocketWrapper | null) => gameState !== null),
+      tap((gameState: WebsocketWrapper | null) => this.gameState = gameState!))
       .subscribe();
 
-    const sub2: Subscription = this.websocketService.latestInputUpdate.pipe(
+    const sub2: Subscription = this.websocketService.$latestOscInput.pipe(
       filter((input: InputData | null) => input !== null),
-      tap((input: InputData | null) => this.inputs = [input!, ...this.inputs]))
+      tap((input: InputData | null) => this.oscInputs = [input!, ...this.oscInputs]))
+      .subscribe();
+
+    const sub3: Subscription = this.websocketService.$latestDebugInfo.pipe(
+      filter((debugInfo: WebsocketWrapper | null) => debugInfo !== null),
+      tap((debugInfo: WebsocketWrapper | null) => this.debugInfo = debugInfo!))
       .subscribe();
 
     this.subscriptions.push(sub1);
     this.subscriptions.push(sub2);
+    this.subscriptions.push(sub3);
   }
 }

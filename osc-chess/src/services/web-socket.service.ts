@@ -2,22 +2,24 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { Configuration } from '../models/configuration';
 import { Socket, io } from 'socket.io-client';
-import { WebSockNamesIn, WebSockNamesOut } from '../models/websocket';
 import { InputData } from '../models/inputData';
-import { DebugInfo } from '../models/debugInfo';
+import { WebsocketWrapper } from '../models/debugInfo';
+import { WebsocketNames } from '../models/websocket';
 
 @Injectable({
   providedIn: 'root'
 })
 export class WebSocketService {
-  public configurationUpdates: BehaviorSubject<Array<Configuration>> = new BehaviorSubject<Array<Configuration>>([]);
-  public inputConfiguration: BehaviorSubject<Array<string>> = new BehaviorSubject<Array<string>>([]);
+  public $latestDebugInfo: BehaviorSubject<WebsocketWrapper | null> = new BehaviorSubject<WebsocketWrapper | null>(null);
+  public $latestOscInput: BehaviorSubject<InputData | null> = new BehaviorSubject<InputData | null>(null);
+  public $latestgameState: BehaviorSubject<WebsocketWrapper | null> = new BehaviorSubject<WebsocketWrapper | null>(null);
 
-  public latestGameStateUpdate: BehaviorSubject<DebugInfo | null> = new BehaviorSubject<DebugInfo | null>(null);
-  public latestInputUpdate: BehaviorSubject<InputData | null> = new BehaviorSubject<InputData | null>(null);
+  public $cachedDebugInfo: BehaviorSubject<Array<WebsocketWrapper>> = new BehaviorSubject<Array<WebsocketWrapper>>([]);
+  public $cachedOscInput: BehaviorSubject<Array<InputData>> = new BehaviorSubject<Array<InputData>>([]);
+  public $cachedGameState: BehaviorSubject<Array<WebsocketWrapper>> = new BehaviorSubject<Array<WebsocketWrapper>>([]);
 
-  public allGameStateUpdates: BehaviorSubject<Array<DebugInfo>> = new BehaviorSubject<Array<DebugInfo>>([]);
-  public allInputUpdates: BehaviorSubject<Array<InputData>> = new BehaviorSubject<Array<InputData>>([]);
+  public $configuration: BehaviorSubject<Array<Configuration>> = new BehaviorSubject<Array<Configuration>>([]);
+  public $inputConfigurations: BehaviorSubject<Array<string>> = new BehaviorSubject<Array<string>>([]);
 
   private readonly socket: Socket;
   private readonly url: string = 'http://localhost:3000';
@@ -28,28 +30,28 @@ export class WebSocketService {
     this.fetchDataFromSocket();
   }
 
-  public async updateInputs(update: Array<string>): Promise<void> {
-    this.sendMessage(WebSockNamesOut.updateinputs, update);
+  public async sendInputConfigurationUpdate(update: Array<string>): Promise<void> {
+    this.sendMessage(WebsocketNames.client_send_input_configuration_update, update);
     await this.waitForMilliseconds(300);
   }
 
-  public async updateConfigurations(update: Array<Configuration>): Promise<void> {
-    this.sendMessage(WebSockNamesOut.updateinputs, update);
+  public async sendConfigurationUpdate(update: Array<Configuration>): Promise<void> {
+    this.sendMessage(WebsocketNames.client_send_configuration_update, update);
     await this.waitForMilliseconds(300);
   }
 
-  public async mockInput(data: string): Promise<void> {
-    this.sendMessage(WebSockNamesOut.mockinput, data);
+  public async sendMockOSCInput(data: string): Promise<void> {
+    this.sendMessage(WebsocketNames.client_send_mock_osc_input, data);
     await this.waitForMilliseconds(300);
   }
 
-  public async resetGameState(): Promise<void> {
-    this.sendMessage(WebSockNamesOut.resetgame, '');
+  public async sendRestartGame(): Promise<void> {
+    this.sendMessage(WebsocketNames.client_send_reset_game, '');
     await this.waitForMilliseconds(300);
   }
 
-  public async pauseGame(): Promise<void> {
-    this.sendMessage(WebSockNamesOut.pausegame, '');
+  public async sendPauseGame(): Promise<void> {
+    this.sendMessage(WebsocketNames.client_send_pause_game, '');
     await this.waitForMilliseconds(300);
   }
 
@@ -62,40 +64,55 @@ export class WebSocketService {
       console.log("Disconnected, socket ID was:", this.socket.id);
     });
 
-    this.socket.on(WebSockNamesIn.gamestateupdated, (message: string) => {
-      console.log("Received gamestateupdated:", message);
-      const prevVal: Array<DebugInfo> = this.allGameStateUpdates.value;
-      const packedInfo: DebugInfo = { value: message, timestamp: new Date(), count: prevVal.length };
+    this.socket.on(WebsocketNames.client_recieve_game_state, (message: string) => {
+      console.log("Received client_recieve_game_state:", message);
+      const prevVal: Array<WebsocketWrapper> = this.$cachedGameState.value;
+      const packedInfo: WebsocketWrapper = { value: message, timestamp: new Date(), count: prevVal.length };
       prevVal.push(packedInfo);
 
-      this.allGameStateUpdates.next(prevVal);
-      this.latestGameStateUpdate.next(packedInfo);
+      this.$cachedGameState.next(prevVal);
+      this.$latestgameState.next(packedInfo);
     });
 
-    this.socket.on(WebSockNamesIn.inputupdated, (message: string) => {
-      console.log("Received inputupdated:", message);
+    this.socket.on(WebsocketNames.client_recieve_debug_info, (message: string) => {
+      console.log("Received client_recieve_debug_info:", message);
+      const prevVal: Array<WebsocketWrapper> = this.$cachedDebugInfo.value;
+      const packedInfo: WebsocketWrapper = { value: message, timestamp: new Date(), count: prevVal.length };
+      prevVal.push(packedInfo);
 
-      const prevVal = this.allInputUpdates.value;
+      this.$cachedDebugInfo.next(prevVal);
+      this.$latestDebugInfo.next(packedInfo);
+    });
+
+    this.socket.on(WebsocketNames.client_recieve_osc_input, (message: string) => {
+      console.log("Received client_recieve_osc_input:", message);
+      const prevVal = this.$cachedOscInput.value;
       const packedInfo: InputData = { value: message, timestamp: new Date(), id: Date.now() };
       prevVal.push(packedInfo);
 
-      this.allInputUpdates.next(prevVal);
-      this.latestInputUpdate.next(packedInfo);
+      this.$cachedOscInput.next(prevVal);
+      this.$latestOscInput.next(packedInfo);
     });
 
-    this.socket.on(WebSockNamesIn.configurationupdated, (message: Array<Configuration>) => {
-      console.log("Received configurationupdated:", message);
-      this.configurationUpdates.next(message);
+    this.socket.on(WebsocketNames.client_recieve_configurations, (message: Array<Configuration>) => {
+      console.log("Received client_recieve_configurations:", message);
+      this.$configuration.next(message);
+    });
+
+    this.socket.on(WebsocketNames.client_recieve_input_configurations, (message: Array<string>) => {
+      console.log("Received client_recieve_input_configurations:", message);
+      this.$inputConfigurations.next(message);
     });
   }
 
   private fetchDataFromSocket(): void {
-    this.sendMessage(WebSockNamesOut.getconfigurations, '');
-    this.sendMessage(WebSockNamesOut.getgamestate, '');
-    this.sendMessage(WebSockNamesOut.getinputs, '');
+    this.sendMessage(WebsocketNames.client_request_configurations, '');
+    this.sendMessage(WebsocketNames.client_request_debug_info, '');
+    this.sendMessage(WebsocketNames.client_request_game_state, '');
+    this.sendMessage(WebsocketNames.client_request_input_configurations, '');
   }
 
-  private sendMessage(name: WebSockNamesOut, message: string | object): void {
+  private sendMessage(name: WebsocketNames, message: string | object): void {
     this.socket.emit(name, message);
   }
 
