@@ -22,10 +22,11 @@ export class WebSocketService {
   public $inputConfigurations: BehaviorSubject<Array<string>> = new BehaviorSubject<Array<string>>([]);
 
   private readonly socket: Socket;
-  private readonly url: string = 'http://localhost:3000';
 
   constructor() {
-    this.socket = io(this.url);
+    this.socket = io('http://localhost:3000', {
+      withCredentials: false 
+    });
     this.setupSocketConnections();
     this.fetchDataFromSocket();
   }

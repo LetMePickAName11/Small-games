@@ -1,0 +1,38 @@
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//  Data structure.
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+256 - bit limit. Color and logic is handled elsewhere. An index will be used to access specific bits.
+[
+  (188 - bits | 188 - bits)
+  0 - 187
+  Keep track of each piece position(28x6 + 4x5 - bit. 64 possible positions for pieces, except bishop that only need 32)
+
+  (32 - bits | 220 - bits)
+  188 - 219
+  Keep track of pawn promotions(16x2 - bit. Unpromoted / pawn, knight, queen, captured)
+
+  (8 - bits | 228 - bits) // can be saved if phat ass king
+  220-227
+  Keep track of piece captures(8x1 - bit. All of type pieces captured, both All of type alive (except king since they can't be captured. Otherwise hide captured piece under twin))
+
+  (8 - bits | 236 - bits)
+  228 - 235
+  Keep track of input(8x1 - bit. 1-8 for inputs that are translated to file and rank)
+
+  (5 - bits | 241 - bits)
+  236 - 240
+  Keep track of selected piece and position(1x5 - bit. 32 different pieces to highlight)
+
+  (6 - bits | 247 - bits)
+  241 - 246
+  Keep track of selected piece and position(1x6 - bit. Which position to highlight)
+
+  (2 - bits | 249 - bits)
+  247 - 248
+  Keep track of if highlighted piece and position should be shown(2x1 - bit. Show, hide)
+
+  (7 - bits | 256 - bits)
+  249 - 255
+  Unused
+]
