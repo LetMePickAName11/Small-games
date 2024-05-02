@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { WebSocketService } from '../../services/web-socket.service';
 import { Subscription, filter, tap } from 'rxjs';
 import { InputData } from '../../models/inputData';
-import { WebsocketWrapper } from '../../models/debugInfo';
+import { WebsocketWrapper, defaultWebsocketWrapper } from '../../models/debugInfo';
 
 @Component({
   selector: 'app-debug',
@@ -25,16 +25,9 @@ import { WebsocketWrapper } from '../../models/debugInfo';
 export class DebugComponent implements OnInit, OnDestroy {
   // Data properties
   public oscInputs: Array<InputData> = [];
-  public debugInfo: WebsocketWrapper = {
-    value: 'Wating for first game state...',
-    timestamp: new Date(),
-    count: 0,
-  };
-  public gameState: WebsocketWrapper = {
-    value: 'Wating for first game state...',
-    timestamp: new Date(),
-    count: 0,
-  };
+  public debugInfo: WebsocketWrapper = defaultWebsocketWrapper("Waiting for first debug info");
+  public gameState: WebsocketWrapper = defaultWebsocketWrapper("Waiting for first game state");
+
   public inputConfigurations: Array<string> = [];
 
   // UI properties
@@ -108,23 +101,22 @@ export class DebugComponent implements OnInit, OnDestroy {
   }
 
   private setupSubscribers(): void {
-    const sub1: Subscription = this.websocketService.$latestgameState.pipe(
-      filter((gameState: WebsocketWrapper | null) => gameState !== null),
-      tap((gameState: WebsocketWrapper | null) => this.gameState = gameState!))
-      .subscribe();
+    this.subscriptions.push(
+      this.websocketService.$latestgameState.pipe(
+        tap((gameState: WebsocketWrapper) => this.gameState = gameState)
+      ).subscribe(),
+  
+      this.websocketService.$latestDebugInfo.pipe(
+        tap((debugInfo: WebsocketWrapper) => this.debugInfo = debugInfo)
+      ).subscribe(),
 
-    const sub2: Subscription = this.websocketService.$latestOscInput.pipe(
-      filter((input: InputData | null) => input !== null),
-      tap((input: InputData | null) => this.oscInputs = [input!, ...this.oscInputs]))
-      .subscribe();
-
-    const sub3: Subscription = this.websocketService.$latestDebugInfo.pipe(
-      filter((debugInfo: WebsocketWrapper | null) => debugInfo !== null),
-      tap((debugInfo: WebsocketWrapper | null) => this.debugInfo = debugInfo!))
-      .subscribe();
-
-    this.subscriptions.push(sub1);
-    this.subscriptions.push(sub2);
-    this.subscriptions.push(sub3);
+      this.websocketService.$cachedOscInput.pipe(
+        tap((oscInputs: Array<InputData>) => this.oscInputs = oscInputs)
+      ).subscribe(),
+  
+      this.websocketService.$inputConfigurations.pipe(
+        tap((inputConfigurations: Array<string>) => this.inputConfigurations = inputConfigurations)
+      ).subscribe(),
+    );
   }
 }

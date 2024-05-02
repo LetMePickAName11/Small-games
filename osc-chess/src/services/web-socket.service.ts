@@ -3,32 +3,28 @@ import { BehaviorSubject } from 'rxjs';
 import { Configuration } from '../models/configuration';
 import { Socket, io } from 'socket.io-client';
 import { InputData } from '../models/inputData';
-import { WebsocketWrapper } from '../models/debugInfo';
+import { WebsocketWrapper, defaultWebsocketWrapper } from '../models/debugInfo';
 import { WebsocketNames } from '../models/websocket';
 
 @Injectable({
   providedIn: 'root'
 })
 export class WebSocketService {
-  public $latestDebugInfo: BehaviorSubject<WebsocketWrapper | null> = new BehaviorSubject<WebsocketWrapper | null>(null);
-  public $latestOscInput: BehaviorSubject<InputData | null> = new BehaviorSubject<InputData | null>(null);
-  public $latestgameState: BehaviorSubject<WebsocketWrapper | null> = new BehaviorSubject<WebsocketWrapper | null>(null);
+  public $latestDebugInfo: BehaviorSubject<WebsocketWrapper> = new BehaviorSubject<WebsocketWrapper>(defaultWebsocketWrapper("Waiting for first debug info"));
+  public $latestgameState: BehaviorSubject<WebsocketWrapper> = new BehaviorSubject<WebsocketWrapper>(defaultWebsocketWrapper("Waiting for first game state"));
 
   public $cachedDebugInfo: BehaviorSubject<Array<WebsocketWrapper>> = new BehaviorSubject<Array<WebsocketWrapper>>([]);
-  public $cachedOscInput: BehaviorSubject<Array<InputData>> = new BehaviorSubject<Array<InputData>>([]);
   public $cachedGameState: BehaviorSubject<Array<WebsocketWrapper>> = new BehaviorSubject<Array<WebsocketWrapper>>([]);
-
+  public $cachedOscInput: BehaviorSubject<Array<InputData>> = new BehaviorSubject<Array<InputData>>([]);
+  
   public $configuration: BehaviorSubject<Array<Configuration>> = new BehaviorSubject<Array<Configuration>>([]);
   public $inputConfigurations: BehaviorSubject<Array<string>> = new BehaviorSubject<Array<string>>([]);
 
   private readonly socket: Socket;
 
   constructor() {
-    this.socket = io('http://localhost:3000', {
-      withCredentials: false 
-    });
+    this.socket = io('http://localhost:3000');
     this.setupSocketConnections();
-    this.fetchDataFromSocket();
   }
 
   public async sendInputConfigurationUpdate(update: Array<string>): Promise<void> {
@@ -48,6 +44,11 @@ export class WebSocketService {
 
   public async sendRestartGame(): Promise<void> {
     this.sendMessage(WebsocketNames.client_send_reset_game, '');
+    this.$latestDebugInfo.next(defaultWebsocketWrapper("Waiting for first debug info"));
+    this.$latestgameState.next(defaultWebsocketWrapper("Waiting for first game state"));
+    this.$cachedDebugInfo.next([]);
+    this.$cachedOscInput.next([]);
+    this.$cachedGameState.next([]);
     await this.waitForMilliseconds(300);
   }
 
@@ -59,6 +60,7 @@ export class WebSocketService {
   private setupSocketConnections(): void {
     this.socket.on('connect', () => {
       console.log("Connected with socket ID:", this.socket.id);
+      this.fetchDataFromSocket();
     });
 
     this.socket.on('disconnect', () => {
@@ -89,10 +91,8 @@ export class WebSocketService {
       console.log("Received client_recieve_osc_input:", message);
       const prevVal = this.$cachedOscInput.value;
       const packedInfo: InputData = { value: message, timestamp: new Date(), id: Date.now() };
-      prevVal.push(packedInfo);
 
-      this.$cachedOscInput.next(prevVal);
-      this.$latestOscInput.next(packedInfo);
+      this.$cachedOscInput.next([packedInfo, ...prevVal]);
     });
 
     this.socket.on(WebsocketNames.client_recieve_configurations, (message: Array<Configuration>) => {

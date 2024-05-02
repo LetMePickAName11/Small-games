@@ -13,6 +13,12 @@ import { GameLogicResponse } from './models/game_logic_response';
 import { SocketType } from './models/socket_type';
 import { EightBitChunkName, WebsocketNames } from './models/enums';
 
+// TODO
+// Better handling of read/write of inputs as they are currently saved without ! prefix but need it for testing
+// Fix naming of elements.
+// Clean up constructor and functions
+// Improve debug and gamestate strings for websocket
+
 export class OSCVrChat {
   constructor(gameLogicCreator: () => OSCVrChatGameLogic) {
     this.gameLogicCreator = gameLogicCreator;
@@ -111,7 +117,7 @@ export class OSCVrChat {
 
       const handleChessInputMessage: GameLogicResponse = this.gameLogic.handleInput(eventType);
       this.sendVrchatboxMessage(handleChessInputMessage.message);
-      console.log(handleChessInputMessage);
+
       if (handleChessInputMessage.updateVrc) {
         return this.updateVrc();
       }
@@ -172,7 +178,6 @@ export class OSCVrChat {
     const allocatedBitsSize: number = this.getAllocatedBitsSize(this.bitAllocations);
 
     if (allocatedBitsSize > 256) {
-      console.error(`Too many bits allocated (limit 256): ${allocatedBitsSize}`);
       throw new Error(`Too many bits allocated (limit 256): ${allocatedBitsSize}`);
     }
   }
@@ -220,7 +225,9 @@ export class OSCVrChat {
   }
 
   private getinputconfiguration(socket: SocketType): void {
-    const inputs = JSON.parse(fs.readFileSync('configurations/user_defined_data/input.json', 'utf8'));
+    const inputs = JSON.parse(fs.readFileSync('configurations/user_defined_data/input.json', 'utf8'))
+    .map((input: string) => `!${input}`);
+    
     socket.emit(WebsocketNames.server_send_input_configurations, inputs);
   } 
 

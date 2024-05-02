@@ -122,8 +122,6 @@ export class ChessGame implements OSCVrChatGameLogic {
   }
 
   public debugInfo(): string {
-    console.warn("Debug info");
-    console.log(this.chess.ascii());
     return this.chess.ascii();
   }
 
@@ -159,9 +157,8 @@ export class ChessGame implements OSCVrChatGameLogic {
       else {
         this.alivePieces.set(movedPiece[0], this.getSelectedPosition());
       }
-    } catch (e) {
+    } catch {
       // Simply reset input and display invalid move
-      console.log(e)
       this.resetInput();
       return { updateVrc: false, message: 'Invalid move.' };
     }
