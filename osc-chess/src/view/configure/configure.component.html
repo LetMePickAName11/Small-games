@@ -1,53 +1,75 @@
-<div>
+<div class="container">
   <h1>Configuraiton ({{bitsUsed}} bits used out of 256)</h1>
-  <button (click)="resetForm()">Clear changes</button>
-  <form [formGroup]="myForm">
-    <table formArrayName="form">
-      <tr>
-        <th>Name</th>
-        <th>Size</th>
-        <th>Type</th>
-        <th>Object Names</th>
-        <th>Shader Parameters</th>
-        <th></th>
-      </tr>
-      <!-- Use the 'form' getter for iterating over the form array -->
-      <ng-container *ngFor="let group of form.controls; let i = index" [formGroupName]="i">
-        <tr>
-          <td><input type="text" formControlName="name"></td>
-          <td><input type="text" formControlName="size"></td>
-          <td><input type="text" formControlName="type"></td>
-          <td>
-            <!-- Use the 'getObjectNames' method for the nested array -->
-            <ng-container formArrayName="objectNames">
-              <div *ngFor="let objectName of getObjectNames(i).controls; let j = index">
-                <input type="text" [formControlName]="j">
-              </div>
-            </ng-container>
-          </td>
-          <td>
-            <!-- Use the 'getShaderParameters' method for the nested array -->
-            <ng-container formArrayName="shaderParameters">
-              <div *ngFor="let shaderParam of getShaderParameters(i).controls; let k = index">
-                <input type="text" [formControlName]="k">
-              </div>
-            </ng-container>
-          </td>
-          <td>
-            <button [disabled]="!form.dirty" (click)="saveChanges()">Save changes</button>
-          </td>
-        </tr>
+  <div class="bit-container">
+    <div class="bit" *ngFor="let bit of bitArray" (mouseenter)="onMouseEnter(bit)" (mouseleave)="onMouseLeave(bit)"
+      (click)="onclick(bit)" [class.selected]="bit === click" [style.width]="bit.width" [style.background]="bit.color">
+      {{bit.type}}
+    </div>
+  </div>
+  <div class="dot">
+    <div>
+      <ng-container *ngIf="hover !== null">
+        <p>
+          <strong>Name:</strong>
+          {{hover.name}}
+        </p>
+        <p>
+          <strong>Data type</strong>
+          {{hover.type}}
+        </p>
+        <p>
+          <strong>Data size:</strong>
+          {{hover.size}}-bits
+        </p>
+        <p>
+          <strong>Chunk name start - end | index:</strong>
+          {{hover.startName}} - {{hover.endName}} | {{hover.bitIndex}}
+        </p>
+        <p>
+          <strong>Chunk range start - end index:</strong>
+          {{hover.range.start}} - {{hover.range.end}}
+        </p>
+        <strong>Unity game object names:</strong>
+        <ul>
+          <li *ngFor="let on of hover.objectNames">{{on}}</li>
+        </ul>
+        <strong>Unity shader parameters:</strong>
+        <ul>
+          <li *ngFor="let sp of hover.shaderParameters">{{sp}}</li>
+        </ul>
       </ng-container>
-      <tr>
-        <td><input type="text"></td>
-        <td><input type="text"></td>
-        <td><input type="text"></td>
-        <td><input type="text"></td>
-        <td><input type="text"></td>
-        <td>
-          <button [disabled]="bitsUsed > 256" (click)="addNewConfiguration()">Add row</button>
-        </td>
-      </tr>
-    </table>
-  </form>
+    </div>
+    <div>
+      <ng-container *ngIf="click !== null">
+        <p>
+          <strong>Name:</strong>
+          {{click.name}}
+        </p>
+        <p>
+          <strong>Data type</strong>
+          {{click.type}}
+        </p>
+        <p>
+          <strong>Data size:</strong>
+          {{click.size}}-bits
+        </p>
+        <p>
+          <strong>Chunk name start - end | index:</strong>
+          {{click.startName}} - {{click.endName}} | {{click.bitIndex}}
+        </p>
+        <p>
+          <strong>Chunk range start - end index:</strong>
+          {{click.range.start}} - {{click.range.end}}
+        </p>
+        <strong>Unity game object names:</strong>
+        <ul>
+          <li *ngFor="let on of click.objectNames">{{on}}</li>
+        </ul>
+        <strong>Unity shader parameters:</strong>
+        <ul>
+          <li *ngFor="let sp of click.shaderParameters">{{sp}}</li>
+        </ul>
+      </ng-container>
+    </div>
+  </div>
 </div>

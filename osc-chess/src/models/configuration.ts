@@ -10,5 +10,5 @@ export interface Configuration {
   };
   startName: string;
   endName: string;
-  bitIndex: number
+  bitIndex: number;
 }
