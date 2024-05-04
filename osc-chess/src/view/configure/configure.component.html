@@ -1,7 +1,7 @@
 <div class="container">
-  <h1>Configuraiton ({{bitsUsed}} bits used out of 256)</h1>
+  <h1>Configuraiton ({{bitsUsed}} bits used out of {{maxBits}})</h1>
   <div class="bit-container">
-    <div class="bit" *ngFor="let bit of bitArray" (mouseenter)="onMouseEnter(bit)" (mouseleave)="onMouseLeave(bit)"
+    <div class="bit" *ngFor="let bit of bitAllocations" (mouseenter)="onMouseEnter(bit)" (mouseleave)="onMouseLeave(bit)"
       (click)="onclick(bit)" [class.selected]="bit === click" [style.width]="bit.width" [style.background]="bit.color">
       {{bit.type}}
     </div>
