@@ -45,9 +45,3 @@ for index, (key, values) in enumerate(read_json(OUTPUT_INTERNAL_DIRECTORY + 'dat
         # Create shader material meta file
         copy_file(TEMPLATE_DIRECTORY + 'shader_material_base.mat.meta', mat_file_meta_path)
         replace_placeholder(mat_file_meta_path, generate_guid(), '__[REPLACEME]__')
-        
-        
-        
-        
-        
-        

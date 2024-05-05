@@ -1,4 +1,4 @@
-import { ChessGame } from "./chess_game";
+import { ChessGame } from "./chess-game";
 import { OSCVrChatGameLogic } from "./models/osc_vrchat_game_logic";
 import { OSCVrChat } from "./osc-vrchat";
 
