@@ -648,12 +648,12 @@ BlendTree:
       this.copyFile(this.templateDirectory + "shader_base.shader.meta", shaderMetaFilePath);
       this.replaceInFile(shaderMetaFilePath, '__[REPLACEME]__', shaderGuid);
 
-      for (const mat_name of values.map((s: string) => s.replace('/', '_'))) {
-        const matFilePath: string = this.outputExternalDirectory + `/materials/${mat_name}.mat`;
-        const matFileMetaPath: string = this.outputExternalDirectory + `/ materials / ${mat_name}.mat.meta`;
+      for (const matName of values.map((s: string) => s.replace('/', '_'))) {
+        const matFilePath: string = this.outputExternalDirectory + `/materials/${matName}.mat`;
+        const matFileMetaPath: string = this.outputExternalDirectory + `/ materials / ${matName}.mat.meta`;
 
         this.copyFile(this.templateDirectory + 'shader_material_base.mat', matFilePath);
-        this.replaceInFile(matFilePath, '__[REPLACEME_MATERIAL_NAME]__', mat_name);
+        this.replaceInFile(matFilePath, '__[REPLACEME_MATERIAL_NAME]__', matName);
         this.replaceInFile(matFilePath, '__[SHADER_GUID]__', shaderGuid);
         this.replaceInFile(matFilePath, '__[REPLACEME_FLOATS]__', matFloatsString);
 
