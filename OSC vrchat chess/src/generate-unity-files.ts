@@ -67,8 +67,8 @@ export class GenerateUnityFiles {
 
   private generateGameObjectMap(): void {
     this.createFile(this.outputInternalDirectory + 'data_game_object_shader_parameter_map.json');
-    const game_object_to_shaders: GameObjectToShaders = {};
-    const shader_to_game_object_map: ShaderToGameObjectMap = {};
+    const gameObjectToShaders: GameObjectToShaders = {};
+    const shaderToGameObjectMap: ShaderToGameObjectMap = {};
 
     // Read the JSON data from the file
     const entries: Entry[] = JSON.parse(this.getFile(this.outputInternalDirectory + 'data_mapped.json'));
@@ -79,28 +79,28 @@ export class GenerateUnityFiles {
       const shaderParameters = new Set<string>(entry.shaderParameters);
 
       for (const objectName of objectNames) {
-        if (!(objectName in game_object_to_shaders)) {
-          game_object_to_shaders[objectName] = new Set<Set<string>>();
+        if (!(objectName in gameObjectToShaders)) {
+          gameObjectToShaders[objectName] = new Set<Set<string>>();
         }
-        game_object_to_shaders[objectName]!.add(shaderParameters);
+        gameObjectToShaders[objectName]!.add(shaderParameters);
       }
     }
 
     // Now, map sets of shader parameters to game objects, ensuring uniqueness
-    for (const [objectName, shaders] of Object.entries(game_object_to_shaders)) {
+    for (const [objectName, shaders] of Object.entries(gameObjectToShaders)) {
       // Combine all shader sets for this object into one key
       const combinedShaderKey = Array.from(shaders).reduce((acc, cur) => new Set([...acc, ...cur]), new Set<string>());
       const combinedShaderKeyString = Array.from(combinedShaderKey).sort().join(', ');
 
-      if (!(combinedShaderKeyString in shader_to_game_object_map)) {
-        shader_to_game_object_map[combinedShaderKeyString] = [];
+      if (!(combinedShaderKeyString in shaderToGameObjectMap)) {
+        shaderToGameObjectMap[combinedShaderKeyString] = [];
       }
-      shader_to_game_object_map[combinedShaderKeyString]!.push(objectName);
+      shaderToGameObjectMap[combinedShaderKeyString]!.push(objectName);
     }
 
     // Convert shader set keys to a sorted, comma-separated string for JSON serialization
     const finalMap = Object.fromEntries(
-      Object.entries(shader_to_game_object_map).map(([key, value]) => [key, value.sort()])
+      Object.entries(shaderToGameObjectMap).map(([key, value]) => [key, value.sort()])
     );
 
     this.writeToFile(this.outputInternalDirectory + 'data_game_object_shader_parameter_map.json', finalMap);
@@ -149,13 +149,13 @@ export class GenerateUnityFiles {
   }
 
   private generateAnimations(): void {
-    const b = (name: string, value_type: number, saved: number, default_value: number, network_synced: number) => {
+    const b = (name: string, valueType: number, saved: number, defaultValue: number, networkSynced: number) => {
       return `
   - name: ${name}
-    valueType: ${value_type}
+    valueType: ${valueType}
     saved: ${saved}
-    defaultValue: ${default_value}
-    networkSynced: ${network_synced}`;
+    defaultValue: ${defaultValue}
+    networkSynced: ${networkSynced}`;
     };
 
     const c = (input: string) => {
@@ -197,16 +197,16 @@ export class GenerateUnityFiles {
     };
 
 
-    const output_path = this.outputExternalDirectory + 'vrchat/VRCExpressionParameters.asset';
-    const output_meta_path = this.outputExternalDirectory + 'vrchat/VRCExpressionParameters.asset.meta';
+    const outputPath = this.outputExternalDirectory + 'vrchat/VRCExpressionParameters.asset';
+    const outputMetaPath = this.outputExternalDirectory + 'vrchat/VRCExpressionParameters.asset.meta';
 
-    this.copyFile(this.templateDirectory + "animator_controller_base.controller.meta", output_meta_path);
-    this.replaceInFile(output_meta_path, '__[REPLACEME]__', this.generateGuid());
+    this.copyFile(this.templateDirectory + "animator_controller_base.controller.meta", outputMetaPath);
+    this.replaceInFile(outputMetaPath, '__[REPLACEME]__', this.generateGuid());
 
-    this.copyFile(this.templateDirectory + 'vrc_expression_parameters.asset', output_path);
+    this.copyFile(this.templateDirectory + 'vrc_expression_parameters.asset', outputPath);
 
     for (const row of c(this.outputInternalDirectory + 'data_mapped.json')) {
-      this.appendToFile(output_path, b(row.name, row.valueType, row.saved, row.defaultValue, row.networkSynced));
+      this.appendToFile(outputPath, b(row.name, row.valueType, row.saved, row.defaultValue, row.networkSynced));
     }
   }
 
@@ -362,53 +362,53 @@ export class GenerateUnityFiles {
     const data: Record<string, ShaderData> = mapJsonConfig(this.outputInternalDirectory + 'data_mapped.json', this);
 
     for (const [key, value] of Object.entries(data)) {
-      const name_base: string = key.split(key.includes("_start") ? "_start" : "_end").slice(0, -1).join("_");
+      const nameBase: string = key.split(key.includes("_start") ? "_start" : "_end").slice(0, -1).join("_");
 
       ['Start', 'End'].forEach((suffix: string) => {
-        const default_value: number = suffix === 'Start' ? 0 : 255;
-        const attribute_id: number = this.generateUniqueId();
-        const path_id: number = this.generateUniqueId();
-        const output_path: string = `${this.outputExternalDirectory}animations/${name_base}_${suffix}.anim`;
-        const output_meta_path: string = `${this.outputExternalDirectory}animations/${name_base}_${suffix}.anim.meta`;
-        const float_curves: string = value.objectNames.flatMap((path: string) => Array.from(value.shaderParameters).map((attribute: string) => generateFloatCurve(default_value, attribute, path))).join("");
-        const generic_bindings: string = new Array(value.objectNames.length * value.shaderParameters.size).fill(generateGenericBinding(path_id, attribute_id)).join("");
-        const editor_curves: string = value.objectNames.flatMap((path: string) => Array.from(value.shaderParameters).map((attribute: string) => generateEditorCurves(default_value, attribute, path))).join("");
+        const defaultValue: number = suffix === 'Start' ? 0 : 255;
+        const attributeId: number = this.generateUniqueId();
+        const pathId: number = this.generateUniqueId();
+        const outputPath: string = `${this.outputExternalDirectory}animations/${nameBase}_${suffix}.anim`;
+        const outputMetaPath: string = `${this.outputExternalDirectory}animations/${nameBase}_${suffix}.anim.meta`;
+        const floatCurves: string = value.objectNames.flatMap((path: string) => Array.from(value.shaderParameters).map((attribute: string) => generateFloatCurve(defaultValue, attribute, path))).join("");
+        const genericBindings: string = new Array(value.objectNames.length * value.shaderParameters.size).fill(generateGenericBinding(pathId, attributeId)).join("");
+        const editorCurves: string = value.objectNames.flatMap((path: string) => Array.from(value.shaderParameters).map((attribute: string) => generateEditorCurves(defaultValue, attribute, path))).join("");
 
-        this.copyFile(this.templateDirectory + "animation_base.anim", output_path);
-        this.appendToFile(output_path, generateAnimationClip(`${name_base}_${suffix}`, float_curves, generic_bindings, editor_curves));
+        this.copyFile(this.templateDirectory + "animation_base.anim", outputPath);
+        this.appendToFile(outputPath, generateAnimationClip(`${nameBase}_${suffix}`, floatCurves, genericBindings, editorCurves));
 
-        this.copyFile(this.templateDirectory + "animation_base.anim.meta", output_meta_path);
-        this.replaceInFile(output_meta_path, '__[REPLACEME]__', this.generateGuid());
+        this.copyFile(this.templateDirectory + "animation_base.anim.meta", outputMetaPath);
+        this.replaceInFile(outputMetaPath, '__[REPLACEME]__', this.generateGuid());
       });
     }
   }
 
   private generateAnimatorController(): void {
-    function map_json_config(input_path: string, that: any) {
+    function mapJsonConfig(input_path: string, that: any) {
       const data: Array<{ startName: string, endName: string }> = JSON.parse(that.getFile(input_path));
-      const unique_names: Set<string> = new Set();
+      const uniqueNames: Set<string> = new Set();
 
       for (const item of data) {
-        unique_names.add(item.startName);
-        unique_names.add(item.endName);
+        uniqueNames.add(item.startName);
+        uniqueNames.add(item.endName);
       }
 
-      const unique_name_list: Array<string> = Array.from(unique_names).sort();
+      const uniqueNameList: Array<string> = Array.from(uniqueNames).sort();
 
-      const animator_data: D = {
-        'name': unique_name_list,
-        'animator_state_machine_id': new Array(unique_name_list.length).fill(that.generateUniqueId()),
-        'animator_state_id': new Array(unique_name_list.length).fill(that.generateUniqueId()),
-        'animator_state_transition_id': new Array(unique_name_list.length).fill(that.generateUniqueId()),
-        'blend_tree_id': new Array(unique_name_list.length).fill(that.generateUniqueId()),
-        'min_threshold': new Array(unique_name_list.length).fill(0),
-        'max_threshold': new Array(unique_name_list.length).fill(255),
+      const animatorData: D = {
+        'name': uniqueNameList,
+        'animator_state_machine_id': new Array(uniqueNameList.length).fill(that.generateUniqueId()),
+        'animator_state_id': new Array(uniqueNameList.length).fill(that.generateUniqueId()),
+        'animator_state_transition_id': new Array(uniqueNameList.length).fill(that.generateUniqueId()),
+        'blend_tree_id': new Array(uniqueNameList.length).fill(that.generateUniqueId()),
+        'min_threshold': new Array(uniqueNameList.length).fill(0),
+        'max_threshold': new Array(uniqueNameList.length).fill(255),
       };
 
-      return animator_data;
+      return animatorData;
     }
 
-    function generate_animator_parameter(name: string): string {
+    function generateAnimatorParameter(name: string): string {
       const template = `
   - m_Name: ${name}
     m_Type: 1
@@ -419,11 +419,11 @@ export class GenerateUnityFiles {
       return template;
     }
 
-    function generate_animator_layer(name: string, animator_state_machine_id: string): string {
+    function generateAnimatorLayer(name: string, animatorStateMachineId: string): string {
       const template = `
   - serializedVersion: 5
     m_Name: ${name}
-    m_StateMachine: {fileID: ${animator_state_machine_id}}
+    m_StateMachine: {fileID: ${animatorStateMachineId}}
     m_Mask: {fileID: 0}
     m_Motions: []
     m_Behaviours: []
@@ -436,7 +436,7 @@ export class GenerateUnityFiles {
       return template;
     }
 
-    function generate_animator_controller(animator_paramaters: string, animator_layers: string) {
+    function generateAnimatorController(animatorParamaters: string, animatorLayers: string) {
       const template = `
 --- !u!91 &9100000
 AnimatorController:
@@ -446,14 +446,14 @@ AnimatorController:
   m_PrefabAsset: {fileID: 0}
   m_Name: FX
   serializedVersion: 5
-  m_AnimatorParameters:${animator_paramaters}
-  m_AnimatorLayers:${animator_layers}`;
+  m_AnimatorParameters:${animatorParamaters}
+  m_AnimatorLayers:${animatorLayers}`;
       return template;
     }
 
-    function generate_animator_state(animator_state_id: string, animator_state_transition_id: string, blend_tree_id: string) {
+    function generateAnimatorState(animatorStateId: string, animatorStateTransitionId: string, blendTreeId: string) {
       const template = `
---- !u!1102 &${animator_state_id}
+--- !u!1102 &${animatorStateId}
 AnimatorState:
   serializedVersion: 6
   m_ObjectHideFlags: 1
@@ -464,7 +464,7 @@ AnimatorState:
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions:
-  - {fileID: ${animator_state_transition_id}}
+  - {fileID: ${animatorStateTransitionId}}
   m_StateMachineBehaviours: []
   m_Position: {x: 50, y: 50, z: 0}
   m_IKOnFeet: 0
@@ -474,7 +474,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: ${blend_tree_id}}
+  m_Motion: {fileID: ${blendTreeId}}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
@@ -483,9 +483,9 @@ AnimatorState:
       return template;
     }
 
-    function generate_animator_state_machine(name: string, animator_state_machine_id: string, animator_state_id: string) {
+    function generateAnimatorStateMachine(name: string, animatorStateMachineId: string, animatorStateId: string) {
       const template = `
---- !u!1107 &${animator_state_machine_id}
+--- !u!1107 &${animatorStateMachineId}
 AnimatorStateMachine:
   serializedVersion: 6
   m_ObjectHideFlags: 1
@@ -495,7 +495,7 @@ AnimatorStateMachine:
   m_Name: ${name}
   m_ChildStates:
   - serializedVersion: 1
-    m_State: {fileID: ${animator_state_id}}
+    m_State: {fileID: ${animatorStateId}}
     m_Position: {x: 300, y: 120, z: 0}
   m_ChildStateMachines: []
   m_AnyStateTransitions: []
@@ -506,13 +506,13 @@ AnimatorStateMachine:
   m_EntryPosition: {x: 50, y: 120, z: 0}
   m_ExitPosition: {x: 600, y: 120, z: 0}
   m_ParentStateMachinePosition: {x: 600, y: 20, z: 0}
-  m_DefaultState: {fileID: ${animator_state_id}}`
+  m_DefaultState: {fileID: ${animatorStateId}}`
       return template;
     }
 
-    function generate_blend_tree(name: string, blend_tree_id: string, motion_start_guid: string, motion_end_guid: string, min_threshold: string, max_threshold: string) {
+    function generateBlendTree(name: string, blendTreeId: string, motionStartGuid: string, motionEndGuid: string, minThreshold: string, maxThreshold: string) {
       const template = `
---- !u!206 &${blend_tree_id}
+--- !u!206 &${blendTreeId}
 BlendTree:
   m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
@@ -521,16 +521,16 @@ BlendTree:
   m_Name: Blend Tree
   m_Childs:
   - serializedVersion: 2
-    m_Motion: {fileID: 7400000, guid: ${motion_start_guid}, type: 2}
-    m_Threshold: ${min_threshold}
+    m_Motion: {fileID: 7400000, guid: ${motionStartGuid}, type: 2}
+    m_Threshold: ${minThreshold}
     m_Position: {x: 0, y: 0}
     m_TimeScale: 1
     m_CycleOffset: 0
     m_DirectBlendParameter: {name}
     m_Mirror: 0
   - serializedVersion: 2
-    m_Motion: {fileID: 7400000, guid: ${motion_end_guid}, type: 2}
-    m_Threshold: ${max_threshold}
+    m_Motion: {fileID: 7400000, guid: ${motionEndGuid}, type: 2}
+    m_Threshold: ${maxThreshold}
     m_Position: {x: 0, y: 0}
     m_TimeScale: 1
     m_CycleOffset: 0
@@ -538,17 +538,17 @@ BlendTree:
     m_Mirror: 0
   m_BlendParameter: ${name}
   m_BlendParameterY: ${name}
-  m_MinThreshold: ${min_threshold}
-  m_MaxThreshold: ${max_threshold}
+  m_MinThreshold: ${minThreshold}
+  m_MaxThreshold: ${maxThreshold}
   m_UseAutomaticThresholds: 0
   m_NormalizedBlendValues: 0
   m_BlendType: 0`
       return template;
     }
 
-    function generate_animator_state_transition(animator_state_transition_id: string) {
+    function generateAnimatorStateTransition(animatorStateTransitionId: string) {
       const template = `
-    --- !u!1101 &${animator_state_transition_id}
+    --- !u!1101 &${animatorStateTransitionId}
     AnimatorStateTransition:
       m_ObjectHideFlags: 1
       m_CorrespondingSourceObject: {fileID: 0}
@@ -573,92 +573,92 @@ BlendTree:
       return template;
     }
 
-    const animatior_controller_output_path: string = this.outputExternalDirectory + "FX.controller";
-    const animatior_controller_meta_output_path: string = this.outputExternalDirectory + "FX.controller.meta";
+    const animatiorControllerOutputPath: string = this.outputExternalDirectory + "FX.controller";
+    const animatiorControllerMetaOutputPath: string = this.outputExternalDirectory + "FX.controller.meta";
 
 
-    this.copyFile(this.templateDirectory + "animator_controller_base.controller.meta", animatior_controller_meta_output_path);
-    this.replaceInFile(animatior_controller_meta_output_path, '__[REPLACEME]__', this.generateGuid());
+    this.copyFile(this.templateDirectory + "animator_controller_base.controller.meta", animatiorControllerMetaOutputPath);
+    this.replaceInFile(animatiorControllerMetaOutputPath, '__[REPLACEME]__', this.generateGuid());
 
-    this.copyFile(this.templateDirectory + "animator_controller_base.controller", animatior_controller_output_path);
-    const json_data = map_json_config(this.outputInternalDirectory + "data_mapped.json", this);
-
-
-    const animator_parameters: string = json_data['name'].map((name: string) => generate_animator_parameter(name)).join("");
-    const animator_layers: string = json_data['name'].map((name: string, index: number) => generate_animator_layer(name, json_data['animator_state_machine_id'][index]!)).join("");
-
-    this.appendToFile(animatior_controller_output_path, generate_animator_controller(animator_parameters, animator_layers));
+    this.copyFile(this.templateDirectory + "animator_controller_base.controller", animatiorControllerOutputPath);
+    const jsonData = mapJsonConfig(this.outputInternalDirectory + "data_mapped.json", this);
 
 
-    const animation_names: Array<string> = this.getFileNamesInDir(this.outputExternalDirectory + 'animations').filter((v: string) => v.includes('.meta'));
+    const animatorParameters: string = jsonData['name'].map((name: string) => generateAnimatorParameter(name)).join("");
+    const animatorLayers: string = jsonData['name'].map((name: string, index: number) => generateAnimatorLayer(name, jsonData['animator_state_machine_id'][index]!)).join("");
 
-    for (let i = 0; i < json_data['name'].length; i++) {
-      const name: string = json_data['name'][i]!;
-      const animator_state_machine_id: string = json_data['animator_state_machine_id'][i]!;
-      const animator_state_id: string = json_data['animator_state_id'][i]!;
-      const animator_state_transition_id: string = json_data['animator_state_transition_id'][i]!;
-      const blend_tree_id: string = json_data['blend_tree_id'][i]!;
-      const minT: string = json_data['min_threshold'][i]!;
-      const maxT: string = json_data['max_threshold'][i]!;
-      const found_string: Array<string> = animation_names.filter((v) => v.includes(v));
-      const motion_start_guid: string = this.findInFile(`${this.outputExternalDirectory}animations/${found_string.find(v => v.includes('_Start'))}`, /guid: ([a-f0-9]+)/g);
-      const motion_end_guid: string = this.findInFile(`${this.outputExternalDirectory}animations/${found_string.find(v => v.includes('_End'))}`, /guid: ([a-f0-9]+)/g);
+    this.appendToFile(animatiorControllerOutputPath, generateAnimatorController(animatorParameters, animatorLayers));
 
-      this.appendToFile(animatior_controller_output_path, generate_animator_state_machine(name, animator_state_machine_id, animator_state_id));
-      this.appendToFile(animatior_controller_output_path, generate_animator_state(animator_state_id, animator_state_transition_id, blend_tree_id));
-      this.appendToFile(animatior_controller_output_path, generate_animator_state_transition(animator_state_transition_id));
-      this.appendToFile(animatior_controller_output_path, generate_blend_tree(name, blend_tree_id, motion_start_guid, motion_end_guid, minT, maxT));
+
+    const animationNames: Array<string> = this.getFileNamesInDir(this.outputExternalDirectory + 'animations').filter((v: string) => v.includes('.meta'));
+
+    for (let i = 0; i < jsonData['name'].length; i++) {
+      const name: string = jsonData['name'][i]!;
+      const animatorStateMachineId: string = jsonData['animator_state_machine_id'][i]!;
+      const animatorStateId: string = jsonData['animator_state_id'][i]!;
+      const animatorStateTransitionId: string = jsonData['animator_state_transition_id'][i]!;
+      const blendTreeId: string = jsonData['blend_tree_id'][i]!;
+      const minT: string = jsonData['min_threshold'][i]!;
+      const maxT: string = jsonData['max_threshold'][i]!;
+      const foundString: Array<string> = animationNames.filter((v) => v.includes(v));
+      const motionStartGuid: string = this.findInFile(`${this.outputExternalDirectory}animations/${foundString.find(v => v.includes('_Start'))}`, /guid: ([a-f0-9]+)/g);
+      const motionEndGuid: string = this.findInFile(`${this.outputExternalDirectory}animations/${foundString.find(v => v.includes('_End'))}`, /guid: ([a-f0-9]+)/g);
+
+      this.appendToFile(animatiorControllerOutputPath, generateAnimatorStateMachine(name, animatorStateMachineId, animatorStateId));
+      this.appendToFile(animatiorControllerOutputPath, generateAnimatorState(animatorStateId, animatorStateTransitionId, blendTreeId));
+      this.appendToFile(animatiorControllerOutputPath, generateAnimatorStateTransition(animatorStateTransitionId));
+      this.appendToFile(animatiorControllerOutputPath, generateBlendTree(name, blendTreeId, motionStartGuid, motionEndGuid, minT, maxT));
     }
   }
 
   private generateShadersAndMaterials(): void {
     const data: Array<Array<string>> = JSON.parse(this.getFile(this.outputInternalDirectory + 'data_game_object_shader_parameter_map.json'));
-    for (const [key, values] of Object.entries(data)) {
-      const shader_properties: Array<string> = [];
-      const shader_variables: Array<string> = [];
-      const mat_floats: Array<string> = [];
-      const properties_lines: Array<string> = key.split(", ");
+    for (const [index, [key, values]] of Object.entries(data).entries()) {
+      const shaderProperties: Array<string> = [];
+      const shaderVariables: Array<string> = [];
+      const matFloats: Array<string> = [];
+      const propertiesLines: Array<string> = key.split(", ");
 
-      for (let i = 0; i < properties_lines.length; i++) {
-        const prop: string = properties_lines[i]!;
-        shader_properties.push(`_${prop} ("${prop}", Range(0,255)) = 0`);
-        shader_variables.push(`float _${prop};`);
-        mat_floats.push(`- _${prop}: 0`);
+      for (let i = 0; i < propertiesLines.length; i++) {
+        const prop: string = propertiesLines[i]!;
+        shaderProperties.push(`_${prop} ("${prop}", Range(0,255)) = 0`);
+        shaderVariables.push(`float _${prop};`);
+        matFloats.push(`- _${prop}: 0`);
 
         if (prop.includes('First')) {
           const text = prop.replace('First', '');
-          shader_properties.push(`_Index${text} ("Index${text}", Range(0,15)) = 0`);
-          shader_variables.push(`float _Index${text};`);
-          mat_floats.push(`- _Index${text}: 0`);
+          shaderProperties.push(`_Index${text} ("Index${text}", Range(0,15)) = 0`);
+          shaderVariables.push(`float _Index${text};`);
+          matFloats.push(`- _Index${text}: 0`);
         }
+      }
 
-        const shader_properties_string = shader_properties.sort().join("\n        ");
-        const shader_variables_string = shader_variables.sort().join("\n        ");
-        const mat_floats_string = mat_floats.sort().join("\n    ");
+      const shaderPropertiesString = shaderProperties.sort().join("\n        ");
+      const shaderVariablesString = shaderVariables.sort().join("\n        ");
+      const matFloatsString = matFloats.sort().join("\n    ");
 
-        const shader_file_path: string = this.outputExternalDirectory + `/materials/shader_${i + 1}.shader`;
-        const shader_meta_file_path: string = this.outputExternalDirectory + `/materials/shader_${i + 1}.shader.meta`;
-        const shader_guid: string = this.generateGuid();
+      const shaderFilePath: string = this.outputExternalDirectory + `/materials/shader_${index + 1}.shader`;
+      const shaderMetaFilePath: string = this.outputExternalDirectory + `/materials/shader_${index + 1}.shader.meta`;
+      const shaderGuid: string = this.generateGuid();
 
-        this.copyFile(this.templateDirectory + 'shader_base.shader', shader_file_path);
-        this.replaceInFile(shader_file_path, '__[REPLACEME_PROPERTIES]__', shader_properties_string);
-        this.replaceInFile(shader_file_path, '__[REPLACEME_VARIABLES]__', shader_variables_string);
+      this.copyFile(this.templateDirectory + 'shader_base.shader', shaderFilePath);
+      this.replaceInFile(shaderFilePath, '__[REPLACEME_PROPERTIES]__', shaderPropertiesString);
+      this.replaceInFile(shaderFilePath, '__[REPLACEME_VARIABLES]__', shaderVariablesString);
 
-        this.copyFile(this.templateDirectory + "shader_base.shader.meta", shader_meta_file_path);
-        this.replaceInFile(shader_meta_file_path, '__[REPLACEME]__', shader_guid);
+      this.copyFile(this.templateDirectory + "shader_base.shader.meta", shaderMetaFilePath);
+      this.replaceInFile(shaderMetaFilePath, '__[REPLACEME]__', shaderGuid);
 
-        for (const mat_name of values.map((s: string) => s.replace('/', '_'))) {
-          const mat_file_path: string = this.outputExternalDirectory + `/materials/${mat_name}.mat`;
-          const mat_file_meta_path: string = this.outputExternalDirectory + `/ materials / ${mat_name}.mat.meta`;
+      for (const mat_name of values.map((s: string) => s.replace('/', '_'))) {
+        const matFilePath: string = this.outputExternalDirectory + `/materials/${mat_name}.mat`;
+        const matFileMetaPath: string = this.outputExternalDirectory + `/ materials / ${mat_name}.mat.meta`;
 
-          this.copyFile(this.templateDirectory + 'shader_material_base.mat', mat_file_path);
-          this.replaceInFile(mat_file_path, '__[REPLACEME_MATERIAL_NAME]__', mat_name);
-          this.replaceInFile(mat_file_path, '__[SHADER_GUID]__', shader_guid);
-          this.replaceInFile(mat_file_path, '__[REPLACEME_FLOATS]__', mat_floats_string);
+        this.copyFile(this.templateDirectory + 'shader_material_base.mat', matFilePath);
+        this.replaceInFile(matFilePath, '__[REPLACEME_MATERIAL_NAME]__', mat_name);
+        this.replaceInFile(matFilePath, '__[SHADER_GUID]__', shaderGuid);
+        this.replaceInFile(matFilePath, '__[REPLACEME_FLOATS]__', matFloatsString);
 
-          this.copyFile(this.templateDirectory + 'shader_material_base.mat.meta', mat_file_meta_path);
-          this.replaceInFile(mat_file_meta_path, '__[REPLACEME]__', this.generateGuid());
-        }
+        this.copyFile(this.templateDirectory + 'shader_material_base.mat.meta', matFileMetaPath);
+        this.replaceInFile(matFileMetaPath, '__[REPLACEME]__', this.generateGuid());
       }
     }
   }
