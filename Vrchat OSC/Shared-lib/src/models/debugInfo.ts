@@ -4,11 +4,10 @@ export interface WebsocketWrapper {
   count: number;
 }
 
-
 export const defaultWebsocketWrapper = (value: string): WebsocketWrapper => {
   return {
     value: value,
     timestamp: new Date(),
     count: 0,
-  }
-}
+  };
+};

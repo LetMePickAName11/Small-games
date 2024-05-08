@@ -3,7 +3,7 @@ import { Subscription, tap } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { WebSocketService } from '../../../services/web-socket.service';
-import { Configuration } from '../../../models/configuration';
+import { Configuration } from 'shared-lib';
 
 @Component({
   selector: 'app-configure-configuration',

@@ -1,6 +1,6 @@
 // @ts-ignore
 import fs from 'fs-extra';
-import { BitAllocation } from './models/bit_allocation';
+import { BitAllocation, EightBitChunkName } from 'shared-lib';
 
 export class GenerateUnityFiles {
   public generateFiles(): void {
@@ -667,40 +667,7 @@ BlendTree:
   private readonly userInputDirectory: string = './configurations/user_defined_data/';
   private readonly outputInternalDirectory: string = './configurations/auto_generated_files_internal/';
   private readonly outputExternalDirectory: string = './configurations/auto_generated_files_external/';
-  private readonly bitIndexToEightBitName: Array<string> = [
-    '0_MSBEightBit',
-    '0_MSBMiddleEightBit',
-    '0_LSBMiddleEightBit',
-    '0_LSBEightBit',
-    '1_MSBEightBit',
-    '1_MSBMiddleEightBit',
-    '1_LSBMiddleEightBit',
-    '1_LSBEightBit',
-    '2_MSBEightBit',
-    '2_MSBMiddleEightBit',
-    '2_LSBMiddleEightBit',
-    '2_LSBEightBit',
-    '3_MSBEightBit',
-    '3_MSBMiddleEightBit',
-    '3_LSBMiddleEightBit',
-    '3_LSBEightBit',
-    '4_MSBEightBit',
-    '4_MSBMiddleEightBit',
-    '4_LSBMiddleEightBit',
-    '4_LSBEightBit',
-    '5_MSBEightBit',
-    '5_MSBMiddleEightBit',
-    '5_LSBMiddleEightBit',
-    '5_LSBEightBit',
-    '6_MSBEightBit',
-    '6_MSBMiddleEightBit',
-    '6_LSBMiddleEightBit',
-    '6_LSBEightBit',
-    '7_MSBEightBit',
-    '7_MSBMiddleEightBit',
-    '7_LSBMiddleEightBit',
-    '7_LSBEightBit'
-  ];
+  private readonly bitIndexToEightBitName: Array<string> = Object.keys(EightBitChunkName);
 }
 
 

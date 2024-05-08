@@ -1,10 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
-import { Configuration } from '../models/configuration';
 import { Socket, io } from 'socket.io-client';
-import { InputData } from '../models/inputData';
-import { WebsocketWrapper, defaultWebsocketWrapper } from '../models/debugInfo';
-import { WebsocketNames } from '../models/websocket';
+import { Configuration, InputData, WebsocketName, WebsocketNames, WebsocketWrapper, defaultWebsocketWrapper } from 'shared-lib';
 
 @Injectable({
   providedIn: 'root'
@@ -23,35 +20,33 @@ export class WebSocketService {
   private readonly socket: Socket;
 
   constructor() {
-    try {
-      this.socket = io('http://localhost:3000');
-      this.setupSocketConnections();
-
-    } catch (error) {
-      console.warn("Could not connect to socket server, defaulting to test mode for web sockets.")
-      this.socket = {
-        emit: (_: any) => { }
-      } as Socket;
-    }
+    this.socket = io('http://localhost:3000', {
+      reconnection: true,
+      reconnectionAttempts: 3,
+      reconnectionDelay: 2000,
+      reconnectionDelayMax: 5000,
+      randomizationFactor: 0.5
+    });
+    this.setupSocketConnections();
   }
 
   public async sendInputConfigurationUpdate(update: Array<string>): Promise<void> {
-    this.sendMessage(WebsocketNames.client_send_input_configuration_update, update);
+    this.sendMessage(WebsocketName.client_send_input_configuration_update, update);
     await this.waitForMilliseconds(300);
   }
 
   public async sendConfigurationUpdate(update: Array<Configuration>): Promise<void> {
-    this.sendMessage(WebsocketNames.client_send_configuration_update, update);
+    this.sendMessage(WebsocketName.client_send_configuration_update, update);
     await this.waitForMilliseconds(300);
   }
 
   public async sendMockOSCInput(data: string): Promise<void> {
-    this.sendMessage(WebsocketNames.client_send_mock_osc_input, data);
+    this.sendMessage(WebsocketName.client_send_mock_osc_input, data);
     await this.waitForMilliseconds(300);
   }
 
   public async sendRestartGame(): Promise<void> {
-    this.sendMessage(WebsocketNames.client_send_reset_game, '');
+    this.sendMessage(WebsocketName.client_send_reset_game, '');
     this.$latestDebugInfo.next(defaultWebsocketWrapper("Waiting for first debug info"));
     this.$latestgameState.next(defaultWebsocketWrapper("Waiting for first game state"));
     this.$cachedDebugInfo.next([]);
@@ -61,7 +56,7 @@ export class WebSocketService {
   }
 
   public async sendPauseGame(): Promise<void> {
-    this.sendMessage(WebsocketNames.client_send_pause_game, '');
+    this.sendMessage(WebsocketName.client_send_pause_game, '');
     await this.waitForMilliseconds(300);
   }
 
@@ -75,7 +70,7 @@ export class WebSocketService {
       console.log("Disconnected, socket ID was:", this.socket.id);
     });
 
-    this.socket.on(WebsocketNames.client_recieve_game_state, (message: string) => {
+    this.socket.on(WebsocketName.client_recieve_game_state, (message: string) => {
       console.log("Received client_recieve_game_state:", message);
       const prevVal: Array<WebsocketWrapper> = this.$cachedGameState.value;
       const packedInfo: WebsocketWrapper = { value: message, timestamp: new Date(), count: prevVal.length };
@@ -85,7 +80,7 @@ export class WebSocketService {
       this.$latestgameState.next(packedInfo);
     });
 
-    this.socket.on(WebsocketNames.client_recieve_debug_info, (message: string) => {
+    this.socket.on(WebsocketName.client_recieve_debug_info, (message: string) => {
       console.log("Received client_recieve_debug_info:", message);
       const prevVal: Array<WebsocketWrapper> = this.$cachedDebugInfo.value;
       const packedInfo: WebsocketWrapper = { value: message, timestamp: new Date(), count: prevVal.length };
@@ -95,7 +90,7 @@ export class WebSocketService {
       this.$latestDebugInfo.next(packedInfo);
     });
 
-    this.socket.on(WebsocketNames.client_recieve_osc_input, (message: string) => {
+    this.socket.on(WebsocketName.client_recieve_osc_input, (message: string) => {
       console.log("Received client_recieve_osc_input:", message);
       const prevVal = this.$cachedOscInput.value;
       const packedInfo: InputData = { value: message, timestamp: new Date(), id: Date.now() };
@@ -103,22 +98,22 @@ export class WebSocketService {
       this.$cachedOscInput.next([packedInfo, ...prevVal]);
     });
 
-    this.socket.on(WebsocketNames.client_recieve_configurations, (message: Array<Configuration>) => {
+    this.socket.on(WebsocketName.client_recieve_configurations, (message: Array<Configuration>) => {
       console.log("Received client_recieve_configurations:", message);
       this.$configuration.next(message);
     });
 
-    this.socket.on(WebsocketNames.client_recieve_input_configurations, (message: Array<string>) => {
+    this.socket.on(WebsocketName.client_recieve_input_configurations, (message: Array<string>) => {
       console.log("Received client_recieve_input_configurations:", message);
       this.$inputConfigurations.next(message);
     });
   }
 
   private fetchDataFromSocket(): void {
-    this.sendMessage(WebsocketNames.client_request_configurations, '');
-    this.sendMessage(WebsocketNames.client_request_debug_info, '');
-    this.sendMessage(WebsocketNames.client_request_game_state, '');
-    this.sendMessage(WebsocketNames.client_request_input_configurations, '');
+    this.sendMessage(WebsocketName.client_request_configurations, '');
+    this.sendMessage(WebsocketName.client_request_debug_info, '');
+    this.sendMessage(WebsocketName.client_request_game_state, '');
+    this.sendMessage(WebsocketName.client_request_input_configurations, '');
   }
 
   private sendMessage(name: WebsocketNames, message: string | object): void {

@@ -8,10 +8,9 @@ import cors from 'cors';
 // @ts-ignore
 import fs from 'fs-extra';
 import { OSCVrChatGameLogic } from './models/osc_vrchat_game_logic';
-import { BitAllocation } from './models/bit_allocation';
 import { GameLogicResponse } from './models/game_logic_response';
 import { SocketType } from './models/socket_type';
-import { EightBitChunkName, WebsocketNames } from './models/enums';
+import { BitAllocation, EightBitChunkName, EightBitChunkNames, WebsocketName } from 'shared-lib';
 
 // TODO
 // Better handling of read/write of inputs as they are currently saved without ! prefix but need it for testing
@@ -73,7 +72,7 @@ export class OSCVrChat {
     return string.substr(0, index) + replacement + string.substr(index + replacement.length);
   }
 
-  private piecePositionsToEightBitChunks(gameState: { [key in string]: number }): Array<{ name: EightBitChunkName, value: number }> {
+  private piecePositionsToEightBitChunks(gameState: { [key in string]: number }): Array<{ name: EightBitChunkNames, value: number }> {
     const chunkedBits = this.getAllocatedBits('noOverflow');
     let positionBitsString: string = ''.padStart(this.getAllocatedBitsSize(chunkedBits), '0');
     let currentIndex: number = 0;
@@ -84,11 +83,13 @@ export class OSCVrChat {
       currentIndex += bitAllocation.size;
     }
 
-    const bytes: Array<{ name: EightBitChunkName, value: number }> = [];
+    const bytes: Array<{ name: EightBitChunkNames, value: number }> = [];
     currentIndex = 0;
     for (let i = 0; i < positionBitsString.length; i += 8) {
-      const byteString: string = positionBitsString.substring(i, i + 8).padEnd(8, '0');
-      bytes.push({ name: this.bitIndexToEightBitName[`${currentIndex}`]!, value: parseInt(byteString, 2) });
+      const byteString: number = parseInt(positionBitsString.substring(i, i + 8).padEnd(8, '0'), 2);
+      const name: EightBitChunkNames = Object.keys(EightBitChunkName)[currentIndex] as EightBitChunkNames;
+
+      bytes.push({ name: name, value: byteString });
       currentIndex++;
     }
 
@@ -199,36 +200,36 @@ export class OSCVrChat {
       console.log(`Socket connected`);
       this.connectedSocket = socket;
 
-      socket.on(WebsocketNames.server_recieve_mock_osc_input, (v) => this.mockoscinput(v));
-      socket.on(WebsocketNames.server_recieve_input_configuration_update, (v) => this.updateinputconfiguration(socket, v));
-      socket.on(WebsocketNames.server_recieve_configuration_update, (v) => this.updateconfigurations(socket, v));
-      socket.on(WebsocketNames.server_recieve_pause_game, (_) => this.pausegame());
-      socket.on(WebsocketNames.server_recieve_reset_game, (_) => this.resetgame());
-      socket.on(WebsocketNames.server_recieve_debug_info, (_) => this.getdebuginfo());
-      socket.on(WebsocketNames.server_recieve_configurations, (_) => this.getconfigurations(socket));
-      socket.on(WebsocketNames.server_recieve_input_configurations, (_) => this.getinputconfiguration(socket));
-      socket.on(WebsocketNames.server_recieve_game_state, (_) => this.getgamestate());
+      socket.on(WebsocketName.server_recieve_mock_osc_input, (v) => this.mockoscinput(v));
+      socket.on(WebsocketName.server_recieve_input_configuration_update, (v) => this.updateinputconfiguration(socket, v));
+      socket.on(WebsocketName.server_recieve_configuration_update, (v) => this.updateconfigurations(socket, v));
+      socket.on(WebsocketName.server_recieve_pause_game, (_) => this.pausegame());
+      socket.on(WebsocketName.server_recieve_reset_game, (_) => this.resetgame());
+      socket.on(WebsocketName.server_recieve_debug_info, (_) => this.getdebuginfo());
+      socket.on(WebsocketName.server_recieve_configurations, (_) => this.getconfigurations(socket));
+      socket.on(WebsocketName.server_recieve_input_configurations, (_) => this.getinputconfiguration(socket));
+      socket.on(WebsocketName.server_recieve_game_state, (_) => this.getgamestate());
     });    
   }
 
   private getconfigurations(socket: SocketType): void {
     const configuration = JSON.parse(fs.readFileSync('configurations/auto_generated_files_internal/data_mapped.json', 'utf8'));
-    socket.emit(WebsocketNames.server_send_configurations, configuration);
+    socket.emit(WebsocketName.server_send_configurations, configuration);
   } 
 
   private getgamestate(): void {
-    this.connectedSocket?.emit(WebsocketNames.server_send_game_state, this.gameLogic.getState());
+    this.connectedSocket?.emit(WebsocketName.server_send_game_state, this.gameLogic.getState());
   } 
 
   private getdebuginfo(): void {
-    this.connectedSocket?.emit(WebsocketNames.server_send_debug_info, this.gameLogic.debugInfo());
+    this.connectedSocket?.emit(WebsocketName.server_send_debug_info, this.gameLogic.debugInfo());
   }
 
   private getinputconfiguration(socket: SocketType): void {
     const inputs = JSON.parse(fs.readFileSync('configurations/user_defined_data/input.json', 'utf8'))
     .map((input: string) => `!${input}`);
     
-    socket.emit(WebsocketNames.server_send_input_configurations, inputs);
+    socket.emit(WebsocketName.server_send_input_configurations, inputs);
   } 
 
   private mockoscinput(...args: any[]): void {
@@ -236,7 +237,7 @@ export class OSCVrChat {
   } 
 
   private sendoscinput(...args: any[]): void {
-    this.connectedSocket?.emit(WebsocketNames.server_send_osc_input, args[0]);
+    this.connectedSocket?.emit(WebsocketName.server_send_osc_input, args[0]);
   }
 
   private updateconfigurations(socket: SocketType, ...args: any[]): void {
@@ -275,40 +276,6 @@ export class OSCVrChat {
   private readonly gameLogicCreator: () => OSCVrChatGameLogic; 
   private readonly inputEventNames: Array<string>;
   private readonly bitAllocations: Array<BitAllocation>;
-  private readonly bitIndexToEightBitName: { [key in string]: EightBitChunkName } = {
-    '0': EightBitChunkName['0_MSBEightBit'],
-    '1': EightBitChunkName['0_MSBMiddleEightBit'],
-    '2': EightBitChunkName['0_LSBMiddleEightBit'],
-    '3': EightBitChunkName['0_LSBEightBit'],
-    '4': EightBitChunkName['1_MSBEightBit'],
-    '5': EightBitChunkName['1_MSBMiddleEightBit'],
-    '6': EightBitChunkName['1_LSBMiddleEightBit'],
-    '7': EightBitChunkName['1_LSBEightBit'],
-    '8': EightBitChunkName['2_MSBEightBit'],
-    '9': EightBitChunkName['2_MSBMiddleEightBit'],
-    '10': EightBitChunkName['2_LSBMiddleEightBit'],
-    '11': EightBitChunkName['2_LSBEightBit'],
-    '12': EightBitChunkName['3_MSBEightBit'],
-    '13': EightBitChunkName['3_MSBMiddleEightBit'],
-    '14': EightBitChunkName['3_LSBMiddleEightBit'],
-    '15': EightBitChunkName['3_LSBEightBit'],
-    '16': EightBitChunkName['4_MSBEightBit'],
-    '17': EightBitChunkName['4_MSBMiddleEightBit'],
-    '18': EightBitChunkName['4_LSBMiddleEightBit'],
-    '19': EightBitChunkName['4_LSBEightBit'],
-    '20': EightBitChunkName['5_MSBEightBit'],
-    '21': EightBitChunkName['5_MSBMiddleEightBit'],
-    '22': EightBitChunkName['5_LSBMiddleEightBit'],
-    '23': EightBitChunkName['5_LSBEightBit'],
-    '24': EightBitChunkName['6_MSBEightBit'],
-    '25': EightBitChunkName['6_MSBMiddleEightBit'],
-    '26': EightBitChunkName['6_LSBMiddleEightBit'],
-    '27': EightBitChunkName['6_LSBEightBit'],
-    '28': EightBitChunkName['7_MSBEightBit'],
-    '29': EightBitChunkName['7_MSBMiddleEightBit'],
-    '30': EightBitChunkName['7_LSBMiddleEightBit'],
-    '31': EightBitChunkName['7_LSBEightBit']
-  };
   private readonly bitAllocationConfigNames: Array<string>;
   private readonly express;
   private readonly server;

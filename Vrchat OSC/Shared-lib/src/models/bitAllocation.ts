@@ -1,4 +1,4 @@
-import { BitAllocationType } from "./enums";
+import { BitAllocationTypes } from "./enums";
 
 export interface BitAllocation {
   range: {
@@ -6,7 +6,7 @@ export interface BitAllocation {
     end: number;
   };
   size: number;
-  type: BitAllocationType;
+  type: BitAllocationTypes;
   name: string; // paramater name
   startName: string;
   endName: string;

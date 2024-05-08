@@ -3,8 +3,7 @@ import { animate, style, transition, trigger } from '@angular/animations';
 import { CommonModule } from '@angular/common';
 import { WebSocketService } from '../../services/web-socket.service';
 import { Subscription, tap } from 'rxjs';
-import { InputData } from '../../models/inputData';
-import { WebsocketWrapper, defaultWebsocketWrapper } from '../../models/debugInfo';
+import { InputData, WebsocketWrapper, defaultWebsocketWrapper } from 'shared-lib';
 
 @Component({
   selector: 'app-debug',
