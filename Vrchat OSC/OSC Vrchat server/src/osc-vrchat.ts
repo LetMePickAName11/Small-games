@@ -36,7 +36,12 @@ export class OSCVrChat {
       credentials: true
     };
 
-    this.express.use(cors(corsOptions))
+    this.express.use(cors(corsOptions));
+
+    this.express.get('/heartbeat', (_, res) => {
+      res.sendStatus(200);
+    });
+
     this.server = http.createServer(this.express);
     this.io = new Server(this.server, { cors: corsOptions });
     this.setupWebsocket();
