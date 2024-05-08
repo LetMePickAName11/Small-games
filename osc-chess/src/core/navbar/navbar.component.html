@@ -1,4 +1,5 @@
 <ul>
-  <li><a active routerLink="debug">Debug</a></li>
-  <li><a routerLink="configure">Configure</a></li>
+  <li *ngFor="let route of routes">
+    <a routerLinkActive="active-link" [routerLink]="route.path">{{route.text}}</a>
+  </li>
 </ul>

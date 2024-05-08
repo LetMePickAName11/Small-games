@@ -1,0 +1,19 @@
+<div class="container">
+  <h1>Configure-input works!</h1>
+  <div class="dot">
+    <div>
+      <label>
+        Input prefix
+        <input type="text" [(ngModel)]="prefix">
+      </label><label>
+        Amount of inputs
+        <input type="number" [(ngModel)]="myNumber" min="0" max="256" style="width: 30px;">
+      </label>
+      <button (click)="saveChanges()" [disabled]="savingButtonDisabled" style="margin: 0 auto; width: 25%;">Save changes</button>
+
+      <div style="display: flex; gap: 0.5rem; flex-direction: column; max-height: 50%; flex-wrap: wrap; padding: 1rem 0;">
+        <div *ngFor="let n of numSi; trackBy: trackByFunction" style="width: max-content;" @fadeIn>{{n}}</div>
+      </div>
+    </div>
+  </div>
+</div>

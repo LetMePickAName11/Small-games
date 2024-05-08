@@ -23,8 +23,16 @@ export class WebSocketService {
   private readonly socket: Socket;
 
   constructor() {
-    this.socket = io('http://localhost:3000');
-    this.setupSocketConnections();
+    try {
+      this.socket = io('http://localhost:3000');
+      this.setupSocketConnections();
+
+    } catch (error) {
+      console.warn("Could not connect to socket server, defaulting to test mode for web sockets.")
+      this.socket = {
+        emit: (_: any) => { }
+      } as Socket;
+    }
   }
 
   public async sendInputConfigurationUpdate(update: Array<string>): Promise<void> {
