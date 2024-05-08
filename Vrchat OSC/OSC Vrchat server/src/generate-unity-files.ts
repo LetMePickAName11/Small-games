@@ -11,7 +11,7 @@ export class GenerateUnityFiles {
     this.generateShadersAndMaterials();
   }
 
-  
+
 
   private generateUniqueId(): number {
     return Math.floor(Math.random() * (999999999 - 100000000 + 1)) + 100000000;
@@ -169,8 +169,8 @@ export class GenerateUnityFiles {
   }
 
   private generateAnimations(): void {
-    function mapJsonConfig(inputPath: string, that: any): Record<string, ShaderData> {
-      const data = JSON.parse(that.getFile(inputPath));
+    const mapJsonConfig = (inputPath: string): Record<string, ShaderData> => {
+      const data = JSON.parse(FileService.getFile(inputPath));
 
       const groupedData: Record<string, ShaderData> = {};
 
@@ -200,7 +200,7 @@ export class GenerateUnityFiles {
       return groupedData;
     }
 
-    function generateFloatCurve(value: number, attribute: string, path: string): string {
+    const generateFloatCurve = (value: number, attribute: string, path: string): string => {
       return `
       - serializedVersion: 2
         curve:
@@ -225,7 +225,7 @@ export class GenerateUnityFiles {
         flags: 16`;
     }
 
-    function generateGenericBinding(pathId: number, attributeId: number): string {
+    const generateGenericBinding = (pathId: number, attributeId: number): string => {
       return `
         - serializedVersion: 2
           path: ${pathId}
@@ -238,7 +238,7 @@ export class GenerateUnityFiles {
           isSerializeReferenceCurve: 0`;
     }
 
-    function generateEditorCurves(value: number, attribute: string, path: string): string {
+    const generateEditorCurves = (value: number, attribute: string, path: string): string => {
       return `
       - serializedVersion: 2
         curve:
@@ -263,7 +263,7 @@ export class GenerateUnityFiles {
         flags: 16`;
     }
 
-    function generateAnimationClip(name: string, floatCurves: string, genericBindings: string, editorCurves: string): string {
+    const generateAnimationClip = (name: string, floatCurves: string, genericBindings: string, editorCurves: string): string => {
       return `
     AnimationClip:
       m_ObjectHideFlags: 0
@@ -317,7 +317,7 @@ export class GenerateUnityFiles {
       m_Events: []`;
     }
 
-    const data: Record<string, ShaderData> = mapJsonConfig(this.outputInternalDirectory + 'data_mapped.json', this);
+    const data: Record<string, ShaderData> = mapJsonConfig(this.outputInternalDirectory + 'data_mapped.json');
 
     for (const [key, value] of Object.entries(data)) {
       const nameBase: string = key.split(key.includes('_start') ? '_start' : '_end').slice(0, -1).join('_');
@@ -342,8 +342,8 @@ export class GenerateUnityFiles {
   }
 
   private generateAnimatorController(): void {
-    function mapJsonConfig(input_path: string, that: any) {
-      const data: Array<{ startName: string, endName: string }> = JSON.parse(that.getFile(input_path));
+    const mapJsonConfig = (input_path: string) => {
+      const data: Array<{ startName: string, endName: string }> = JSON.parse(FileService.getFile(input_path));
       const uniqueNames: Set<string> = new Set();
 
       for (const item of data) {
@@ -355,10 +355,10 @@ export class GenerateUnityFiles {
 
       const animatorData: D = {
         'name': uniqueNameList,
-        'animator_state_machine_id': new Array(uniqueNameList.length).fill(that.generateUniqueId()),
-        'animator_state_id': new Array(uniqueNameList.length).fill(that.generateUniqueId()),
-        'animator_state_transition_id': new Array(uniqueNameList.length).fill(that.generateUniqueId()),
-        'blend_tree_id': new Array(uniqueNameList.length).fill(that.generateUniqueId()),
+        'animator_state_machine_id': new Array(uniqueNameList.length).fill(this.generateUniqueId()),
+        'animator_state_id': new Array(uniqueNameList.length).fill(this.generateUniqueId()),
+        'animator_state_transition_id': new Array(uniqueNameList.length).fill(this.generateUniqueId()),
+        'blend_tree_id': new Array(uniqueNameList.length).fill(this.generateUniqueId()),
         'min_threshold': new Array(uniqueNameList.length).fill(0),
         'max_threshold': new Array(uniqueNameList.length).fill(255),
       };
@@ -366,7 +366,7 @@ export class GenerateUnityFiles {
       return animatorData;
     }
 
-    function generateAnimatorParameter(name: string): string {
+    const generateAnimatorParameter = (name: string): string => {
       const template = `
   - m_Name: ${name}
     m_Type: 1
@@ -377,7 +377,7 @@ export class GenerateUnityFiles {
       return template;
     }
 
-    function generateAnimatorLayer(name: string, animatorStateMachineId: string): string {
+    const generateAnimatorLayer = (name: string, animatorStateMachineId: string): string => {
       const template = `
   - serializedVersion: 5
     m_Name: ${name}
@@ -394,7 +394,7 @@ export class GenerateUnityFiles {
       return template;
     }
 
-    function generateAnimatorController(animatorParamaters: string, animatorLayers: string) {
+    const generateAnimatorController = (animatorParamaters: string, animatorLayers: string) => {
       const template = `
 --- !u!91 &9100000
 AnimatorController:
@@ -409,7 +409,7 @@ AnimatorController:
       return template;
     }
 
-    function generateAnimatorState(animatorStateId: string, animatorStateTransitionId: string, blendTreeId: string) {
+    const generateAnimatorState = (animatorStateId: string, animatorStateTransitionId: string, blendTreeId: string) => {
       const template = `
 --- !u!1102 &${animatorStateId}
 AnimatorState:
@@ -441,7 +441,7 @@ AnimatorState:
       return template;
     }
 
-    function generateAnimatorStateMachine(name: string, animatorStateMachineId: string, animatorStateId: string) {
+    const generateAnimatorStateMachine = (name: string, animatorStateMachineId: string, animatorStateId: string) => {
       const template = `
 --- !u!1107 &${animatorStateMachineId}
 AnimatorStateMachine:
@@ -468,7 +468,7 @@ AnimatorStateMachine:
       return template;
     }
 
-    function generateBlendTree(name: string, blendTreeId: string, motionStartGuid: string, motionEndGuid: string, minThreshold: string, maxThreshold: string) {
+    const generateBlendTree = (name: string, blendTreeId: string, motionStartGuid: string, motionEndGuid: string, minThreshold: string, maxThreshold: string) => {
       const template = `
 --- !u!206 &${blendTreeId}
 BlendTree:
@@ -504,7 +504,7 @@ BlendTree:
       return template;
     }
 
-    function generateAnimatorStateTransition(animatorStateTransitionId: string) {
+    const generateAnimatorStateTransition = (animatorStateTransitionId: string) => {
       const template = `
     --- !u!1101 &${animatorStateTransitionId}
     AnimatorStateTransition:
@@ -539,7 +539,7 @@ BlendTree:
     FileService.replaceInFile(animatiorControllerMetaOutputPath, '__[REPLACEME]__', this.generateGuid());
 
     FileService.copyFile(this.templateDirectory + 'animator_controller_base.controller', animatiorControllerOutputPath);
-    const jsonData = mapJsonConfig(this.outputInternalDirectory + 'data_mapped.json', this);
+    const jsonData = mapJsonConfig(this.outputInternalDirectory + 'data_mapped.json');
 
 
     const animatorParameters: string = jsonData['name'].map((name: string) => generateAnimatorParameter(name)).join('');
