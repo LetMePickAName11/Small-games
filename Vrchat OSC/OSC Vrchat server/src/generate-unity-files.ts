@@ -5,8 +5,8 @@ export class GenerateUnityFiles {
   public generateFiles(): void {
     this.generateDataMapped();
     this.generateGameObjectMap();
-    this.generateAnimations();
     this.generateVrcExpressionParamters();
+    this.generateAnimations();
     this.generateAnimatorController();
     this.generateShadersAndMaterials();
   }
@@ -106,8 +106,8 @@ export class GenerateUnityFiles {
     FileService.writeToFile(this.outputInternalDirectory + 'data_mapped.json', bitAllocations);
   }
 
-  private generateAnimations(): void {
-    const b = (name: string, valueType: number, saved: number, defaultValue: number, networkSynced: number) => {
+  private generateVrcExpressionParamters(): void {
+    const createParamter = (name: string, valueType: number, saved: number, defaultValue: number, networkSynced: number) => {
       return `
   - name: ${name}
     valueType: ${valueType}
@@ -116,7 +116,7 @@ export class GenerateUnityFiles {
     networkSynced: ${networkSynced}`;
     };
 
-    const c = (input: string) => {
+    const mapDataToParamters = (input: string) => {
       const data = JSON.parse(FileService.getFile(input));
       const chunks: Array<string> = [];
       const overflows: Array<string> = [];
@@ -138,7 +138,7 @@ export class GenerateUnityFiles {
       return chunks.map((chunk) => {
         return {
           name: chunk,
-          valueType: 0,
+          valueType: 0, // 0 == 8-bit integer
           saved: 0,
           defaultValue: 0,
           networkSynced: 1
@@ -146,7 +146,7 @@ export class GenerateUnityFiles {
       }).concat(overflows.map((overflow) => {
         return {
           name: overflow,
-          valueType: 1,
+          valueType: 2, // 2 == boolean
           saved: 0,
           defaultValue: 0,
           networkSynced: 1
@@ -158,17 +158,17 @@ export class GenerateUnityFiles {
     const outputPath = this.outputExternalDirectory + 'vrchat/VRCExpressionParameters.asset';
     const outputMetaPath = this.outputExternalDirectory + 'vrchat/VRCExpressionParameters.asset.meta';
 
-    FileService.copyFile(this.templateDirectory + "animator_controller_base.controller.meta", outputMetaPath);
+    FileService.copyFile(this.templateDirectory + 'animator_controller_base.controller.meta', outputMetaPath);
     FileService.replaceInFile(outputMetaPath, '__[REPLACEME]__', this.generateGuid());
 
     FileService.copyFile(this.templateDirectory + 'vrc_expression_parameters.asset', outputPath);
 
-    for (const row of c(this.outputInternalDirectory + 'data_mapped.json')) {
-      FileService.appendToFile(outputPath, b(row.name, row.valueType, row.saved, row.defaultValue, row.networkSynced));
+    for (const row of mapDataToParamters(this.outputInternalDirectory + 'data_mapped.json')) {
+      FileService.appendToFile(outputPath, createParamter(row.name, row.valueType, row.saved, row.defaultValue, row.networkSynced));
     }
   }
 
-  private generateVrcExpressionParamters(): void {
+  private generateAnimations(): void {
     function mapJsonConfig(inputPath: string, that: any): Record<string, ShaderData> {
       const data = JSON.parse(that.getFile(inputPath));
 
@@ -320,7 +320,7 @@ export class GenerateUnityFiles {
     const data: Record<string, ShaderData> = mapJsonConfig(this.outputInternalDirectory + 'data_mapped.json', this);
 
     for (const [key, value] of Object.entries(data)) {
-      const nameBase: string = key.split(key.includes("_start") ? "_start" : "_end").slice(0, -1).join("_");
+      const nameBase: string = key.split(key.includes('_start') ? '_start' : '_end').slice(0, -1).join('_');
 
       ['Start', 'End'].forEach((suffix: string) => {
         const defaultValue: number = suffix === 'Start' ? 0 : 255;
@@ -328,14 +328,14 @@ export class GenerateUnityFiles {
         const pathId: number = this.generateUniqueId();
         const outputPath: string = `${this.outputExternalDirectory}animations/${nameBase}_${suffix}.anim`;
         const outputMetaPath: string = `${this.outputExternalDirectory}animations/${nameBase}_${suffix}.anim.meta`;
-        const floatCurves: string = value.objectNames.flatMap((path: string) => Array.from(value.shaderParameters).map((attribute: string) => generateFloatCurve(defaultValue, attribute, path))).join("");
-        const genericBindings: string = new Array(value.objectNames.length * value.shaderParameters.size).fill(generateGenericBinding(pathId, attributeId)).join("");
-        const editorCurves: string = value.objectNames.flatMap((path: string) => Array.from(value.shaderParameters).map((attribute: string) => generateEditorCurves(defaultValue, attribute, path))).join("");
+        const floatCurves: string = value.objectNames.flatMap((path: string) => Array.from(value.shaderParameters).map((attribute: string) => generateFloatCurve(defaultValue, attribute, path))).join('');
+        const genericBindings: string = new Array(value.objectNames.length * value.shaderParameters.size).fill(generateGenericBinding(pathId, attributeId)).join('');
+        const editorCurves: string = value.objectNames.flatMap((path: string) => Array.from(value.shaderParameters).map((attribute: string) => generateEditorCurves(defaultValue, attribute, path))).join('');
 
-        FileService.copyFile(this.templateDirectory + "animation_base.anim", outputPath);
+        FileService.copyFile(this.templateDirectory + 'animation_base.anim', outputPath);
         FileService.appendToFile(outputPath, generateAnimationClip(`${nameBase}_${suffix}`, floatCurves, genericBindings, editorCurves));
 
-        FileService.copyFile(this.templateDirectory + "animation_base.anim.meta", outputMetaPath);
+        FileService.copyFile(this.templateDirectory + 'animation_base.anim.meta', outputMetaPath);
         FileService.replaceInFile(outputMetaPath, '__[REPLACEME]__', this.generateGuid());
       });
     }
@@ -531,19 +531,19 @@ BlendTree:
       return template;
     }
 
-    const animatiorControllerOutputPath: string = this.outputExternalDirectory + "FX.controller";
-    const animatiorControllerMetaOutputPath: string = this.outputExternalDirectory + "FX.controller.meta";
+    const animatiorControllerOutputPath: string = this.outputExternalDirectory + 'FX.controller';
+    const animatiorControllerMetaOutputPath: string = this.outputExternalDirectory + 'FX.controller.meta';
 
 
-    FileService.copyFile(this.templateDirectory + "animator_controller_base.controller.meta", animatiorControllerMetaOutputPath);
+    FileService.copyFile(this.templateDirectory + 'animator_controller_base.controller.meta', animatiorControllerMetaOutputPath);
     FileService.replaceInFile(animatiorControllerMetaOutputPath, '__[REPLACEME]__', this.generateGuid());
 
-    FileService.copyFile(this.templateDirectory + "animator_controller_base.controller", animatiorControllerOutputPath);
-    const jsonData = mapJsonConfig(this.outputInternalDirectory + "data_mapped.json", this);
+    FileService.copyFile(this.templateDirectory + 'animator_controller_base.controller', animatiorControllerOutputPath);
+    const jsonData = mapJsonConfig(this.outputInternalDirectory + 'data_mapped.json', this);
 
 
-    const animatorParameters: string = jsonData['name'].map((name: string) => generateAnimatorParameter(name)).join("");
-    const animatorLayers: string = jsonData['name'].map((name: string, index: number) => generateAnimatorLayer(name, jsonData['animator_state_machine_id'][index]!)).join("");
+    const animatorParameters: string = jsonData['name'].map((name: string) => generateAnimatorParameter(name)).join('');
+    const animatorLayers: string = jsonData['name'].map((name: string, index: number) => generateAnimatorLayer(name, jsonData['animator_state_machine_id'][index]!)).join('');
 
     FileService.appendToFile(animatiorControllerOutputPath, generateAnimatorController(animatorParameters, animatorLayers));
 
@@ -575,25 +575,25 @@ BlendTree:
       const shaderProperties: Array<string> = [];
       const shaderVariables: Array<string> = [];
       const matFloats: Array<string> = [];
-      const propertiesLines: Array<string> = key.split(", ");
+      const propertiesLines: Array<string> = key.split(', ');
 
       for (let i = 0; i < propertiesLines.length; i++) {
         const prop: string = propertiesLines[i]!;
-        shaderProperties.push(`_${prop} ("${prop}", Range(0,255)) = 0`);
+        shaderProperties.push(`_${prop} ('${prop}', Range(0,255)) = 0`);
         shaderVariables.push(`float _${prop};`);
         matFloats.push(`- _${prop}: 0`);
 
         if (prop.includes('First')) {
           const text = prop.replace('First', '');
-          shaderProperties.push(`_Index${text} ("Index${text}", Range(0,15)) = 0`);
+          shaderProperties.push(`_Index${text} ('Index${text}', Range(0,15)) = 0`);
           shaderVariables.push(`float _Index${text};`);
           matFloats.push(`- _Index${text}: 0`);
         }
       }
 
-      const shaderPropertiesString = shaderProperties.sort().join("\n        ");
-      const shaderVariablesString = shaderVariables.sort().join("\n        ");
-      const matFloatsString = matFloats.sort().join("\n    ");
+      const shaderPropertiesString = shaderProperties.sort().join('\n        ');
+      const shaderVariablesString = shaderVariables.sort().join('\n        ');
+      const matFloatsString = matFloats.sort().join('\n    ');
 
       const shaderFilePath: string = this.outputExternalDirectory + `/materials/shader_${index + 1}.shader`;
       const shaderMetaFilePath: string = this.outputExternalDirectory + `/materials/shader_${index + 1}.shader.meta`;
@@ -603,7 +603,7 @@ BlendTree:
       FileService.replaceInFile(shaderFilePath, '__[REPLACEME_PROPERTIES]__', shaderPropertiesString);
       FileService.replaceInFile(shaderFilePath, '__[REPLACEME_VARIABLES]__', shaderVariablesString);
 
-      FileService.copyFile(this.templateDirectory + "shader_base.shader.meta", shaderMetaFilePath);
+      FileService.copyFile(this.templateDirectory + 'shader_base.shader.meta', shaderMetaFilePath);
       FileService.replaceInFile(shaderMetaFilePath, '__[REPLACEME]__', shaderGuid);
 
       for (const matName of values.map((s: string) => s.replace('/', '_'))) {
