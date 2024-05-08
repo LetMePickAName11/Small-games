@@ -1,6 +1,5 @@
-// @ts-ignore
-import fs from 'fs-extra';
 import { BitAllocation, EightBitChunkName } from 'shared-lib';
+import { FileService } from './file-service';
 
 export class GenerateUnityFiles {
   public generateFiles(): void {
@@ -12,46 +11,7 @@ export class GenerateUnityFiles {
     this.generateShadersAndMaterials();
   }
 
-  private getFile(path: string): string {
-    return fs.readFileSync(path, 'utf8');
-  }
-
-  private writeToFile(path: string, val: string | object): void {
-    const content = typeof val === 'string' ? val : JSON.stringify(val, null, 2);
-    fs.outputFileSync(path, content);
-  }
-
-  private copyFile(sourcePath: string, destinationPath: string): void {
-    fs.copySync(sourcePath, destinationPath);
-  }
-
-  private createFile(path: string): void {
-    fs.ensureFileSync(path);
-  }
-
-  private appendToFile(path: string, data: string): void {
-    fs.appendFileSync(path, data);
-  }
-
-  private getFileNamesInDir(directoryPath: string): Array<string> {
-    return fs.readdirSync(directoryPath);
-  }
-
-  private findInFile(path: string, regex: RegExp): string {
-    const data = this.getFile(path);
-    const matches = data.match(regex) || [];
-
-    if (matches.length > 1) {
-      throw Error(`Too many matches in findInFile ${path} | ${regex}`);
-    }
-
-    return matches.pop()!;
-  }
-
-  private replaceInFile(path: string, placeholder: string, replacement: string): void {
-    const content = this.getFile(path).replace(placeholder, replacement);
-    fs.outputFileSync(path, content);
-  }
+  
 
   private generateUniqueId(): number {
     return Math.floor(Math.random() * (999999999 - 100000000 + 1)) + 100000000;
@@ -66,12 +26,11 @@ export class GenerateUnityFiles {
   }
 
   private generateGameObjectMap(): void {
-    this.createFile(this.outputInternalDirectory + 'data_game_object_shader_parameter_map.json');
     const gameObjectToShaders: GameObjectToShaders = {};
     const shaderToGameObjectMap: ShaderToGameObjectMap = {};
 
     // Read the JSON data from the file
-    const entries: Entry[] = JSON.parse(this.getFile(this.outputInternalDirectory + 'data_mapped.json'));
+    const entries: Entry[] = JSON.parse(FileService.getFile(this.outputInternalDirectory + 'data_mapped.json'));
 
     // First, map each game object to all its shader parameters
     for (const entry of entries) {
@@ -103,14 +62,13 @@ export class GenerateUnityFiles {
       Object.entries(shaderToGameObjectMap).map(([key, value]) => [key, value.sort()])
     );
 
-    this.writeToFile(this.outputInternalDirectory + 'data_game_object_shader_parameter_map.json', finalMap);
+    FileService.writeToFile(this.outputInternalDirectory + 'data_game_object_shader_parameter_map.json', finalMap);
   }
 
   private generateDataMapped(): void {
-    this.createFile(this.outputInternalDirectory + 'data_mapped.json');
     let startIndex: number = 0;
     const bitAllocations: Array<BitAllocation> = [];
-    const data: Array<BitAllocation> = JSON.parse(this.getFile(this.userInputDirectory + 'data.json'))
+    const data: Array<BitAllocation> = JSON.parse(FileService.getFile(this.userInputDirectory + 'data.json'))
     for (const bitAllocation of data) {
       const range: { start: number, end: number } = {
         'start': startIndex,
@@ -145,7 +103,7 @@ export class GenerateUnityFiles {
       throw new Error(`Too many bits allocated (limit 256): ${allocatedBitsSize}`)
     }
 
-    this.writeToFile(this.outputInternalDirectory + 'data_mapped.json', bitAllocations);
+    FileService.writeToFile(this.outputInternalDirectory + 'data_mapped.json', bitAllocations);
   }
 
   private generateAnimations(): void {
@@ -159,7 +117,7 @@ export class GenerateUnityFiles {
     };
 
     const c = (input: string) => {
-      const data = JSON.parse(this.getFile(input));
+      const data = JSON.parse(FileService.getFile(input));
       const chunks: Array<string> = [];
       const overflows: Array<string> = [];
 
@@ -200,13 +158,13 @@ export class GenerateUnityFiles {
     const outputPath = this.outputExternalDirectory + 'vrchat/VRCExpressionParameters.asset';
     const outputMetaPath = this.outputExternalDirectory + 'vrchat/VRCExpressionParameters.asset.meta';
 
-    this.copyFile(this.templateDirectory + "animator_controller_base.controller.meta", outputMetaPath);
-    this.replaceInFile(outputMetaPath, '__[REPLACEME]__', this.generateGuid());
+    FileService.copyFile(this.templateDirectory + "animator_controller_base.controller.meta", outputMetaPath);
+    FileService.replaceInFile(outputMetaPath, '__[REPLACEME]__', this.generateGuid());
 
-    this.copyFile(this.templateDirectory + 'vrc_expression_parameters.asset', outputPath);
+    FileService.copyFile(this.templateDirectory + 'vrc_expression_parameters.asset', outputPath);
 
     for (const row of c(this.outputInternalDirectory + 'data_mapped.json')) {
-      this.appendToFile(outputPath, b(row.name, row.valueType, row.saved, row.defaultValue, row.networkSynced));
+      FileService.appendToFile(outputPath, b(row.name, row.valueType, row.saved, row.defaultValue, row.networkSynced));
     }
   }
 
@@ -374,11 +332,11 @@ export class GenerateUnityFiles {
         const genericBindings: string = new Array(value.objectNames.length * value.shaderParameters.size).fill(generateGenericBinding(pathId, attributeId)).join("");
         const editorCurves: string = value.objectNames.flatMap((path: string) => Array.from(value.shaderParameters).map((attribute: string) => generateEditorCurves(defaultValue, attribute, path))).join("");
 
-        this.copyFile(this.templateDirectory + "animation_base.anim", outputPath);
-        this.appendToFile(outputPath, generateAnimationClip(`${nameBase}_${suffix}`, floatCurves, genericBindings, editorCurves));
+        FileService.copyFile(this.templateDirectory + "animation_base.anim", outputPath);
+        FileService.appendToFile(outputPath, generateAnimationClip(`${nameBase}_${suffix}`, floatCurves, genericBindings, editorCurves));
 
-        this.copyFile(this.templateDirectory + "animation_base.anim.meta", outputMetaPath);
-        this.replaceInFile(outputMetaPath, '__[REPLACEME]__', this.generateGuid());
+        FileService.copyFile(this.templateDirectory + "animation_base.anim.meta", outputMetaPath);
+        FileService.replaceInFile(outputMetaPath, '__[REPLACEME]__', this.generateGuid());
       });
     }
   }
@@ -577,20 +535,20 @@ BlendTree:
     const animatiorControllerMetaOutputPath: string = this.outputExternalDirectory + "FX.controller.meta";
 
 
-    this.copyFile(this.templateDirectory + "animator_controller_base.controller.meta", animatiorControllerMetaOutputPath);
-    this.replaceInFile(animatiorControllerMetaOutputPath, '__[REPLACEME]__', this.generateGuid());
+    FileService.copyFile(this.templateDirectory + "animator_controller_base.controller.meta", animatiorControllerMetaOutputPath);
+    FileService.replaceInFile(animatiorControllerMetaOutputPath, '__[REPLACEME]__', this.generateGuid());
 
-    this.copyFile(this.templateDirectory + "animator_controller_base.controller", animatiorControllerOutputPath);
+    FileService.copyFile(this.templateDirectory + "animator_controller_base.controller", animatiorControllerOutputPath);
     const jsonData = mapJsonConfig(this.outputInternalDirectory + "data_mapped.json", this);
 
 
     const animatorParameters: string = jsonData['name'].map((name: string) => generateAnimatorParameter(name)).join("");
     const animatorLayers: string = jsonData['name'].map((name: string, index: number) => generateAnimatorLayer(name, jsonData['animator_state_machine_id'][index]!)).join("");
 
-    this.appendToFile(animatiorControllerOutputPath, generateAnimatorController(animatorParameters, animatorLayers));
+    FileService.appendToFile(animatiorControllerOutputPath, generateAnimatorController(animatorParameters, animatorLayers));
 
 
-    const animationNames: Array<string> = this.getFileNamesInDir(this.outputExternalDirectory + 'animations').filter((v: string) => v.includes('.meta'));
+    const animationNames: Array<string> = FileService.getFileNamesInDir(this.outputExternalDirectory + 'animations').filter((v: string) => v.includes('.meta'));
 
     for (let i = 0; i < jsonData['name'].length; i++) {
       const name: string = jsonData['name'][i]!;
@@ -601,18 +559,18 @@ BlendTree:
       const minT: string = jsonData['min_threshold'][i]!;
       const maxT: string = jsonData['max_threshold'][i]!;
       const foundString: Array<string> = animationNames.filter((v) => v.includes(v));
-      const motionStartGuid: string = this.findInFile(`${this.outputExternalDirectory}animations/${foundString.find(v => v.includes('_Start'))}`, /guid: ([a-f0-9]+)/g);
-      const motionEndGuid: string = this.findInFile(`${this.outputExternalDirectory}animations/${foundString.find(v => v.includes('_End'))}`, /guid: ([a-f0-9]+)/g);
+      const motionStartGuid: string = FileService.findInFile(`${this.outputExternalDirectory}animations/${foundString.find(v => v.includes('_Start'))}`, /guid: ([a-f0-9]+)/g);
+      const motionEndGuid: string = FileService.findInFile(`${this.outputExternalDirectory}animations/${foundString.find(v => v.includes('_End'))}`, /guid: ([a-f0-9]+)/g);
 
-      this.appendToFile(animatiorControllerOutputPath, generateAnimatorStateMachine(name, animatorStateMachineId, animatorStateId));
-      this.appendToFile(animatiorControllerOutputPath, generateAnimatorState(animatorStateId, animatorStateTransitionId, blendTreeId));
-      this.appendToFile(animatiorControllerOutputPath, generateAnimatorStateTransition(animatorStateTransitionId));
-      this.appendToFile(animatiorControllerOutputPath, generateBlendTree(name, blendTreeId, motionStartGuid, motionEndGuid, minT, maxT));
+      FileService.appendToFile(animatiorControllerOutputPath, generateAnimatorStateMachine(name, animatorStateMachineId, animatorStateId));
+      FileService.appendToFile(animatiorControllerOutputPath, generateAnimatorState(animatorStateId, animatorStateTransitionId, blendTreeId));
+      FileService.appendToFile(animatiorControllerOutputPath, generateAnimatorStateTransition(animatorStateTransitionId));
+      FileService.appendToFile(animatiorControllerOutputPath, generateBlendTree(name, blendTreeId, motionStartGuid, motionEndGuid, minT, maxT));
     }
   }
 
   private generateShadersAndMaterials(): void {
-    const data: Array<Array<string>> = JSON.parse(this.getFile(this.outputInternalDirectory + 'data_game_object_shader_parameter_map.json'));
+    const data: Array<Array<string>> = JSON.parse(FileService.getFile(this.outputInternalDirectory + 'data_game_object_shader_parameter_map.json'));
     for (const [index, [key, values]] of Object.entries(data).entries()) {
       const shaderProperties: Array<string> = [];
       const shaderVariables: Array<string> = [];
@@ -641,24 +599,24 @@ BlendTree:
       const shaderMetaFilePath: string = this.outputExternalDirectory + `/materials/shader_${index + 1}.shader.meta`;
       const shaderGuid: string = this.generateGuid();
 
-      this.copyFile(this.templateDirectory + 'shader_base.shader', shaderFilePath);
-      this.replaceInFile(shaderFilePath, '__[REPLACEME_PROPERTIES]__', shaderPropertiesString);
-      this.replaceInFile(shaderFilePath, '__[REPLACEME_VARIABLES]__', shaderVariablesString);
+      FileService.copyFile(this.templateDirectory + 'shader_base.shader', shaderFilePath);
+      FileService.replaceInFile(shaderFilePath, '__[REPLACEME_PROPERTIES]__', shaderPropertiesString);
+      FileService.replaceInFile(shaderFilePath, '__[REPLACEME_VARIABLES]__', shaderVariablesString);
 
-      this.copyFile(this.templateDirectory + "shader_base.shader.meta", shaderMetaFilePath);
-      this.replaceInFile(shaderMetaFilePath, '__[REPLACEME]__', shaderGuid);
+      FileService.copyFile(this.templateDirectory + "shader_base.shader.meta", shaderMetaFilePath);
+      FileService.replaceInFile(shaderMetaFilePath, '__[REPLACEME]__', shaderGuid);
 
       for (const matName of values.map((s: string) => s.replace('/', '_'))) {
         const matFilePath: string = this.outputExternalDirectory + `/materials/${matName}.mat`;
         const matFileMetaPath: string = this.outputExternalDirectory + `/ materials / ${matName}.mat.meta`;
 
-        this.copyFile(this.templateDirectory + 'shader_material_base.mat', matFilePath);
-        this.replaceInFile(matFilePath, '__[REPLACEME_MATERIAL_NAME]__', matName);
-        this.replaceInFile(matFilePath, '__[SHADER_GUID]__', shaderGuid);
-        this.replaceInFile(matFilePath, '__[REPLACEME_FLOATS]__', matFloatsString);
+        FileService.copyFile(this.templateDirectory + 'shader_material_base.mat', matFilePath);
+        FileService.replaceInFile(matFilePath, '__[REPLACEME_MATERIAL_NAME]__', matName);
+        FileService.replaceInFile(matFilePath, '__[SHADER_GUID]__', shaderGuid);
+        FileService.replaceInFile(matFilePath, '__[REPLACEME_FLOATS]__', matFloatsString);
 
-        this.copyFile(this.templateDirectory + 'shader_material_base.mat.meta', matFileMetaPath);
-        this.replaceInFile(matFileMetaPath, '__[REPLACEME]__', this.generateGuid());
+        FileService.copyFile(this.templateDirectory + 'shader_material_base.mat.meta', matFileMetaPath);
+        FileService.replaceInFile(matFileMetaPath, '__[REPLACEME]__', this.generateGuid());
       }
     }
   }

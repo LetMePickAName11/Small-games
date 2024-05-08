@@ -1,16 +1,15 @@
 // @ts-ignore
 import osc from 'osc';
-//import * as fs from 'fs';
 import express from 'express';
 import http from 'http';
 import { Server } from 'socket.io';
 import cors from 'cors';
-// @ts-ignore
-import fs from 'fs-extra';
+
 import { OSCVrChatGameLogic } from './models/osc_vrchat_game_logic';
 import { GameLogicResponse } from './models/game_logic_response';
 import { SocketType } from './models/socket_type';
 import { BitAllocation, EightBitChunkName, EightBitChunkNames, WebsocketName } from 'shared-lib';
+import { FileService } from './file-service';
 
 // TODO
 // Better handling of read/write of inputs as they are currently saved without ! prefix but need it for testing
@@ -23,9 +22,9 @@ export class OSCVrChat {
     this.gameLogicCreator = gameLogicCreator;
     this.gameLogic = this.gameLogicCreator();
 
-    this.bitAllocations = JSON.parse(fs.readFileSync('configurations/user_defined_data/data.json', 'utf8'));
+    this.bitAllocations = JSON.parse(FileService.getFile('configurations/user_defined_data/data.json'));
     this.bitAllocationConfigNames = this.bitAllocations.map((bitAllocation: BitAllocation) => bitAllocation.name);
-    this.inputEventNames = JSON.parse(fs.readFileSync('configurations/user_defined_data/input.json', 'utf8'));
+    this.inputEventNames = JSON.parse(FileService.getFile('configurations/user_defined_data/input.json'));
 
     this.validateBitAllocations();
 
@@ -218,7 +217,7 @@ export class OSCVrChat {
   }
 
   private getconfigurations(socket: SocketType): void {
-    const configuration = JSON.parse(fs.readFileSync('configurations/auto_generated_files_internal/data_mapped.json', 'utf8'));
+    const configuration = JSON.parse(FileService.getFile('configurations/auto_generated_files_internal/data_mapped.json'));
     socket.emit(WebsocketName.server_send_configurations, configuration);
   } 
 
@@ -231,7 +230,7 @@ export class OSCVrChat {
   }
 
   private getinputconfiguration(socket: SocketType): void {
-    const inputs = JSON.parse(fs.readFileSync('configurations/user_defined_data/input.json', 'utf8'))
+    const inputs = JSON.parse(FileService.getFile('configurations/user_defined_data/input.json'))
     .map((input: string) => `!${input}`);
     
     socket.emit(WebsocketName.server_send_input_configurations, inputs);
@@ -247,13 +246,13 @@ export class OSCVrChat {
 
   private updateconfigurations(socket: SocketType, ...args: any[]): void {
     const obj = JSON.stringify(args[0]);
-    fs.writeFile('configurations/user_defined_data/input.json', obj, 'utf8');
+    FileService.writeToFile('configurations/user_defined_data/input.json', obj);
     this.getconfigurations(socket);
   } 
 
   private updateinputconfiguration(socket: SocketType, ...args: any[]): void {
     const obj = JSON.stringify(args[0]);
-    fs.writeFile('configurations/user_defined_data/input.json', obj, 'utf8');
+    FileService.writeToFile('configurations/user_defined_data/input.json', obj);
     this.getinputconfiguration(socket);
   }
 
