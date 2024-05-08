@@ -353,7 +353,7 @@ export class GenerateUnityFiles {
 
       const uniqueNameList: Array<string> = Array.from(uniqueNames).sort();
 
-      const animatorData: D = {
+      const animatorData: AnimatorData = {
         'name': uniqueNameList,
         'animator_state_machine_id': new Array(uniqueNameList.length).fill(this.generateUniqueId()),
         'animator_state_id': new Array(uniqueNameList.length).fill(this.generateUniqueId()),
@@ -647,7 +647,7 @@ interface ShaderData {
   shaderParameters: Set<string>;
 }
 
-interface D {
+interface AnimatorData {
   name: Array<string>;
   animator_state_machine_id: Array<string>;
   animator_state_id: Array<string>;
