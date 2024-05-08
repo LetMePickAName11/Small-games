@@ -608,7 +608,7 @@ BlendTree:
 
       for (const matName of values.map((s: string) => s.replace('/', '_'))) {
         const matFilePath: string = this.outputExternalDirectory + `/materials/${matName}.mat`;
-        const matFileMetaPath: string = this.outputExternalDirectory + `/ materials / ${matName}.mat.meta`;
+        const matFileMetaPath: string = this.outputExternalDirectory + `/materials/${matName}.mat.meta`;
 
         FileService.copyFile(this.templateDirectory + 'shader_material_base.mat', matFilePath);
         FileService.replaceInFile(matFilePath, '__[REPLACEME_MATERIAL_NAME]__', matName);
