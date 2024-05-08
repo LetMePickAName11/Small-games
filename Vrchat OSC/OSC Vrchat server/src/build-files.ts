@@ -8,5 +8,5 @@ const oscVrchat = new GenerateUnityFiles();
 oscVrchat.generateFiles();
 console.log();
 console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-console.log("Files generated.")
+console.log("Files generated.");
 console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!");

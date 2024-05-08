@@ -22,7 +22,7 @@ export class GenerateUnityFiles {
       const randomNumber: number = (Math.random() * 16) | 0;
       const randomValue: number = character === 'x' ? randomNumber : (randomNumber & 0x3) | 0x8;
       return randomValue.toString(16);
-    });
+    }).replaceAll('-', '');
   }
 
   private generateGameObjectMap(): void {
@@ -579,13 +579,13 @@ BlendTree:
 
       for (let i = 0; i < propertiesLines.length; i++) {
         const prop: string = propertiesLines[i]!;
-        shaderProperties.push(`_${prop} ('${prop}', Range(0,255)) = 0`);
+        shaderProperties.push(`_${prop} ("${prop}", Range(0,255)) = 0`);
         shaderVariables.push(`float _${prop};`);
         matFloats.push(`- _${prop}: 0`);
 
         if (prop.includes('First')) {
           const text = prop.replace('First', '');
-          shaderProperties.push(`_Index${text} ('Index${text}', Range(0,15)) = 0`);
+          shaderProperties.push(`_Index${text} ("Index${text}", Range(0,15)) = 0`);
           shaderVariables.push(`float _Index${text};`);
           matFloats.push(`- _Index${text}: 0`);
         }
