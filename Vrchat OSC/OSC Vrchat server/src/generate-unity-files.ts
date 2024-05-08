@@ -155,8 +155,8 @@ export class GenerateUnityFiles {
     };
 
 
-    const outputPath = this.outputExternalDirectory + 'vrchat/VRCExpressionParameters.asset';
-    const outputMetaPath = this.outputExternalDirectory + 'vrchat/VRCExpressionParameters.asset.meta';
+    const outputPath = this.outputExternalDirectory + 'Vrchat/VRCExpressionParameters.asset';
+    const outputMetaPath = this.outputExternalDirectory + 'Vrchat/VRCExpressionParameters.asset.meta';
 
     FileService.copyFile(this.templateDirectory + 'animator_controller_base.controller.meta', outputMetaPath);
     FileService.replaceInFile(outputMetaPath, '__[REPLACEME]__', this.generateGuid());
@@ -326,8 +326,8 @@ export class GenerateUnityFiles {
         const defaultValue: number = suffix === 'Start' ? 0 : 255;
         const attributeId: number = this.generateUniqueId();
         const pathId: number = this.generateUniqueId();
-        const outputPath: string = `${this.outputExternalDirectory}animations/${nameBase}_${suffix}.anim`;
-        const outputMetaPath: string = `${this.outputExternalDirectory}animations/${nameBase}_${suffix}.anim.meta`;
+        const outputPath: string = `${this.outputExternalDirectory}Animations/${nameBase}_${suffix}.anim`;
+        const outputMetaPath: string = `${this.outputExternalDirectory}Animations/${nameBase}_${suffix}.anim.meta`;
         const floatCurves: string = value.objectNames.flatMap((path: string) => Array.from(value.shaderParameters).map((attribute: string) => generateFloatCurve(defaultValue, attribute, path))).join('');
         const genericBindings: string = new Array(value.objectNames.length * value.shaderParameters.size).fill(generateGenericBinding(pathId, attributeId)).join('');
         const editorCurves: string = value.objectNames.flatMap((path: string) => Array.from(value.shaderParameters).map((attribute: string) => generateEditorCurves(defaultValue, attribute, path))).join('');
@@ -548,7 +548,7 @@ BlendTree:
     FileService.appendToFile(animatiorControllerOutputPath, generateAnimatorController(animatorParameters, animatorLayers));
 
 
-    const animationNames: Array<string> = FileService.getFileNamesInDir(this.outputExternalDirectory + 'animations').filter((v: string) => v.includes('.meta'));
+    const animationNames: Array<string> = FileService.getFileNamesInDir(this.outputExternalDirectory + 'Animations').filter((v: string) => v.includes('.meta'));
 
     for (let i = 0; i < jsonData['name'].length; i++) {
       const name: string = jsonData['name'][i]!;
@@ -559,8 +559,8 @@ BlendTree:
       const minT: string = jsonData['min_threshold'][i]!;
       const maxT: string = jsonData['max_threshold'][i]!;
       const foundString: Array<string> = animationNames.filter((v) => v.includes(v));
-      const motionStartGuid: string = FileService.findInFile(`${this.outputExternalDirectory}animations/${foundString.find(v => v.includes('_Start'))}`, /guid: ([a-f0-9]+)/g);
-      const motionEndGuid: string = FileService.findInFile(`${this.outputExternalDirectory}animations/${foundString.find(v => v.includes('_End'))}`, /guid: ([a-f0-9]+)/g);
+      const motionStartGuid: string = FileService.findInFile(`${this.outputExternalDirectory}Animations/${foundString.find(v => v.includes('_Start'))}`, /guid: ([a-f0-9]+)/g);
+      const motionEndGuid: string = FileService.findInFile(`${this.outputExternalDirectory}Animations/${foundString.find(v => v.includes('_End'))}`, /guid: ([a-f0-9]+)/g);
 
       FileService.appendToFile(animatiorControllerOutputPath, generateAnimatorStateMachine(name, animatorStateMachineId, animatorStateId));
       FileService.appendToFile(animatiorControllerOutputPath, generateAnimatorState(animatorStateId, animatorStateTransitionId, blendTreeId));
@@ -595,8 +595,8 @@ BlendTree:
       const shaderVariablesString = shaderVariables.sort().join('\n        ');
       const matFloatsString = matFloats.sort().join('\n    ');
 
-      const shaderFilePath: string = this.outputExternalDirectory + `/materials/shader_${index + 1}.shader`;
-      const shaderMetaFilePath: string = this.outputExternalDirectory + `/materials/shader_${index + 1}.shader.meta`;
+      const shaderFilePath: string = this.outputExternalDirectory + `/Materials/shader_${index + 1}.shader`;
+      const shaderMetaFilePath: string = this.outputExternalDirectory + `/Materials/shader_${index + 1}.shader.meta`;
       const shaderGuid: string = this.generateGuid();
 
       FileService.copyFile(this.templateDirectory + 'shader_base.shader', shaderFilePath);
@@ -607,8 +607,8 @@ BlendTree:
       FileService.replaceInFile(shaderMetaFilePath, '__[REPLACEME]__', shaderGuid);
 
       for (const matName of values.map((s: string) => s.replace('/', '_'))) {
-        const matFilePath: string = this.outputExternalDirectory + `/materials/${matName}.mat`;
-        const matFileMetaPath: string = this.outputExternalDirectory + `/materials/${matName}.mat.meta`;
+        const matFilePath: string = this.outputExternalDirectory + `/Materials/${matName}.mat`;
+        const matFileMetaPath: string = this.outputExternalDirectory + `/Materials/${matName}.mat.meta`;
 
         FileService.copyFile(this.templateDirectory + 'shader_material_base.mat', matFilePath);
         FileService.replaceInFile(matFilePath, '__[REPLACEME_MATERIAL_NAME]__', matName);
