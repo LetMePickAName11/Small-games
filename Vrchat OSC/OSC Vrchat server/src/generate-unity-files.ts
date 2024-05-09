@@ -361,10 +361,10 @@ export class GenerateUnityFiles {
 
       const animatorData: AnimatorData = {
         'name': uniqueNameList,
-        'animator_state_machine_id': new Array(uniqueNameList.length).map((_: any) => this.generateUniqueId()),
-        'animator_state_id': new Array(uniqueNameList.length).map((_: any) => this.generateUniqueId()),
-        'animator_state_transition_id': new Array(uniqueNameList.length).map((_: any) => this.generateUniqueId()),
-        'blend_tree_id': new Array(uniqueNameList.length).map((_: any) => this.generateUniqueId()),
+        'animator_state_machine_id': Array.from({ length: uniqueNameList.length }, (_, __) => this.generateUniqueId()),
+        'animator_state_id': Array.from({ length: uniqueNameList.length }, (_, __) => this.generateUniqueId()),
+        'animator_state_transition_id': Array.from({ length: uniqueNameList.length }, (_, __) => this.generateUniqueId()),
+        'blend_tree_id': Array.from({ length: uniqueNameList.length }, (_, __) => this.generateUniqueId()),
         'min_threshold': new Array(uniqueNameList.length).fill(0),
         'max_threshold': new Array(uniqueNameList.length).fill(255),
       };
@@ -490,7 +490,7 @@ BlendTree:
     m_Position: {x: 0, y: 0}
     m_TimeScale: 1
     m_CycleOffset: 0
-    m_DirectBlendParameter: {name}
+    m_DirectBlendParameter: ${name}
     m_Mirror: 0
   - serializedVersion: 2
     m_Motion: {fileID: 7400000, guid: ${motionEndGuid}, type: 2}
@@ -512,28 +512,28 @@ BlendTree:
 
     const generateAnimatorStateTransition = (animatorStateTransitionId: number) => {
       const template = `
-    --- !u!1101 &${animatorStateTransitionId}
-    AnimatorStateTransition:
-      m_ObjectHideFlags: 1
-      m_CorrespondingSourceObject: {fileID: 0}
-      m_PrefabInstance: {fileID: 0}
-      m_PrefabAsset: {fileID: 0}
-      m_Name: 
-      m_Conditions: []
-      m_DstStateMachine: {fileID: 0}
-      m_DstState: {fileID: 0}
-      m_Solo: 0
-      m_Mute: 0
-      m_IsExit: 1
-      serializedVersion: 3
-      m_TransitionDuration: 0.25
-      m_TransitionOffset: 0
-      m_ExitTime: 0.75
-      m_HasExitTime: 1
-      m_HasFixedDuration: 1
-      m_InterruptionSource: 0
-      m_OrderedInterruption: 1
-      m_CanTransitionToSelf: 1`;
+--- !u!1101 &${animatorStateTransitionId}
+AnimatorStateTransition:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: 
+  m_Conditions: []
+  m_DstStateMachine: {fileID: 0}
+  m_DstState: {fileID: 0}
+  m_Solo: 0
+  m_Mute: 0
+  m_IsExit: 1
+  serializedVersion: 3
+  m_TransitionDuration: 0.25
+  m_TransitionOffset: 0
+  m_ExitTime: 0.75
+  m_HasExitTime: 1
+  m_HasFixedDuration: 1
+  m_InterruptionSource: 0
+  m_OrderedInterruption: 1
+  m_CanTransitionToSelf: 1`;
       return template;
     }
 
@@ -565,8 +565,8 @@ BlendTree:
       const minT: number = jsonData['min_threshold'][i]!;
       const maxT: number = jsonData['max_threshold'][i]!;
       const foundString: Array<string> = animationNames.filter((v) => v.includes(v));
-      const motionStartGuid: string = FileService.findInFile(`${this.outputExternalDirectory}Animations/${foundString.find(v => v.includes('_Start'))}`, /guid: ([a-f0-9]+)/g);
-      const motionEndGuid: string = FileService.findInFile(`${this.outputExternalDirectory}Animations/${foundString.find(v => v.includes('_End'))}`, /guid: ([a-f0-9]+)/g);
+      const motionStartGuid: string = FileService.findInFile(`${this.outputExternalDirectory}Animations/${foundString.find(v => v.includes('_Start'))}`, /guid: ([a-f0-9]+)/g).replace('guid: ', '');
+      const motionEndGuid: string = FileService.findInFile(`${this.outputExternalDirectory}Animations/${foundString.find(v => v.includes('_End'))}`, /guid: ([a-f0-9]+)/g).replace('guid: ', '');
 
       FileService.appendToFile(animatiorControllerOutputPath, generateAnimatorStateMachine(name, animatorStateMachineId, animatorStateId));
       FileService.appendToFile(animatiorControllerOutputPath, generateAnimatorState(animatorStateId, animatorStateTransitionId, blendTreeId));
