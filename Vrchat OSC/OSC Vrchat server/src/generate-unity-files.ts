@@ -537,8 +537,8 @@ BlendTree:
       return template;
     }
 
-    const animatiorControllerOutputPath: string = this.outputExternalDirectory + 'FX.controller';
-    const animatiorControllerMetaOutputPath: string = this.outputExternalDirectory + 'FX.controller.meta';
+    const animatiorControllerOutputPath: string = this.outputExternalDirectory + 'Animations/FX.controller';
+    const animatiorControllerMetaOutputPath: string = this.outputExternalDirectory + 'Animations/FX.controller.meta';
 
 
     FileService.copyFile(this.templateDirectory + 'animator_controller_base.controller.meta', animatiorControllerMetaOutputPath);
