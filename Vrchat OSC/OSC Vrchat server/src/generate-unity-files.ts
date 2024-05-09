@@ -355,10 +355,10 @@ export class GenerateUnityFiles {
 
       const animatorData: AnimatorData = {
         'name': uniqueNameList,
-        'animator_state_machine_id': new Array(uniqueNameList.length).fill(this.generateUniqueId()),
-        'animator_state_id': new Array(uniqueNameList.length).fill(this.generateUniqueId()),
-        'animator_state_transition_id': new Array(uniqueNameList.length).fill(this.generateUniqueId()),
-        'blend_tree_id': new Array(uniqueNameList.length).fill(this.generateUniqueId()),
+        'animator_state_machine_id': new Array(uniqueNameList.length).map((_: any) => this.generateUniqueId()),
+        'animator_state_id': new Array(uniqueNameList.length).map((_: any) => this.generateUniqueId()),
+        'animator_state_transition_id': new Array(uniqueNameList.length).map((_: any) => this.generateUniqueId()),
+        'blend_tree_id': new Array(uniqueNameList.length).map((_: any) => this.generateUniqueId()),
         'min_threshold': new Array(uniqueNameList.length).fill(0),
         'max_threshold': new Array(uniqueNameList.length).fill(255),
       };
@@ -377,7 +377,7 @@ export class GenerateUnityFiles {
       return template;
     }
 
-    const generateAnimatorLayer = (name: string, animatorStateMachineId: string): string => {
+    const generateAnimatorLayer = (name: string, animatorStateMachineId: number): string => {
       const template = `
   - serializedVersion: 5
     m_Name: ${name}
@@ -409,7 +409,7 @@ AnimatorController:
       return template;
     }
 
-    const generateAnimatorState = (animatorStateId: string, animatorStateTransitionId: string, blendTreeId: string) => {
+    const generateAnimatorState = (animatorStateId: number, animatorStateTransitionId: number, blendTreeId: number) => {
       const template = `
 --- !u!1102 &${animatorStateId}
 AnimatorState:
@@ -441,7 +441,7 @@ AnimatorState:
       return template;
     }
 
-    const generateAnimatorStateMachine = (name: string, animatorStateMachineId: string, animatorStateId: string) => {
+    const generateAnimatorStateMachine = (name: string, animatorStateMachineId: number, animatorStateId: number) => {
       const template = `
 --- !u!1107 &${animatorStateMachineId}
 AnimatorStateMachine:
@@ -468,7 +468,7 @@ AnimatorStateMachine:
       return template;
     }
 
-    const generateBlendTree = (name: string, blendTreeId: string, motionStartGuid: string, motionEndGuid: string, minThreshold: string, maxThreshold: string) => {
+    const generateBlendTree = (name: string, blendTreeId: number, motionStartGuid: string, motionEndGuid: string, minThreshold: number, maxThreshold: number) => {
       const template = `
 --- !u!206 &${blendTreeId}
 BlendTree:
@@ -504,7 +504,7 @@ BlendTree:
       return template;
     }
 
-    const generateAnimatorStateTransition = (animatorStateTransitionId: string) => {
+    const generateAnimatorStateTransition = (animatorStateTransitionId: number) => {
       const template = `
     --- !u!1101 &${animatorStateTransitionId}
     AnimatorStateTransition:
@@ -552,12 +552,12 @@ BlendTree:
 
     for (let i = 0; i < jsonData['name'].length; i++) {
       const name: string = jsonData['name'][i]!;
-      const animatorStateMachineId: string = jsonData['animator_state_machine_id'][i]!;
-      const animatorStateId: string = jsonData['animator_state_id'][i]!;
-      const animatorStateTransitionId: string = jsonData['animator_state_transition_id'][i]!;
-      const blendTreeId: string = jsonData['blend_tree_id'][i]!;
-      const minT: string = jsonData['min_threshold'][i]!;
-      const maxT: string = jsonData['max_threshold'][i]!;
+      const animatorStateMachineId: number = jsonData['animator_state_machine_id'][i]!;
+      const animatorStateId: number = jsonData['animator_state_id'][i]!;
+      const animatorStateTransitionId: number = jsonData['animator_state_transition_id'][i]!;
+      const blendTreeId: number = jsonData['blend_tree_id'][i]!;
+      const minT: number = jsonData['min_threshold'][i]!;
+      const maxT: number = jsonData['max_threshold'][i]!;
       const foundString: Array<string> = animationNames.filter((v) => v.includes(v));
       const motionStartGuid: string = FileService.findInFile(`${this.outputExternalDirectory}Animations/${foundString.find(v => v.includes('_Start'))}`, /guid: ([a-f0-9]+)/g);
       const motionEndGuid: string = FileService.findInFile(`${this.outputExternalDirectory}Animations/${foundString.find(v => v.includes('_End'))}`, /guid: ([a-f0-9]+)/g);
@@ -649,10 +649,10 @@ interface ShaderData {
 
 interface AnimatorData {
   name: Array<string>;
-  animator_state_machine_id: Array<string>;
-  animator_state_id: Array<string>;
-  animator_state_transition_id: Array<string>;
-  blend_tree_id: Array<string>;
-  min_threshold: Array<string>;
-  max_threshold: Array<string>;
+  animator_state_machine_id: Array<number>;
+  animator_state_id: Array<number>;
+  animator_state_transition_id: Array<number>;
+  blend_tree_id: Array<number>;
+  min_threshold: Array<number>;
+  max_threshold: Array<number>;
 }
