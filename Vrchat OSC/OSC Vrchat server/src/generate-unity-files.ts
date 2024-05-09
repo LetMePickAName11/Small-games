@@ -334,9 +334,9 @@ export class GenerateUnityFiles {
         const pathId: number = this.generateUniqueId();
         const outputPath: string = `${this.outputExternalDirectory}Animations/${nameBase}_${suffix}.anim`;
         const outputMetaPath: string = `${this.outputExternalDirectory}Animations/${nameBase}_${suffix}.anim.meta`;
-        const floatCurves: string = value.objectNames.flatMap((path: string) => Array.from(value.shaderParameters).map((attribute: string) => generateFloatCurve(defaultValue, attribute, path))).join('');
+        const floatCurves: string = value.objectNames.flatMap((path: string) => Array.from(value.shaderParameters).map((attribute: string) => generateFloatCurve(defaultValue, `_${attribute}`, path))).join('');
         const genericBindings: string = new Array(value.objectNames.length * value.shaderParameters.size).fill(generateGenericBinding(pathId, attributeId)).join('');
-        const editorCurves: string = value.objectNames.flatMap((path: string) => Array.from(value.shaderParameters).map((attribute: string) => generateEditorCurves(defaultValue, attribute, path))).join('');
+        const editorCurves: string = value.objectNames.flatMap((path: string) => Array.from(value.shaderParameters).map((attribute: string) => generateEditorCurves(defaultValue, `_${attribute}`, path))).join('');
 
         FileService.copyFile(this.templateDirectory + 'animation_base.anim', outputPath);
         FileService.appendToFile(outputPath, generateAnimationClip(`${nameBase}_${suffix}`, floatCurves, genericBindings, editorCurves));
@@ -553,7 +553,6 @@ AnimatorStateTransition:
 
     FileService.appendToFile(animatiorControllerOutputPath, generateAnimatorController(animatorParameters, animatorLayers));
 
-
     const animationNames: Array<string> = FileService.getFileNamesInDir(this.outputExternalDirectory + 'Animations').filter((v: string) => v.includes('.meta'));
 
     for (let i = 0; i < jsonData['name'].length; i++) {
@@ -564,9 +563,10 @@ AnimatorStateTransition:
       const blendTreeId: number = jsonData['blend_tree_id'][i]!;
       const minT: number = jsonData['min_threshold'][i]!;
       const maxT: number = jsonData['max_threshold'][i]!;
-      const foundString: Array<string> = animationNames.filter((v) => v.includes(v));
-      const motionStartGuid: string = FileService.findInFile(`${this.outputExternalDirectory}Animations/${foundString.find(v => v.includes('_Start'))}`, /guid: ([a-f0-9]+)/g).replace('guid: ', '');
-      const motionEndGuid: string = FileService.findInFile(`${this.outputExternalDirectory}Animations/${foundString.find(v => v.includes('_End'))}`, /guid: ([a-f0-9]+)/g).replace('guid: ', '');
+      const startAnimationName = `${this.outputExternalDirectory}Animations/${animationNames.filter((v: string) => v === `${name}_Start.anim.meta`).find(v => v.includes('_Start'))}`;
+      const endAnimationName = `${this.outputExternalDirectory}Animations/${animationNames.filter((v: string) => v === `${name}_End.anim.meta`).find(v => v.includes('_End'))}`;
+      const motionStartGuid: string = FileService.findInFile(startAnimationName, /guid: ([a-f0-9]+)/g).replace('guid: ', '');
+      const motionEndGuid: string = FileService.findInFile(endAnimationName, /guid: ([a-f0-9]+)/g).replace('guid: ', '');
 
       FileService.appendToFile(animatiorControllerOutputPath, generateAnimatorStateMachine(name, animatorStateMachineId, animatorStateId));
       FileService.appendToFile(animatiorControllerOutputPath, generateAnimatorState(animatorStateId, animatorStateTransitionId, blendTreeId));

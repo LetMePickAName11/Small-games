@@ -316,3 +316,4 @@ const updateVrc = () => {
 };
 
 oscReciever.open();
+console.log("Running");

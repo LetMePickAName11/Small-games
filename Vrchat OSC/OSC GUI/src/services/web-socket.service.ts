@@ -73,7 +73,7 @@ export class WebSocketService {
     this.socket.on(WebsocketName.client_recieve_game_state, (message: string) => {
       console.log("Received client_recieve_game_state:", message);
       const prevVal: Array<WebsocketWrapper> = this.$cachedGameState.value;
-      const packedInfo: WebsocketWrapper = { value: message, timestamp: new Date(), count: prevVal.length };
+      const packedInfo: WebsocketWrapper = { value: message, timestamp: new Date(), count: prevVal.length + 1 };
       prevVal.push(packedInfo);
 
       this.$cachedGameState.next(prevVal);
@@ -83,7 +83,7 @@ export class WebSocketService {
     this.socket.on(WebsocketName.client_recieve_debug_info, (message: string) => {
       console.log("Received client_recieve_debug_info:", message);
       const prevVal: Array<WebsocketWrapper> = this.$cachedDebugInfo.value;
-      const packedInfo: WebsocketWrapper = { value: message, timestamp: new Date(), count: prevVal.length };
+      const packedInfo: WebsocketWrapper = { value: message, timestamp: new Date(), count: prevVal.length + 1 };
       prevVal.push(packedInfo);
 
       this.$cachedDebugInfo.next(prevVal);

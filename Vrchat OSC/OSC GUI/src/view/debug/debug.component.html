@@ -6,10 +6,10 @@
     <pre style="margin: 0 auto; width: fit-content; padding: 1rem 0;">
 {{debugInfo.value}}
     </pre>
-    <div style="margin: auto; width: fit-content;">
+    <div style="margin: auto; width: fit-content; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem 1rem;">
       <div *ngFor="let gs of gameState.value | keyvalue" style="display: grid; grid-template-columns: 1fr auto;">
         <div>
-          {{gs.key}} 
+          {{gs.key}}
         </div>
         <div style="text-align: end; padding: 0 0.5rem;">
           {{gs.value}}

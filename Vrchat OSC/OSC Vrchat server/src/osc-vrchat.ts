@@ -213,17 +213,24 @@ export class OSCVrChat {
       socket.on(WebsocketName.server_recieve_configurations, (_) => this.getconfigurations(socket));
       socket.on(WebsocketName.server_recieve_input_configurations, (_) => this.getinputconfiguration(socket));
       socket.on(WebsocketName.server_recieve_game_state, (_) => this.getgamestate());
-    });    
+    });
   }
 
   private getconfigurations(socket: SocketType): void {
     const configuration = JSON.parse(FileService.getFile('configurations/auto_generated_files_internal/data_mapped.json'));
     socket.emit(WebsocketName.server_send_configurations, configuration);
-  } 
+  }
 
   private getgamestate(): void {
-    this.connectedSocket?.emit(WebsocketName.server_send_game_state, this.gameLogic.getState());
-  } 
+    const gameState: { [key in string]: number } = this.gameLogic.getState();
+    const bitChunks: { [key in string]: number  } = this.piecePositionsToEightBitChunks(gameState)
+    .reduce((obj: { [key in string]: number }, item: { name: EightBitChunkNames; value: number; }) => {
+      obj[item.name] = item.value;
+      return obj;
+    }, {} as { [key in string]: number });
+    
+    this.connectedSocket?.emit(WebsocketName.server_send_game_state, {...gameState,  ...bitChunks});
+  }
 
   private getdebuginfo(): void {
     this.connectedSocket?.emit(WebsocketName.server_send_debug_info, this.gameLogic.debugInfo());
@@ -231,14 +238,14 @@ export class OSCVrChat {
 
   private getinputconfiguration(socket: SocketType): void {
     const inputs = JSON.parse(FileService.getFile('configurations/user_defined_data/input.json'))
-    .map((input: string) => `!${input}`);
-    
+      .map((input: string) => `!${input}`);
+
     socket.emit(WebsocketName.server_send_input_configurations, inputs);
-  } 
+  }
 
   private mockoscinput(...args: any[]): void {
     this.testOnMessageRecived(args[0]);
-  } 
+  }
 
   private sendoscinput(...args: any[]): void {
     this.connectedSocket?.emit(WebsocketName.server_send_osc_input, args[0]);
@@ -248,7 +255,7 @@ export class OSCVrChat {
     const obj = JSON.stringify(args[0]);
     FileService.writeToFile('configurations/user_defined_data/input.json', obj);
     this.getconfigurations(socket);
-  } 
+  }
 
   private updateinputconfiguration(socket: SocketType, ...args: any[]): void {
     const obj = JSON.stringify(args[0]);
@@ -257,14 +264,14 @@ export class OSCVrChat {
   }
 
   private pausegame(): void {
-    this.gamePause = !this.gamePause; 
+    this.gamePause = !this.gamePause;
   }
 
   private resetgame(): void {
     this.gameLogic = this.gameLogicCreator();
+    this.gamePause = false;
     this.updateVrc();
   }
-  
 
 
   private lastMessageDate = Date.now() - 1000;
@@ -277,7 +284,7 @@ export class OSCVrChat {
   private readonly url: string = 'localhost';
   private readonly oscHandler;
   private readonly messageDelayMs = 250;
-  private readonly gameLogicCreator: () => OSCVrChatGameLogic; 
+  private readonly gameLogicCreator: () => OSCVrChatGameLogic;
   private readonly inputEventNames: Array<string>;
   private readonly bitAllocations: Array<BitAllocation>;
   private readonly bitAllocationConfigNames: Array<string>;
