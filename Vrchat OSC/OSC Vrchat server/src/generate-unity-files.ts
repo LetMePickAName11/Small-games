@@ -3,6 +3,7 @@ import { FileService } from './file-service';
 
 export class GenerateUnityFiles {
   public generateFiles(): void {
+    this.clearDirectories();
     this.generateDataMapped();
     this.generateGameObjectMap();
     this.generateVrcExpressionParamters();
@@ -23,6 +24,11 @@ export class GenerateUnityFiles {
       const randomValue: number = character === 'x' ? randomNumber : (randomNumber & 0x3) | 0x8;
       return randomValue.toString(16);
     }).replaceAll('-', '');
+  }
+
+  private clearDirectories(): void {
+    FileService.clearDirectory(this.outputInternalDirectory.slice(0, -1));
+    FileService.clearDirectory(this.outputExternalDirectory.slice(0, -1));
   }
 
   private generateGameObjectMap(): void {

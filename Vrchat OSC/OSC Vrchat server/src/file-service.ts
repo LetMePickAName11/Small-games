@@ -24,6 +24,11 @@ export class FileService {
     return fs.readdirSync(directoryPath);
   }
 
+  public static clearDirectory(directoryPath: string): void {
+    fs.removeSync(directoryPath);
+    fs.ensureDirSync(directoryPath)
+  }
+
   public static findInFile(path: string, regex: RegExp): string {
     const data = FileService.getFile(path);
     const matches = data.match(regex) || [];
