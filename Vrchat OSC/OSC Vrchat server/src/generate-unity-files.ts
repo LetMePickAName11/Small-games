@@ -32,15 +32,16 @@ export class GenerateUnityFiles {
   }
 
   private generateGameObjectMap(): void {
-    const gameObjectToShaders: GameObjectToShaders = {};
-    const shaderToGameObjectMap: ShaderToGameObjectMap = {};
+    const gameObjectToShaders: Record<string, Set<Set<string>>> = {};
+    const shaderToGameObjectMap: Record<string, string[]> = {};
 
     // Read the JSON data from the file
-    const entries: Array<BitAllocation> = FileService.getFileJson(this.outputInternalDirectory + 'data_mapped.json');
+    const bitAllocations: Array<BitAllocation> = FileService.getFileJson(this.outputInternalDirectory + 'data_mapped.json');
+
     // First, map each game object to all its shader parameters
-    for (const entry of entries) {
-      const objectNames: Array<string> = entry.objectNames;
-      const shaderParameters = new Set<string>(entry.shaderParameters);
+    for (const allocation of bitAllocations) {
+      const objectNames: Array<string> = allocation.objectNames;
+      const shaderParameters: Set<string> = new Set<string>(allocation.shaderParameters);
 
       for (const objectName of objectNames) {
         if (!(objectName in gameObjectToShaders)) {
@@ -105,23 +106,28 @@ export class GenerateUnityFiles {
       const minrange = allocatedBitsSize - overflowBits;
       const overflows = bitAllocations.filter(b => b.range.start >= minrange);
 
-      // Remove the overflow bit allocations from the original array
-      bitAllocations.length -= overflows.length;
+      // Filter out the overflow bit allocations from the original array
+      const nonOverflows = bitAllocations.filter(b => b.range.start < minrange);
 
+      // Handle the overflow allocations
       overflows.forEach((overflow, index) => {
         for (let i = 0; i < overflow.size; i++) {
-          bitAllocations.push({
+          nonOverflows.push({
             range: { start: overflow.range.start + i, end: overflow.range.start + i },
             size: 1,
             name: overflow.name,
-            lsbName: `overflow${index}_${i}`,
-            msbName: `overflow${index}_${i}`,
+            lsbName: `Overflow_${index}_${i}`,
+            msbName: `Overflow_${index}_${i}`,
             bitIndex: 0,
             objectNames: overflow.objectNames,
             shaderParameters: overflow.shaderParameters,
           });
         }
       });
+
+      // Update the bitAllocations with the new list
+      bitAllocations.length = 0;
+      bitAllocations.push(...nonOverflows);
     }
 
     if (allocatedBitsSize + allocatedInputBitsSize > 256) {
@@ -141,54 +147,61 @@ export class GenerateUnityFiles {
     networkSynced: ${networkSynced}`;
     };
 
-    const mapDataToParamters = (input: string) => {
-      const data: Array<BitAllocation> = FileService.getFileJson(input);
-      const chunks: Array<string> = [];
-      const overflows: Array<string> = [];
+    const dataConfigurations: Array<BitAllocation> = FileService.getFileJson(this.outputInternalDirectory + 'data_mapped.json');
+    const dataInputs: Array<string> = FileService.getFileJson(this.userInputDirectory + 'input.json');
 
-      for (const d of data) {
-        if (!d.lsbName.includes('Overflow')) {
-          if (!chunks.includes(d.lsbName)) {
-            chunks.push(d.lsbName);
-          }
-          if (!chunks.includes(d.msbName)) {
-            chunks.push(d.msbName);
-          }
+    const chunks: Array<string> = [];
+    const overflows: Array<string> = [];
+
+    for (const d of dataConfigurations) {
+      if (!d.lsbName.includes('Overflow')) {
+        if (!chunks.includes(d.lsbName)) {
+          chunks.push(d.lsbName);
         }
-        else if (!overflows.includes(d.lsbName)) {
-          overflows.push(d.lsbName)
+        if (!chunks.includes(d.msbName)) {
+          chunks.push(d.msbName);
         }
       }
+      else if (!overflows.includes(d.lsbName)) {
+        overflows.push(d.lsbName)
+      }
+    }
 
-      return chunks.map((chunk) => {
-        return {
-          name: chunk,
-          valueType: 0, // 0 == 8-bit integer
-          saved: 0,
-          defaultValue: 0,
-          networkSynced: 1
-        }
-      }).concat(overflows.map((overflow) => {
-        return {
-          name: overflow,
-          valueType: 2, // 2 == boolean
-          saved: 0,
-          defaultValue: 0,
-          networkSynced: 1
-        }
-      }));
-    };
-
+    const parametersInfo = chunks.map((chunk) => {
+      return {
+        name: chunk,
+        valueType: 0, // 0 == 8-bit integer
+        saved: 0,
+        defaultValue: 0,
+        networkSynced: 1
+      }
+    }).concat(overflows.map((overflow) => {
+      return {
+        name: overflow,
+        valueType: 2, // 2 == boolean
+        saved: 0,
+        defaultValue: 0,
+        networkSynced: 1
+      }
+    }).concat(dataInputs.map((input) => {
+      return {
+        name: `!${input}`,
+        valueType: 2, // 2 == boolean
+        saved: 0,
+        defaultValue: 0,
+        networkSynced: 1
+      }
+    })));
 
     const outputPath = this.outputExternalDirectory + 'Vrchat/VRCExpressionParameters.asset';
     const outputMetaPath = this.outputExternalDirectory + 'Vrchat/VRCExpressionParameters.asset.meta';
 
-    FileService.copyFile(this.templateDirectory + 'animator_controller_base.controller.meta', outputMetaPath);
+    FileService.copyFile(this.templateDirectory + 'vrc_expression_parameters.asset.meta', outputMetaPath);
     FileService.replaceInFile(outputMetaPath, '__[REPLACEME]__', this.generateGuid());
 
     FileService.copyFile(this.templateDirectory + 'vrc_expression_parameters.asset', outputPath);
 
-    for (const row of mapDataToParamters(this.outputInternalDirectory + 'data_mapped.json')) {
+    for (const row of parametersInfo) {
       FileService.appendToFile(outputPath, createParamter(row.name, row.valueType, row.saved, row.defaultValue, row.networkSynced));
     }
   }
@@ -311,8 +324,8 @@ export class GenerateUnityFiles {
       m_Events: []`;
     }
 
-    const generateAnimationPairData = (suffix: string, allocations: Array<BitAllocation>) =>{
-      const defaultValue: number = suffix === 'Start' ? 0 : 255;
+    const generateAnimationPairData = (suffix: string, allocations: Array<BitAllocation>, maxValue: number) =>{
+      const defaultValue: number = suffix === 'Start' ? 0 : maxValue;
       const attributeId: number = this.generateUniqueId();
       const pathId: number = this.generateUniqueId();
 
@@ -341,6 +354,7 @@ export class GenerateUnityFiles {
 
     for (const name of uniqueStartNames){
       ['Start', 'End'].forEach((suffix: string) => {
+        const maxValue: number = name.includes('Overflow') ? 1 : 255;
         const [newFloatCurves, newGenericBindings, newEditorCurves]: Array<string> = generateAnimationPairData(suffix, data.filter((bitAllocation: BitAllocation) => bitAllocation.lsbName === name).map((bitAllocation: BitAllocation) => {
           return {
             ...bitAllocation,
@@ -348,7 +362,7 @@ export class GenerateUnityFiles {
               bitAllocation.shaderParameters[0]!
             ]
           }
-        }));
+        }), maxValue);
         const [newFloatCurves2, newGenericBindings2, newEditorCurves2]: Array<string> = generateAnimationPairData(suffix, data.filter((bitAllocation: BitAllocation) => bitAllocation.msbName === name).map((bitAllocation: BitAllocation) => {
           return {
             ...bitAllocation,
@@ -356,7 +370,7 @@ export class GenerateUnityFiles {
               bitAllocation.shaderParameters[1]!
             ]
           }
-        }));
+        }), maxValue);
 
         const floatCurves: string = newFloatCurves + newFloatCurves2!;
         const genericBindings: string = newGenericBindings + newGenericBindings2!;
@@ -393,7 +407,7 @@ export class GenerateUnityFiles {
         animatorStateTransitionId: Array.from({ length: uniqueNameList.length }, (_, __) => this.generateUniqueId()),
         blendTreeId: Array.from({ length: uniqueNameList.length }, (_, __) => this.generateUniqueId()),
         minThreshold: new Array(uniqueNameList.length).fill(0),
-        maxThreshold: new Array(uniqueNameList.length).fill(255),
+        maxThreshold: uniqueNameList.map((name) => name.includes('Overflow') ? 1 : 255 ),
       };
 
       return animatorData;
@@ -674,16 +688,6 @@ AnimatorStateTransition:
   private readonly outputInternalDirectory: string = './configurations/auto_generated_files_internal/';
   private readonly outputExternalDirectory: string = './configurations/auto_generated_files_external/';
   private readonly bitIndexToEightBitName: Array<string> = Object.keys(EightBitChunkName);
-}
-
-
-
-interface GameObjectToShaders {
-  [key: string]: Set<Set<string>>;
-}
-
-interface ShaderToGameObjectMap {
-  [key: string]: string[];
 }
 
 
