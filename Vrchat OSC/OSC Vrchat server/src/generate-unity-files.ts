@@ -96,18 +96,23 @@ export class GenerateUnityFiles {
       };
       startIndex += bitAllocation.size;
       bitAllocations.push(res);
-    }
+    };
 
     const allocatedBitsSize: number = bitAllocations.reduce((acc, val) => acc + val.size, 0);
     const allocatedInputBitsSize: number = inputData.length; // Input data is array of 1-bits
     const overflowBits: number = allocatedBitsSize % 8;
 
     if (overflowBits !== 0) {
-      const minrange = allocatedBitsSize - overflowBits;
-      const overflows = bitAllocations.filter(b => b.range.start >= minrange);
+      const minrange: number = allocatedBitsSize - overflowBits;
+      const overflows: Array<BitAllocation> = bitAllocations.filter(b => b.range.start >= minrange);
 
       // Filter out the overflow bit allocations from the original array
-      const nonOverflows = bitAllocations.filter(b => b.range.start < minrange);
+      const nonOverflows: Array<BitAllocation> = bitAllocations.filter(b => b.range.start < minrange);
+      const lastChunkBeforeOverflow: string = nonOverflows[nonOverflows.length - 1]!.msbName;
+
+      nonOverflows
+        .filter((bitAllocation: BitAllocation) => bitAllocation.msbName === lastChunkBeforeOverflow)
+        .forEach((bitAllocation: BitAllocation) => bitAllocation.msbName = bitAllocation.lsbName);
 
       // Handle the overflow allocations
       overflows.forEach((overflow, index) => {
