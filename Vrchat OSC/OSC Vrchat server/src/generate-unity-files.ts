@@ -89,8 +89,8 @@ export class GenerateUnityFiles {
       const res: BitAllocation = {
         ...bitAllocation,
         range: range,
-        lsbName: this.bitIndexToEightBitName[(range.start - range.start % 8) / 8]!,
-        msbName: this.bitIndexToEightBitName[(range.start - range.start % 8) / 8 + 1]!,
+        msbName: this.bitIndexToEightBitName[(range.start - range.start % 8) / 8]!,
+        lsbName: this.bitIndexToEightBitName[(range.start - range.start % 8) / 8 + 1]!,
         bitIndex: 15 - (range.start % 16),
         shaderParameters: [`LSB${bitAllocation.shaderParameters}`, `MSB${bitAllocation.shaderParameters}`]
       };
