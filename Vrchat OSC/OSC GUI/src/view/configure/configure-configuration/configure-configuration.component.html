@@ -3,7 +3,6 @@
   <div class="bit-container">
     <div class="bit" *ngFor="let bit of bitAllocations" (mouseenter)="onMouseEnter(bit)" (mouseleave)="onMouseLeave(bit)"
       (click)="onclick(bit)" [class.selected]="bit === click" [style.width]="bit.width" [style.background]="bit.color">
-      {{bit.type}}
     </div>
   </div>
   <div class="dot">
@@ -12,10 +11,6 @@
         <p>
           <strong>Name:</strong>
           {{hover.name}}
-        </p>
-        <p>
-          <strong>Data type</strong>
-          {{hover.type}}
         </p>
         <p>
           <strong>Data size:</strong>
@@ -42,10 +37,6 @@
         <p>
           <strong>Name:</strong>
           {{click.name}}
-        </p>
-        <p>
-          <strong>Data type</strong>
-          {{click.type}}
         </p>
         <p>
           <strong>Data size:</strong>

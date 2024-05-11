@@ -22,9 +22,9 @@ export class OSCVrChat {
     this.gameLogicCreator = gameLogicCreator;
     this.gameLogic = this.gameLogicCreator();
 
-    this.bitAllocations = JSON.parse(FileService.getFile('configurations/user_defined_data/data.json'));
+    this.bitAllocations = FileService.getFileJson('configurations/user_defined_data/data.json');
     this.bitAllocationConfigNames = this.bitAllocations.map((bitAllocation: BitAllocation) => bitAllocation.name);
-    this.inputEventNames = JSON.parse(FileService.getFile('configurations/user_defined_data/input.json'));
+    this.inputEventNames = FileService.getFileJson('configurations/user_defined_data/input.json');
 
     this.validateBitAllocations();
 
@@ -145,7 +145,7 @@ export class OSCVrChat {
     });
 
     this.getAllocatedBits('overflow').forEach((bitAllocation: BitAllocation) => {
-      this.sendUdpMessage(`${bitAllocation.startName}`, [{ type: 'i', value: gameState[bitAllocation.name] }]);
+      this.sendUdpMessage(`${bitAllocation.lsbName}`, [{ type: 'i', value: gameState[bitAllocation.name] }]);
     });
 
     this.getgamestate();
@@ -217,7 +217,7 @@ export class OSCVrChat {
   }
 
   private getconfigurations(socket: SocketType): void {
-    const configuration = JSON.parse(FileService.getFile('configurations/auto_generated_files_internal/data_mapped.json'));
+    const configuration: Array<BitAllocation> = FileService.getFileJson('configurations/auto_generated_files_internal/data_mapped.json');
     socket.emit(WebsocketName.server_send_configurations, configuration);
   }
 
@@ -237,7 +237,7 @@ export class OSCVrChat {
   }
 
   private getinputconfiguration(socket: SocketType): void {
-    const inputs = JSON.parse(FileService.getFile('configurations/user_defined_data/input.json'))
+    const inputs: Array<string> = FileService.getFileJson<Array<string>>('configurations/user_defined_data/input.json')
       .map((input: string) => `!${input}`);
 
     socket.emit(WebsocketName.server_send_input_configurations, inputs);

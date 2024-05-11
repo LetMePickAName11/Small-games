@@ -1,7 +1,6 @@
 [
   {
     "size": 2,
-    "type": "i",
     "name": "Pawn_White_1_Promotion",
     "objectNames": [
       "Pawn_White_1/Pawn",
@@ -9,13 +8,11 @@
       "Pawn_White_1/Knight"
     ],
     "shaderParameters": [
-      "FirstBitsPromotion",
-      "LastBitsPromotion"
+      "Promotion"
     ]
   },
   {
     "size": 2,
-    "type": "i",
     "name": "Pawn_White_2_Promotion",
     "objectNames": [
       "Pawn_White_2/Pawn",
@@ -23,13 +20,11 @@
       "Pawn_White_2/Knight"
     ],
     "shaderParameters": [
-      "FirstBitsPromotion",
-      "LastBitsPromotion"
+      "Promotion"
     ]
   },
   {
     "size": 2,
-    "type": "i",
     "name": "Pawn_White_3_Promotion",
     "objectNames": [
       "Pawn_White_3/Pawn",
@@ -37,13 +32,11 @@
       "Pawn_White_3/Knight"
     ],
     "shaderParameters": [
-      "FirstBitsPromotion",
-      "LastBitsPromotion"
+      "Promotion"
     ]
   },
   {
     "size": 2,
-    "type": "i",
     "name": "Pawn_White_4_Promotion",
     "objectNames": [
       "Pawn_White_4/Pawn",
@@ -51,13 +44,11 @@
       "Pawn_White_4/Knight"
     ],
     "shaderParameters": [
-      "FirstBitsPromotion",
-      "LastBitsPromotion"
+      "Promotion"
     ]
   },
   {
     "size": 2,
-    "type": "i",
     "name": "Pawn_White_5_Promotion",
     "objectNames": [
       "Pawn_White_5/Pawn",
@@ -65,13 +56,11 @@
       "Pawn_White_5/Knight"
     ],
     "shaderParameters": [
-      "FirstBitsPromotion",
-      "LastBitsPromotion"
+      "Promotion"
     ]
   },
   {
     "size": 2,
-    "type": "i",
     "name": "Pawn_White_6_Promotion",
     "objectNames": [
       "Pawn_White_6/Pawn",
@@ -79,13 +68,11 @@
       "Pawn_White_6/Knight"
     ],
     "shaderParameters": [
-      "FirstBitsPromotion",
-      "LastBitsPromotion"
+      "Promotion"
     ]
   },
   {
     "size": 2,
-    "type": "i",
     "name": "Pawn_White_7_Promotion",
     "objectNames": [
       "Pawn_White_7/Pawn",
@@ -93,13 +80,11 @@
       "Pawn_White_7/Knight"
     ],
     "shaderParameters": [
-      "FirstBitsPromotion",
-      "LastBitsPromotion"
+      "Promotion"
     ]
   },
   {
     "size": 2,
-    "type": "i",
     "name": "Pawn_White_8_Promotion",
     "objectNames": [
       "Pawn_White_8/Pawn",
@@ -107,13 +92,11 @@
       "Pawn_White_8/Knight"
     ],
     "shaderParameters": [
-      "FirstBitsPromotion",
-      "LastBitsPromotion"
+      "Promotion"
     ]
   },
   {
     "size": 2,
-    "type": "i",
     "name": "Pawn_Black_1_Promotion",
     "objectNames": [
       "Pawn_Black_1/Pawn",
@@ -121,13 +104,11 @@
       "Pawn_Black_1/Knight"
     ],
     "shaderParameters": [
-      "FirstBitsPromotion",
-      "LastBitsPromotion"
+      "Promotion"
     ]
   },
   {
     "size": 2,
-    "type": "i",
     "name": "Pawn_Black_2_Promotion",
     "objectNames": [
       "Pawn_Black_2/Pawn",
@@ -135,13 +116,11 @@
       "Pawn_Black_2/Knight"
     ],
     "shaderParameters": [
-      "FirstBitsPromotion",
-      "LastBitsPromotion"
+      "Promotion"
     ]
   },
   {
     "size": 2,
-    "type": "i",
     "name": "Pawn_Black_3_Promotion",
     "objectNames": [
       "Pawn_Black_3/Pawn",
@@ -149,13 +128,11 @@
       "Pawn_Black_3/Knight"
     ],
     "shaderParameters": [
-      "FirstBitsPromotion",
-      "LastBitsPromotion"
+      "Promotion"
     ]
   },
   {
     "size": 2,
-    "type": "i",
     "name": "Pawn_Black_4_Promotion",
     "objectNames": [
       "Pawn_Black_4/Pawn",
@@ -163,13 +140,11 @@
       "Pawn_Black_4/Knight"
     ],
     "shaderParameters": [
-      "FirstBitsPromotion",
-      "LastBitsPromotion"
+      "Promotion"
     ]
   },
   {
     "size": 2,
-    "type": "i",
     "name": "Pawn_Black_5_Promotion",
     "objectNames": [
       "Pawn_Black_5/Pawn",
@@ -177,13 +152,11 @@
       "Pawn_Black_5/Knight"
     ],
     "shaderParameters": [
-      "FirstBitsPromotion",
-      "LastBitsPromotion"
+      "Promotion"
     ]
   },
   {
     "size": 2,
-    "type": "i",
     "name": "Pawn_Black_6_Promotion",
     "objectNames": [
       "Pawn_Black_6/Pawn",
@@ -191,13 +164,11 @@
       "Pawn_Black_6/Knight"
     ],
     "shaderParameters": [
-      "FirstBitsPromotion",
-      "LastBitsPromotion"
+      "Promotion"
     ]
   },
   {
     "size": 2,
-    "type": "i",
     "name": "Pawn_Black_7_Promotion",
     "objectNames": [
       "Pawn_Black_7/Pawn",
@@ -205,13 +176,11 @@
       "Pawn_Black_7/Knight"
     ],
     "shaderParameters": [
-      "FirstBitsPromotion",
-      "LastBitsPromotion"
+      "Promotion"
     ]
   },
   {
     "size": 2,
-    "type": "i",
     "name": "Pawn_Black_8_Promotion",
     "objectNames": [
       "Pawn_Black_8/Pawn",
@@ -219,13 +188,11 @@
       "Pawn_Black_8/Knight"
     ],
     "shaderParameters": [
-      "FirstBitsPromotion",
-      "LastBitsPromotion"
+      "Promotion"
     ]
   },
   {
     "size": 6,
-    "type": "i",
     "name": "Pawn_White_1_Position",
     "objectNames": [
       "Pawn_White_1/Pawn",
@@ -233,13 +200,11 @@
       "Pawn_White_1/Knight"
     ],
     "shaderParameters": [
-      "FirstBitsPosition",
-      "LastBitsPosition"
+      "Position"
     ]
   },
   {
     "size": 6,
-    "type": "i",
     "name": "Pawn_White_2_Position",
     "objectNames": [
       "Pawn_White_2/Pawn",
@@ -247,13 +212,11 @@
       "Pawn_White_2/Knight"
     ],
     "shaderParameters": [
-      "FirstBitsPosition",
-      "LastBitsPosition"
+      "Position"
     ]
   },
   {
     "size": 6,
-    "type": "i",
     "name": "Pawn_White_3_Position",
     "objectNames": [
       "Pawn_White_3/Pawn",
@@ -261,13 +224,11 @@
       "Pawn_White_3/Knight"
     ],
     "shaderParameters": [
-      "FirstBitsPosition",
-      "LastBitsPosition"
+      "Position"
     ]
   },
   {
     "size": 6,
-    "type": "i",
     "name": "Pawn_White_4_Position",
     "objectNames": [
       "Pawn_White_4/Pawn",
@@ -275,13 +236,11 @@
       "Pawn_White_4/Knight"
     ],
     "shaderParameters": [
-      "FirstBitsPosition",
-      "LastBitsPosition"
+      "Position"
     ]
   },
   {
     "size": 6,
-    "type": "i",
     "name": "Pawn_White_5_Position",
     "objectNames": [
       "Pawn_White_5/Pawn",
@@ -289,13 +248,11 @@
       "Pawn_White_5/Knight"
     ],
     "shaderParameters": [
-      "FirstBitsPosition",
-      "LastBitsPosition"
+      "Position"
     ]
   },
   {
     "size": 6,
-    "type": "i",
     "name": "Pawn_White_6_Position",
     "objectNames": [
       "Pawn_White_6/Pawn",
@@ -303,13 +260,11 @@
       "Pawn_White_6/Knight"
     ],
     "shaderParameters": [
-      "FirstBitsPosition",
-      "LastBitsPosition"
+      "Position"
     ]
   },
   {
     "size": 6,
-    "type": "i",
     "name": "Pawn_White_7_Position",
     "objectNames": [
       "Pawn_White_7/Pawn",
@@ -317,13 +272,11 @@
       "Pawn_White_7/Knight"
     ],
     "shaderParameters": [
-      "FirstBitsPosition",
-      "LastBitsPosition"
+      "Position"
     ]
   },
   {
     "size": 6,
-    "type": "i",
     "name": "Pawn_White_8_Position",
     "objectNames": [
       "Pawn_White_8/Pawn",
@@ -331,13 +284,11 @@
       "Pawn_White_8/Knight"
     ],
     "shaderParameters": [
-      "FirstBitsPosition",
-      "LastBitsPosition"
+      "Position"
     ]
   },
   {
     "size": 6,
-    "type": "i",
     "name": "Pawn_Black_1_Position",
     "objectNames": [
       "Pawn_Black_1/Pawn",
@@ -345,13 +296,11 @@
       "Pawn_Black_1/Knight"
     ],
     "shaderParameters": [
-      "FirstBitsPosition",
-      "LastBitsPosition"
+      "Position"
     ]
   },
   {
     "size": 6,
-    "type": "i",
     "name": "Pawn_Black_2_Position",
     "objectNames": [
       "Pawn_Black_2/Pawn",
@@ -359,13 +308,11 @@
       "Pawn_Black_2/Knight"
     ],
     "shaderParameters": [
-      "FirstBitsPosition",
-      "LastBitsPosition"
+      "Position"
     ]
   },
   {
     "size": 6,
-    "type": "i",
     "name": "Pawn_Black_3_Position",
     "objectNames": [
       "Pawn_Black_3/Pawn",
@@ -373,13 +320,11 @@
       "Pawn_Black_3/Knight"
     ],
     "shaderParameters": [
-      "FirstBitsPosition",
-      "LastBitsPosition"
+      "Position"
     ]
   },
   {
     "size": 6,
-    "type": "i",
     "name": "Pawn_Black_4_Position",
     "objectNames": [
       "Pawn_Black_4/Pawn",
@@ -387,13 +332,11 @@
       "Pawn_Black_4/Knight"
     ],
     "shaderParameters": [
-      "FirstBitsPosition",
-      "LastBitsPosition"
+      "Position"
     ]
   },
   {
     "size": 6,
-    "type": "i",
     "name": "Pawn_Black_5_Position",
     "objectNames": [
       "Pawn_Black_5/Pawn",
@@ -401,13 +344,11 @@
       "Pawn_Black_5/Knight"
     ],
     "shaderParameters": [
-      "FirstBitsPosition",
-      "LastBitsPosition"
+      "Position"
     ]
   },
   {
     "size": 6,
-    "type": "i",
     "name": "Pawn_Black_6_Position",
     "objectNames": [
       "Pawn_Black_6/Pawn",
@@ -415,13 +356,11 @@
       "Pawn_Black_6/Knight"
     ],
     "shaderParameters": [
-      "FirstBitsPosition",
-      "LastBitsPosition"
+      "Position"
     ]
   },
   {
     "size": 6,
-    "type": "i",
     "name": "Pawn_Black_7_Position",
     "objectNames": [
       "Pawn_Black_7/Pawn",
@@ -429,13 +368,11 @@
       "Pawn_Black_7/Knight"
     ],
     "shaderParameters": [
-      "FirstBitsPosition",
-      "LastBitsPosition"
+      "Position"
     ]
   },
   {
     "size": 6,
-    "type": "i",
     "name": "Pawn_Black_8_Position",
     "objectNames": [
       "Pawn_Black_8/Pawn",
@@ -443,307 +380,257 @@
       "Pawn_Black_8/Knight"
     ],
     "shaderParameters": [
-      "FirstBitsPosition",
-      "LastBitsPosition"
+      "Position"
     ]
   },
   {
     "size": 6,
-    "type": "i",
     "name": "Rook_White_1_Position",
     "objectNames": [
       "Rook_White_1/Rook"
     ],
     "shaderParameters": [
-      "FirstBitsPosition",
-      "LastBitsPosition"
+      "Position"
     ]
   },
   {
     "size": 6,
-    "type": "i",
     "name": "Rook_White_2_Position",
     "objectNames": [
       "Rook_White_2/Rook"
     ],
     "shaderParameters": [
-      "FirstBitsPosition",
-      "LastBitsPosition"
+      "Position"
     ]
   },
   {
     "size": 6,
-    "type": "i",
     "name": "Rook_Black_1_Position",
     "objectNames": [
       "Rook_Black_1/Rook"
     ],
     "shaderParameters": [
-      "FirstBitsPosition",
-      "LastBitsPosition"
+      "Position"
     ]
   },
   {
     "size": 6,
-    "type": "i",
     "name": "Rook_Black_2_Position",
     "objectNames": [
       "Rook_Black_2/Rook"
     ],
     "shaderParameters": [
-      "FirstBitsPosition",
-      "LastBitsPosition"
+      "Position"
     ]
   },
   {
     "size": 5,
-    "type": "i",
     "name": "Bishop_White_1_Position",
     "objectNames": [
       "Bishop_White_1/Bishop"
     ],
     "shaderParameters": [
-      "FirstBitsPosition",
-      "LastBitsPosition"
+      "Position"
     ]
   },
   {
     "size": 5,
-    "type": "i",
     "name": "Bishop_White_2_Position",
     "objectNames": [
       "Bishop_White_2/Bishop"
     ],
     "shaderParameters": [
-      "FirstBitsPosition",
-      "LastBitsPosition"
+      "Position"
     ]
   },
   {
     "size": 5,
-    "type": "i",
     "name": "Bishop_Black_1_Position",
     "objectNames": [
       "Bishop_Black_1/Bishop"
     ],
     "shaderParameters": [
-      "FirstBitsPosition",
-      "LastBitsPosition"
+      "Position"
     ]
   },
   {
     "size": 5,
-    "type": "i",
     "name": "Bishop_Black_2_Position",
     "objectNames": [
       "Bishop_Black_2/Bishop"
     ],
     "shaderParameters": [
-      "FirstBitsPosition",
-      "LastBitsPosition"
+      "Position"
     ]
   },
   {
     "size": 6,
-    "type": "i",
     "name": "Knight_White_1_Position",
     "objectNames": [
       "Knight_White_1/Knight"
     ],
     "shaderParameters": [
-      "FirstBitsPosition",
-      "LastBitsPosition"
+      "Position"
     ]
   },
   {
     "size": 6,
-    "type": "i",
     "name": "Knight_White_2_Position",
     "objectNames": [
       "Knight_White_2/Knight"
     ],
     "shaderParameters": [
-      "FirstBitsPosition",
-      "LastBitsPosition"
+      "Position"
     ]
   },
   {
     "size": 6,
-    "type": "i",
     "name": "Knight_Black_1_Position",
     "objectNames": [
       "Knight_Black_1/Knight"
     ],
     "shaderParameters": [
-      "FirstBitsPosition",
-      "LastBitsPosition"
+      "Position"
     ]
   },
   {
     "size": 6,
-    "type": "i",
     "name": "Knight_Black_2_Position",
     "objectNames": [
       "Knight_Black_2/Knight"
     ],
     "shaderParameters": [
-      "FirstBitsPosition",
-      "LastBitsPosition"
+      "Position"
     ]
   },
   {
     "size": 6,
-    "type": "i",
     "name": "Queen_White_1_Position",
     "objectNames": [
       "Queen_White_1/Queen"
     ],
     "shaderParameters": [
-      "FirstBitsPosition",
-      "LastBitsPosition"
+      "Position"
     ]
   },
   {
     "size": 6,
-    "type": "i",
     "name": "King_White_1_Position",
     "objectNames": [
       "King_White_1/King"
     ],
     "shaderParameters": [
-      "FirstBitsPosition",
-      "LastBitsPosition"
+      "Position"
     ]
   },
   {
     "size": 6,
-    "type": "i",
     "name": "Queen_Black_1_Position",
     "objectNames": [
       "Queen_Black_1/Queen"
     ],
     "shaderParameters": [
-      "FirstBitsPosition",
-      "LastBitsPosition"
+      "Position"
     ]
   },
   {
     "size": 6,
-    "type": "i",
     "name": "King_Black_1_Position",
     "objectNames": [
       "King_Black_1/King"
     ],
     "shaderParameters": [
-      "FirstBitsPosition",
-      "LastBitsPosition"
+      "Position"
     ]
   },
   {
     "size": 1,
-    "type": "i",
     "name": "Rook_White_Both_Captured",
     "objectNames": [
       "Rook_White_1/Rook",
       "Rook_White_2/Rook"
     ],
     "shaderParameters": [
-      "FirstBitsBothCaptured",
-      "LastBitsBothCaptured"
+      "BothCaptured"
     ]
   },
   {
     "size": 1,
-    "type": "i",
     "name": "Rook_Black_Both_Captured",
     "objectNames": [
       "Rook_Black_1/Rook",
       "Rook_Black_2/Rook"
     ],
     "shaderParameters": [
-      "FirstBitsBothCaptured",
-      "LastBitsBothCaptured"
+      "BothCaptured"
     ]
   },
   {
     "size": 1,
-    "type": "i",
     "name": "Bishop_White_Both_Captured",
     "objectNames": [
       "Bishop_White_1/Bishop",
       "Bishop_White_2/Bishop"
     ],
     "shaderParameters": [
-      "FirstBitsBothCaptured",
-      "LastBitsBothCaptured"
+      "BothCaptured"
     ]
   },
   {
     "size": 1,
-    "type": "i",
     "name": "Bishop_Black_Both_Captured",
     "objectNames": [
       "Bishop_Black_1/Bishop",
       "Bishop_Black_2/Bishop"
     ],
     "shaderParameters": [
-      "FirstBitsBothCaptured",
-      "LastBitsBothCaptured"
+      "BothCaptured"
     ]
   },
   {
     "size": 1,
-    "type": "i",
     "name": "Knight_White_Both_Captured",
     "objectNames": [
       "Knight_White_1/Knight",
       "Knight_White_2/Knight"
     ],
     "shaderParameters": [
-      "FirstBitsBothCaptured",
-      "LastBitsBothCaptured"
+      "BothCaptured"
     ]
   },
   {
     "size": 1,
-    "type": "i",
     "name": "Knight_Black_Both_Captured",
     "objectNames": [
       "Knight_Black_1/Knight",
       "Knight_Black_2/Knight"
     ],
     "shaderParameters": [
-      "FirstBitsBothCaptured",
-      "LastBitsBothCaptured"
+      "BothCaptured"
     ]
   },
   {
     "size": 1,
-    "type": "i",
     "name": "Queen_White_1_Captured",
     "objectNames": [
       "Queen_White_1/Queen"
     ],
     "shaderParameters": [
-      "FirstBitsBothCaptured",
-      "LastBitsBothCaptured"
+      "BothCaptured"
     ]
   },
   {
     "size": 1,
-    "type": "i",
     "name": "Queen_Black_1_Captured",
     "objectNames": [
       "Queen_Black_1/Queen"
     ],
     "shaderParameters": [
-      "FirstBitsBothCaptured",
-      "LastBitsBothCaptured"
+      "BothCaptured"
     ]
   },
   {
     "size": 5,
-    "type": "i",
     "name": "Selected_Piece",
     "objectNames": [
       "Rook_White_1/Rook",
@@ -812,25 +699,21 @@
       "Pawn_Black_8/Knight"
     ],
     "shaderParameters": [
-      "FirstBitsSelectedPiece",
-      "LastBitsSelectedPiece"
+      "SelectedPiece"
     ]
   },
   {
     "size": 6,
-    "type": "i",
     "name": "Selected_Position",
     "objectNames": [
       "Selected_Position"
     ],
     "shaderParameters": [
-      "FirstBitsSelectedPosition",
-      "LastBitsSelectedPosition"
+      "SelectedPosition"
     ]
   },
   {
     "size": 1,
-    "type": "i",
     "name": "Selected_Piece_Shown",
     "objectNames": [
       "Rook_White_1/Rook",
@@ -899,20 +782,17 @@
       "Pawn_Black_8/Knight"
     ],
     "shaderParameters": [
-      "FirstBitsSelectedPieceShown",
-      "LastBitsSelectedPieceShown"
+      "SelectedPieceShown"
     ]
   },
   {
     "size": 1,
-    "type": "i",
     "name": "Selected_Position_Shown",
     "objectNames": [
       "Selected_Position"
     ],
     "shaderParameters": [
-      "FirstBitsSelectedPositionShown",
-      "LastBitsSelectedPositionShown"
+      "SelectedPositionShown"
     ]
   }
 ]

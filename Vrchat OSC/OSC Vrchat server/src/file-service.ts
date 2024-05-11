@@ -6,6 +6,10 @@ export class FileService {
     return fs.readFileSync(path, 'utf8');
   }
 
+  public static getFileJson<T>(path: string): T {
+    return JSON.parse(FileService.getFile(path)) as T;
+  }
+
   public static writeToFile(path: string, val: string | object): void {
     const content = typeof val === 'string' ? val : JSON.stringify(val, null, 2);
     fs.ensureFileSync(path);

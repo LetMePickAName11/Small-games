@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { Socket, io } from 'socket.io-client';
-import { Configuration, InputData, WebsocketName, WebsocketNames, WebsocketWrapper, defaultWebsocketWrapper } from 'shared-lib';
+import { BitAllocation, InputData, WebsocketName, WebsocketNames, WebsocketWrapper, defaultWebsocketWrapper } from 'shared-lib';
 
 @Injectable({
   providedIn: 'root'
@@ -14,7 +14,7 @@ export class WebSocketService {
   public $cachedGameState: BehaviorSubject<Array<WebsocketWrapper>> = new BehaviorSubject<Array<WebsocketWrapper>>([]);
   public $cachedOscInput: BehaviorSubject<Array<InputData>> = new BehaviorSubject<Array<InputData>>([]);
   
-  public $configuration: BehaviorSubject<Array<Configuration>> = new BehaviorSubject<Array<Configuration>>([]);
+  public $configuration: BehaviorSubject<Array<BitAllocation>> = new BehaviorSubject<Array<BitAllocation>>([]);
   public $inputConfigurations: BehaviorSubject<Array<string>> = new BehaviorSubject<Array<string>>([]);
 
   private readonly socket: Socket;
@@ -35,7 +35,7 @@ export class WebSocketService {
     await this.waitForMilliseconds(300);
   }
 
-  public async sendConfigurationUpdate(update: Array<Configuration>): Promise<void> {
+  public async sendConfigurationUpdate(update: Array<BitAllocation>): Promise<void> {
     this.sendMessage(WebsocketName.client_send_configuration_update, update);
     await this.waitForMilliseconds(300);
   }
@@ -98,7 +98,7 @@ export class WebSocketService {
       this.$cachedOscInput.next([packedInfo, ...prevVal]);
     });
 
-    this.socket.on(WebsocketName.client_recieve_configurations, (message: Array<Configuration>) => {
+    this.socket.on(WebsocketName.client_recieve_configurations, (message: Array<BitAllocation>) => {
       console.log("Received client_recieve_configurations:", message);
       this.$configuration.next(message);
     });

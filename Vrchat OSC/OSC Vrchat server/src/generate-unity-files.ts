@@ -36,8 +36,7 @@ export class GenerateUnityFiles {
     const shaderToGameObjectMap: ShaderToGameObjectMap = {};
 
     // Read the JSON data from the file
-    const entries: Entry[] = JSON.parse(FileService.getFile(this.outputInternalDirectory + 'data_mapped.json'));
-
+    const entries: Array<BitAllocation> = FileService.getFileJson(this.outputInternalDirectory + 'data_mapped.json');
     // First, map each game object to all its shader parameters
     for (const entry of entries) {
       const objectNames: Array<string> = entry.objectNames;
@@ -74,39 +73,59 @@ export class GenerateUnityFiles {
   private generateDataMapped(): void {
     let startIndex: number = 0;
     const bitAllocations: Array<BitAllocation> = [];
-    const data: Array<BitAllocation> = JSON.parse(FileService.getFile(this.userInputDirectory + 'data.json'))
-    for (const bitAllocation of data) {
+    const configData: Array<BitAllocation> = FileService.getFileJson(this.userInputDirectory + 'data.json');
+    const inputData: Array<string> = FileService.getFileJson(this.userInputDirectory + 'input.json');
+
+    // Sort configData by size in descending order
+    const sortedConfigData = configData.sort((a, b) => b.size - a.size);
+
+    for (const bitAllocation of sortedConfigData) {
       const range: { start: number, end: number } = {
-        'start': startIndex,
-        'end': startIndex + bitAllocation.size
+        start: startIndex,
+        end: startIndex + bitAllocation.size - 1
       };
 
       const res: BitAllocation = {
         ...bitAllocation,
-        'range': range,
-        'startName': this.bitIndexToEightBitName[(range['start'] - range['start'] % 8) / 8]!,
-        'endName': this.bitIndexToEightBitName[(range['start'] - range['start'] % 8) / 8 + 1]!,
-        'bitIndex': range['start'] % 16
-      }
+        range: range,
+        lsbName: this.bitIndexToEightBitName[(range.start - range.start % 8) / 8]!,
+        msbName: this.bitIndexToEightBitName[(range.start - range.start % 8) / 8 + 1]!,
+        bitIndex: 15 - (range.start % 16),
+        shaderParameters: [`LSB${bitAllocation.shaderParameters}`, `MSB${bitAllocation.shaderParameters}`]
+      };
       startIndex += bitAllocation.size;
-      bitAllocations.push(res)
+      bitAllocations.push(res);
     }
-
 
     const allocatedBitsSize: number = bitAllocations.reduce((acc, val) => acc + val.size, 0);
+    const allocatedInputBitsSize: number = inputData.length; // Input data is array of 1-bits
     const overflowBits: number = allocatedBitsSize % 8;
-    let overflowNumber: number = 1
 
     if (overflowBits !== 0) {
-      for (let i = bitAllocations.length - overflowBits; i < bitAllocations.length; i++) {
-        bitAllocations[i]!.startName = `Overflow_bit_${overflowNumber}`;
-        bitAllocations[i]!.endName = `Overflow_bit_${overflowNumber}`;
-        overflowNumber += 1;
-      }
+      const minrange = allocatedBitsSize - overflowBits;
+      const overflows = bitAllocations.filter(b => b.range.start >= minrange);
+
+      // Remove the overflow bit allocations from the original array
+      bitAllocations.length -= overflows.length;
+
+      overflows.forEach((overflow, index) => {
+        for (let i = 0; i < overflow.size; i++) {
+          bitAllocations.push({
+            range: { start: overflow.range.start + i, end: overflow.range.start + i },
+            size: 1,
+            name: overflow.name,
+            lsbName: `overflow${index}_${i}`,
+            msbName: `overflow${index}_${i}`,
+            bitIndex: 0,
+            objectNames: overflow.objectNames,
+            shaderParameters: overflow.shaderParameters,
+          });
+        }
+      });
     }
 
-    if (allocatedBitsSize > 256) {
-      throw new Error(`Too many bits allocated (limit 256): ${allocatedBitsSize}`)
+    if (allocatedBitsSize + allocatedInputBitsSize > 256) {
+      throw new Error(`Too many bits allocated (limit 256): ${allocatedBitsSize} + ${allocatedInputBitsSize}`);
     }
 
     FileService.writeToFile(this.outputInternalDirectory + 'data_mapped.json', bitAllocations);
@@ -123,21 +142,21 @@ export class GenerateUnityFiles {
     };
 
     const mapDataToParamters = (input: string) => {
-      const data = JSON.parse(FileService.getFile(input));
+      const data: Array<BitAllocation> = FileService.getFileJson(input);
       const chunks: Array<string> = [];
       const overflows: Array<string> = [];
 
       for (const d of data) {
-        if (!d.startName.includes('Overflow')) {
-          if (!chunks.includes(d.startName)) {
-            chunks.push(d.startName);
+        if (!d.lsbName.includes('Overflow')) {
+          if (!chunks.includes(d.lsbName)) {
+            chunks.push(d.lsbName);
           }
-          if (!chunks.includes(d.endName)) {
-            chunks.push(d.endName);
+          if (!chunks.includes(d.msbName)) {
+            chunks.push(d.msbName);
           }
         }
-        else if (!overflows.includes(d.startName)) {
-          overflows.push(d.startName)
+        else if (!overflows.includes(d.lsbName)) {
+          overflows.push(d.lsbName)
         }
       }
 
@@ -175,37 +194,6 @@ export class GenerateUnityFiles {
   }
 
   private generateAnimations(): void {
-    const mapJsonConfig = (inputPath: string): Record<string, ShaderData> => {
-      const data = JSON.parse(FileService.getFile(inputPath));
-
-      const groupedData: Record<string, ShaderData> = {};
-
-      for (const item of data) {
-        const startShader: string = `${item.startName}_start`;
-        const endShader: string = `${item.endName}_end`;
-
-        if (!groupedData[startShader]) {
-          groupedData[startShader] = { objectNames: [], shaderParameters: new Set<string>() };
-        }
-        if (!groupedData[endShader]) {
-          groupedData[endShader] = { objectNames: [], shaderParameters: new Set<string>() };
-        }
-
-        groupedData[startShader]!.objectNames.push(...item.objectNames);
-        groupedData[endShader]!.objectNames.push(...item.objectNames);
-        item.shaderParameters.forEach((param: string) => {
-          groupedData[startShader]!.shaderParameters.add(param);
-          groupedData[endShader]!.shaderParameters.add(param);
-        });
-      }
-
-      for (const shader in groupedData) {
-        groupedData[shader]!.shaderParameters = new Set([...groupedData[shader]!.shaderParameters]);
-      }
-
-      return groupedData;
-    }
-
     const generateFloatCurve = (value: number, attribute: string, path: string): string => {
       return `
       - serializedVersion: 2
@@ -323,24 +311,63 @@ export class GenerateUnityFiles {
       m_Events: []`;
     }
 
-    const data: Record<string, ShaderData> = mapJsonConfig(this.outputInternalDirectory + 'data_mapped.json');
+    const generateAnimationPairData = (suffix: string, allocations: Array<BitAllocation>) =>{
+      const defaultValue: number = suffix === 'Start' ? 0 : 255;
+      const attributeId: number = this.generateUniqueId();
+      const pathId: number = this.generateUniqueId();
 
-    for (const [key, value] of Object.entries(data)) {
-      const nameBase: string = key.split(key.includes('_start') ? '_start' : '_end').slice(0, -1).join('_');
+      return [
+        allocations.map((allocation: BitAllocation) => {
+          return allocation.objectNames.map((path: string) => generateFloatCurve(defaultValue, `_${allocation.shaderParameters[0]}`, path)).join('');
+        }).join(''),
 
+        allocations.map((allocation: BitAllocation) => {
+          return allocation.objectNames
+            .map((_: string) => generateGenericBinding(pathId, attributeId)).join('');
+        }).join(''),
+
+        allocations.map((allocation: BitAllocation) => {
+          return allocation.objectNames.map((path: string) => generateEditorCurves(defaultValue, `_${allocation.shaderParameters[0]}`, path)).join('');
+        }).join('')
+      ];
+    }
+
+    const data: Array<BitAllocation> = FileService.getFileJson(this.outputInternalDirectory + 'data_mapped.json');
+
+    const uniqueStartNames: Array<string> = Array.from(
+      new Set(data.map(promotion => promotion.lsbName).concat(data.map(promotion => promotion.msbName)))
+    );
+
+
+    for (const name of uniqueStartNames){
       ['Start', 'End'].forEach((suffix: string) => {
-        const defaultValue: number = suffix === 'Start' ? 0 : 255;
-        const attributeId: number = this.generateUniqueId();
-        const pathId: number = this.generateUniqueId();
-        const outputPath: string = `${this.outputExternalDirectory}Animations/${nameBase}_${suffix}.anim`;
-        const outputMetaPath: string = `${this.outputExternalDirectory}Animations/${nameBase}_${suffix}.anim.meta`;
-        const floatCurves: string = value.objectNames.flatMap((path: string) => Array.from(value.shaderParameters).map((attribute: string) => generateFloatCurve(defaultValue, `_${attribute}`, path))).join('');
-        const genericBindings: string = new Array(value.objectNames.length * value.shaderParameters.size).fill(generateGenericBinding(pathId, attributeId)).join('');
-        const editorCurves: string = value.objectNames.flatMap((path: string) => Array.from(value.shaderParameters).map((attribute: string) => generateEditorCurves(defaultValue, `_${attribute}`, path))).join('');
+        const [newFloatCurves, newGenericBindings, newEditorCurves]: Array<string> = generateAnimationPairData(suffix, data.filter((bitAllocation: BitAllocation) => bitAllocation.lsbName === name).map((bitAllocation: BitAllocation) => {
+          return {
+            ...bitAllocation,
+            shaderParameters: [
+              bitAllocation.shaderParameters[0]!
+            ]
+          }
+        }));
+        const [newFloatCurves2, newGenericBindings2, newEditorCurves2]: Array<string> = generateAnimationPairData(suffix, data.filter((bitAllocation: BitAllocation) => bitAllocation.msbName === name).map((bitAllocation: BitAllocation) => {
+          return {
+            ...bitAllocation,
+            shaderParameters: [
+              bitAllocation.shaderParameters[1]!
+            ]
+          }
+        }));
 
+        const floatCurves: string = newFloatCurves + newFloatCurves2!;
+        const genericBindings: string = newGenericBindings + newGenericBindings2!;
+        const editorCurves: string = newEditorCurves + newEditorCurves2!;
+
+        const outputPath: string = `${this.outputExternalDirectory}Animations/${name}_${suffix}.anim`;
+        const outputMetaPath: string = `${this.outputExternalDirectory}Animations/${name}_${suffix}.anim.meta`;
+  
         FileService.copyFile(this.templateDirectory + 'animation_base.anim', outputPath);
-        FileService.appendToFile(outputPath, generateAnimationClip(`${nameBase}_${suffix}`, floatCurves, genericBindings, editorCurves));
-
+        FileService.appendToFile(outputPath, generateAnimationClip(`${name}_${suffix}`, floatCurves, genericBindings, editorCurves));
+  
         FileService.copyFile(this.templateDirectory + 'animation_base.anim.meta', outputMetaPath);
         FileService.replaceInFile(outputMetaPath, '__[REPLACEME]__', this.generateGuid());
       });
@@ -348,25 +375,25 @@ export class GenerateUnityFiles {
   }
 
   private generateAnimatorController(): void {
-    const mapJsonConfig = (input_path: string) => {
-      const data: Array<{ startName: string, endName: string }> = JSON.parse(FileService.getFile(input_path));
+    const mapJsonConfig = () => {
+      const data: Array<BitAllocation> = FileService.getFileJson(this.outputInternalDirectory + 'data_mapped.json');
       const uniqueNames: Set<string> = new Set();
 
       for (const item of data) {
-        uniqueNames.add(item.startName);
-        uniqueNames.add(item.endName);
+        uniqueNames.add(item.lsbName);
+        uniqueNames.add(item.msbName);
       }
 
       const uniqueNameList: Array<string> = Array.from(uniqueNames).sort();
 
       const animatorData: AnimatorData = {
-        'name': uniqueNameList,
-        'animator_state_machine_id': Array.from({ length: uniqueNameList.length }, (_, __) => this.generateUniqueId()),
-        'animator_state_id': Array.from({ length: uniqueNameList.length }, (_, __) => this.generateUniqueId()),
-        'animator_state_transition_id': Array.from({ length: uniqueNameList.length }, (_, __) => this.generateUniqueId()),
-        'blend_tree_id': Array.from({ length: uniqueNameList.length }, (_, __) => this.generateUniqueId()),
-        'min_threshold': new Array(uniqueNameList.length).fill(0),
-        'max_threshold': new Array(uniqueNameList.length).fill(255),
+        name: uniqueNameList,
+        animatorStateMachineId: Array.from({ length: uniqueNameList.length }, (_, __) => this.generateUniqueId()),
+        animatorStateId: Array.from({ length: uniqueNameList.length }, (_, __) => this.generateUniqueId()),
+        animatorStateTransitionId: Array.from({ length: uniqueNameList.length }, (_, __) => this.generateUniqueId()),
+        blendTreeId: Array.from({ length: uniqueNameList.length }, (_, __) => this.generateUniqueId()),
+        minThreshold: new Array(uniqueNameList.length).fill(0),
+        maxThreshold: new Array(uniqueNameList.length).fill(255),
       };
 
       return animatorData;
@@ -545,24 +572,23 @@ AnimatorStateTransition:
     FileService.replaceInFile(animatiorControllerMetaOutputPath, '__[REPLACEME]__', this.generateGuid());
 
     FileService.copyFile(this.templateDirectory + 'animator_controller_base.controller', animatiorControllerOutputPath);
-    const jsonData = mapJsonConfig(this.outputInternalDirectory + 'data_mapped.json');
+    const jsonData: AnimatorData = mapJsonConfig();
 
-
-    const animatorParameters: string = jsonData['name'].map((name: string) => generateAnimatorParameter(name)).join('');
-    const animatorLayers: string = jsonData['name'].map((name: string, index: number) => generateAnimatorLayer(name, jsonData['animator_state_machine_id'][index]!)).join('');
+    const animatorParameters: string = jsonData.name.map((name: string) => generateAnimatorParameter(name)).join('');
+    const animatorLayers: string = jsonData.name.map((name: string, index: number) => generateAnimatorLayer(name, jsonData.animatorStateMachineId[index]!)).join('');
 
     FileService.appendToFile(animatiorControllerOutputPath, generateAnimatorController(animatorParameters, animatorLayers));
 
     const animationNames: Array<string> = FileService.getFileNamesInDir(this.outputExternalDirectory + 'Animations').filter((v: string) => v.includes('.meta'));
 
-    for (let i = 0; i < jsonData['name'].length; i++) {
-      const name: string = jsonData['name'][i]!;
-      const animatorStateMachineId: number = jsonData['animator_state_machine_id'][i]!;
-      const animatorStateId: number = jsonData['animator_state_id'][i]!;
-      const animatorStateTransitionId: number = jsonData['animator_state_transition_id'][i]!;
-      const blendTreeId: number = jsonData['blend_tree_id'][i]!;
-      const minT: number = jsonData['min_threshold'][i]!;
-      const maxT: number = jsonData['max_threshold'][i]!;
+    for (let i = 0; i < jsonData.name.length; i++) {
+      const name: string = jsonData.name[i]!;
+      const animatorStateMachineId: number = jsonData.animatorStateMachineId[i]!;
+      const animatorStateId: number = jsonData.animatorStateId[i]!;
+      const animatorStateTransitionId: number = jsonData.animatorStateTransitionId[i]!;
+      const blendTreeId: number = jsonData.blendTreeId[i]!;
+      const minT: number = jsonData.minThreshold[i]!;
+      const maxT: number = jsonData.maxThreshold[i]!;
       const startAnimationName = `${this.outputExternalDirectory}Animations/${animationNames.filter((v: string) => v === `${name}_Start.anim.meta`).find(v => v.includes('_Start'))}`;
       const endAnimationName = `${this.outputExternalDirectory}Animations/${animationNames.filter((v: string) => v === `${name}_End.anim.meta`).find(v => v.includes('_End'))}`;
       const motionStartGuid: string = FileService.findInFile(startAnimationName, /guid: ([a-f0-9]+)/g).replace('guid: ', '');
@@ -576,7 +602,9 @@ AnimatorStateTransition:
   }
 
   private generateShadersAndMaterials(): void {
-    const data: Array<Array<string>> = JSON.parse(FileService.getFile(this.outputInternalDirectory + 'data_game_object_shader_parameter_map.json'));
+    const data: Array<Array<string>> = FileService.getFileJson(this.outputInternalDirectory + 'data_game_object_shader_parameter_map.json');
+    const data2: Array<BitAllocation> = FileService.getFileJson(this.outputInternalDirectory + 'data_mapped.json');
+
     for (const [index, [key, values]] of Object.entries(data).entries()) {
       const shaderProperties: Array<string> = [];
       const shaderVariables: Array<string> = [];
@@ -589,22 +617,21 @@ AnimatorStateTransition:
         shaderVariables.push(`float _${prop};`);
         matFloats.push(`- _${prop}: 0`);
 
-        if (prop.includes('First')) {
-          const text = prop.replace('First', '');
+        if (prop.includes('LSB')) {
+          const text = prop.replace('LSB', '');
           shaderProperties.push(`_Index${text} ("Index${text}", Range(0,15)) = 0`);
           shaderVariables.push(`float _Index${text};`);
-          matFloats.push(`- _Index${text}: 0`);
+          matFloats.push(`- _Index${text}: -1`);
         }
       }
 
       const shaderPropertiesString = shaderProperties.sort().join('\n        ');
       const shaderVariablesString = shaderVariables.sort().join('\n        ');
-      const matFloatsString = matFloats.sort().join('\n    ');
 
       const shaderFilePath: string = this.outputExternalDirectory + `/Materials/shader_${index + 1}.shader`;
       const shaderMetaFilePath: string = this.outputExternalDirectory + `/Materials/shader_${index + 1}.shader.meta`;
       const shaderGuid: string = this.generateGuid();
-
+      // TODO fix shader template functions
       FileService.copyFile(this.templateDirectory + 'shader_base.shader', shaderFilePath);
       FileService.replaceInFile(shaderFilePath, '__[REPLACEME_PROPERTIES]__', shaderPropertiesString);
       FileService.replaceInFile(shaderFilePath, '__[REPLACEME_VARIABLES]__', shaderVariablesString);
@@ -612,9 +639,24 @@ AnimatorStateTransition:
       FileService.copyFile(this.templateDirectory + 'shader_base.shader.meta', shaderMetaFilePath);
       FileService.replaceInFile(shaderMetaFilePath, '__[REPLACEME]__', shaderGuid);
 
-      for (const matName of values.map((s: string) => s.replace('/', '_'))) {
+      for (const matNam of values) {
+        const matName: string = matNam.replace('/', '_');
         const matFilePath: string = this.outputExternalDirectory + `/Materials/${matName}.mat`;
         const matFileMetaPath: string = this.outputExternalDirectory + `/Materials/${matName}.mat.meta`;
+        const matFloatsString: string = matFloats
+          .sort()
+          .map((matFloat: string) => {
+            if (!(matFloat.includes(': -1') && matFloat.includes('- _Index'))) {
+              return matFloat;
+            }
+
+            const shaderParameterNameWithoutPrefix: string = matFloat.replace(/- _Index|:.*/g, '');
+            const relevantData: Array<BitAllocation> = data2.filter((d: BitAllocation) => d.shaderParameters.some((e: string) => e.includes(shaderParameterNameWithoutPrefix)))
+            const matchingAllocation: BitAllocation = relevantData.find((v) => v.objectNames.some(o => o === matNam))!;
+
+            return matFloat.replace('-1', `${matchingAllocation.bitIndex}`);
+          })
+          .join('\n    ');
 
         FileService.copyFile(this.templateDirectory + 'shader_material_base.mat', matFilePath);
         FileService.replaceInFile(matFilePath, '__[REPLACEME_MATERIAL_NAME]__', matName);
@@ -635,10 +677,6 @@ AnimatorStateTransition:
 }
 
 
-interface Entry {
-  objectNames: string[];
-  shaderParameters: string[];
-}
 
 interface GameObjectToShaders {
   [key: string]: Set<Set<string>>;
@@ -648,17 +686,13 @@ interface ShaderToGameObjectMap {
   [key: string]: string[];
 }
 
-interface ShaderData {
-  objectNames: string[];
-  shaderParameters: Set<string>;
-}
 
 interface AnimatorData {
   name: Array<string>;
-  animator_state_machine_id: Array<number>;
-  animator_state_id: Array<number>;
-  animator_state_transition_id: Array<number>;
-  blend_tree_id: Array<number>;
-  min_threshold: Array<number>;
-  max_threshold: Array<number>;
+  animatorStateMachineId: Array<number>;
+  animatorStateId: Array<number>;
+  animatorStateTransitionId: Array<number>;
+  blendTreeId: Array<number>;
+  minThreshold: Array<number>;
+  maxThreshold: Array<number>;
 }

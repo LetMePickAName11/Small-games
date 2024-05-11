@@ -3,7 +3,7 @@ import { Subscription, tap } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { WebSocketService } from '../../../services/web-socket.service';
-import { Configuration } from 'shared-lib';
+import { BitAllocation } from 'shared-lib';
 
 @Component({
   selector: 'app-configure-configuration',
@@ -41,10 +41,9 @@ export class ConfigureConfigurationComponent implements OnDestroy {
     public bitsUsed: number = 0;
     public hover: any = null;
     public click: any = null;
-    public bitAllocations: Array<ConfigurationData> = [
+    public bitAllocations: Array<BitAllocationData> = [
       {
         size: 256,
-        type: "i",
         name: "Unused bits",
         objectNames: [],
         shaderParameters: [],
@@ -52,8 +51,8 @@ export class ConfigureConfigurationComponent implements OnDestroy {
           start: 0,
           end: 0
         },
-        startName: "",
-        endName: "",
+        lsbName: "",
+        msbName: "",
         bitIndex: 0,
         id: Date.now() + '_' + Math.random() + Math.random() * Math.random(),
         color: 'rgb(255, 255, 255)',
@@ -68,8 +67,8 @@ export class ConfigureConfigurationComponent implements OnDestroy {
     constructor(private webSocketService: WebSocketService) {
       this.subscriptions.push(
         this.webSocketService.$configuration.pipe(
-          tap((configurations: Array<Configuration>) => {
-            const mappedResult: Array<ConfigurationData> = configurations.map((configuration: Configuration) => {
+          tap((configurations: Array<BitAllocation>) => {
+            const mappedResult: Array<BitAllocationData> = configurations.map((configuration: BitAllocation) => {
               return {
                 ...configuration,
                 id: Date.now() + '_' + Math.random() + Math.random() * Math.random(),
@@ -82,7 +81,6 @@ export class ConfigureConfigurationComponent implements OnDestroy {
   
             mappedResult.push({
               size: this.maxBits - this.bitsUsed,
-              type: "i",
               name: "Unused bits",
               objectNames: [],
               shaderParameters: [],
@@ -90,8 +88,8 @@ export class ConfigureConfigurationComponent implements OnDestroy {
                 start: 0,
                 end: 0
               },
-              startName: "",
-              endName: "",
+              lsbName: "",
+              msbName: "",
               bitIndex: 0,
               id: Date.now() + '_' + Math.random() + Math.random() * Math.random(),
               color: 'rgb(255, 255, 255)',
@@ -131,7 +129,7 @@ export class ConfigureConfigurationComponent implements OnDestroy {
   }
   
   
-  interface ConfigurationData extends Configuration {
+  interface BitAllocationData extends BitAllocation {
     id: string;
     color: string;
     width: string;

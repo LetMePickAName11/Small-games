@@ -5,7 +5,8 @@
     "start": "node dist/index.js",
     "build": "tsc",
     "test": "tsc && node dist/index.js",
-    "build-files": "tsc && node dist/build-files.js"
+    "build-files": "tsc && node dist/build-files.js",
+    "debug": "tsc && node inspect dist/build-files.js"
   },
   "author": "Crumpets",
   "dependencies": {

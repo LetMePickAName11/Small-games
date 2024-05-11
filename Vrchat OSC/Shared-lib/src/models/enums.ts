@@ -33,11 +33,6 @@ export const EightBitChunkName = {
   'BitChunk31': 'BitChunk31'
 } as const;
 
-export const BitAllocationType = {
-  'Int': 'i',
-  'Bool': 'i'
-} as const;
-
 export const WebsocketName = {
   'client_send_mock_osc_input': 'mock_osc_input',
   'client_send_input_configuration_update': 'input_configuration_update',
@@ -70,5 +65,4 @@ export const WebsocketName = {
 } as const;
 
 export type EightBitChunkNames = (typeof EightBitChunkName)[keyof typeof EightBitChunkName];
-export type BitAllocationTypes = (typeof BitAllocationType)[keyof typeof BitAllocationType];
 export type WebsocketNames = (typeof WebsocketName)[keyof typeof WebsocketName];

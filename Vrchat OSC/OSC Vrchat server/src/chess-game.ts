@@ -241,7 +241,7 @@ export class ChessGame implements OSCVrChatGameLogic {
   }
 
   private getPieceTypeCaptured(pieceType: ChessIndexName): number {
-    return (this.alivePieces.has(pieceType)! || this.alivePieces.has(this.twinMap.get(pieceType)!)!) ? 1 : 0;
+    return (this.alivePieces.has(pieceType)! || this.alivePieces.has(this.twinMap.get(pieceType)!)!) ? 0 : 1;
   }
 
   private getSelectedPieceBit(): number {
@@ -255,11 +255,11 @@ export class ChessGame implements OSCVrChatGameLogic {
   }
 
   private getSelectedPieceShown(): number {
-    return this.getSelectedPiece<string>().length === 2 ? 1 : 0;
+    return this.getSelectedPiece<string>().length === 2 ? 0 : 1;
   }
 
   private getSelectedPositionShown(): number {
-    return this.getSelectedPosition<string>().length === 2 ? 1 : 0;
+    return this.getSelectedPosition<string>().length === 2 ? 0 : 1;
   }
 
 
