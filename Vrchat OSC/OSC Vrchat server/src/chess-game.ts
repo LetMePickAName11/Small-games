@@ -43,10 +43,10 @@ export class ChessGame implements OSCVrChatGameLogic {
       Rook_White_2_Position: this.getPiecePosition(ChessIndexName['Rook_White_2']),
       Rook_Black_1_Position: this.getPiecePosition(ChessIndexName['Rook_Black_1']),
       Rook_Black_2_Position: this.getPiecePosition(ChessIndexName['Rook_Black_2']),
-      Bishop_White_1_PositionBishop: this.getPiecePosition(ChessIndexName['Bishop_White_1']),
-      Bishop_White_2_PositionBishop: this.getPiecePosition(ChessIndexName['Bishop_White_2']),
-      Bishop_Black_1_PositionBishop: this.getPiecePosition(ChessIndexName['Bishop_Black_1']),
-      Bishop_Black_2_PositionBishop: this.getPiecePosition(ChessIndexName['Bishop_Black_2']),
+      Bishop_White_1_PositionBishop: this.getPiecePositionBishop(ChessIndexName['Bishop_White_1'], true),
+      Bishop_White_2_PositionBishop: this.getPiecePositionBishop(ChessIndexName['Bishop_White_2'], false),
+      Bishop_Black_1_PositionBishop: this.getPiecePositionBishop(ChessIndexName['Bishop_Black_1'], true),
+      Bishop_Black_2_PositionBishop: this.getPiecePositionBishop(ChessIndexName['Bishop_Black_2'], false),
       Knight_White_1_Position: this.getPiecePosition(ChessIndexName['Knight_White_1']),
       Knight_White_2_Position: this.getPiecePosition(ChessIndexName['Knight_White_2']),
       Knight_Black_1_Position: this.getPiecePosition(ChessIndexName['Knight_Black_1']),
@@ -186,6 +186,27 @@ export class ChessGame implements OSCVrChatGameLogic {
     return rank * 8 + file;
   }
 
+  private chessSquareToIndexBishop(square: Square, isWhiteSquare: boolean): number {
+    const [squareFile, squareRank] = square;
+    if (squareFile === undefined || squareRank === undefined) {
+      return 0;
+    }
+  
+    const file = squareFile.charCodeAt(0) - 'a'.charCodeAt(0); // Calculates file index: 'a' -> 0, 'b' -> 1, ..., 'h' -> 7
+    const rank = parseInt(squareRank) - 1; // Converts rank to 0-based index: '1' -> 0, '2' -> 1, ..., '8' -> 7
+    const index = rank * 8 + file;
+    
+    // Ensure index is valid for bishops on either black or white squares
+    if (isWhiteSquare && (index % 2 !== 0)) {
+      throw new Error("Invalid square for white bishop");
+    } else if (!isWhiteSquare && (index % 2 !== 1)) {
+      throw new Error("Invalid square for black bishop");
+    }
+  
+    // Return 5-bit integer representation (0-31)
+    return Math.floor(index / 2);
+  }
+
   private getPromotionMove(): string {
     switch (this.input.promotionInput) {
       case 1:
@@ -238,6 +259,11 @@ export class ChessGame implements OSCVrChatGameLogic {
   private getPiecePosition(pieceName: ChessIndexName): number {
     const pieceSquare: Square = this.alivePieces.get(pieceName)! || this.alivePieces.get(this.twinMap.get(pieceName)!)! || this.alivePieces.get(this.kingMap.get(pieceName)!)!;
     return this.chessSquareToIndex(pieceSquare);
+  }
+
+  private getPiecePositionBishop(pieceName: ChessIndexName, isWhiteSquare: boolean): number {
+    const pieceSquare: Square = this.alivePieces.get(pieceName)! || this.alivePieces.get(this.twinMap.get(pieceName)!)! || this.alivePieces.get(this.kingMap.get(pieceName)!)!;
+    return this.chessSquareToIndexBishop(pieceSquare, isWhiteSquare);
   }
 
   private getPieceTypeCaptured(pieceType: ChessIndexName): number {
