@@ -287,11 +287,11 @@ export class ChessGame implements OSCVrChatGameLogic {
   }
 
   private getSelectedPieceShown(): number {
-    return this.getSelectedPiece<string>().length === 2 ? 1 : 0;
+    return this.getSelectedPiece<string>().length === 2 ? 0 : 1;
   }
 
   private getSelectedPositionShown(): number {
-    return this.getSelectedPosition<string>().length === 2 ? 1 : 0;
+    return this.getSelectedPosition<string>().length === 2 ? 0 : 1;
   }
 
 
