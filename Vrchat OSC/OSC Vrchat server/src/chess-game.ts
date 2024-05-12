@@ -1,4 +1,4 @@
-import { Chess, Square } from "chess.js";
+import { Chess, Piece, Square } from "chess.js";
 import { ChessIndexName } from "./models/enums";
 import { OSCVrChatGameLogic } from "./models/osc_vrchat_game_logic";
 import { GameLogicResponse } from "./models/game_logic_response";
@@ -277,7 +277,8 @@ export class ChessGame implements OSCVrChatGameLogic {
 
   private getSelectedPieceBit(): number {
     const square: Square = this.getSelectedPiece();
-    return this.chessSquareToIndex(square);
+    const piece: Piece = this.chess.get(square);
+    return this.pieceIndexMap.get(`${piece.type}_${piece.color}`)!;
   }
 
   private getSelectedPositionBit(): number {
@@ -408,5 +409,39 @@ export class ChessGame implements OSCVrChatGameLogic {
   private readonly pawnPromotionMap: Map<string, number> = new Map<string, number>([
     ['k', 2],
     ['q', 3],
+  ]);
+  private readonly pieceIndexMap: Map<string, number> = new Map<string, number>([
+    ['r_w', 0],
+    ['n_w', 1],
+    ['b_w', 2],
+    ['q_w', 3],
+    ['k_w', 4],
+    ['b_w', 5],
+    ['n_w', 6],
+    ['r_w', 7],
+    ['p_w', 8],
+    ['p_w', 9],
+    ['p_w', 10],
+    ['p_w', 11],
+    ['p_w', 12],
+    ['p_w', 13],
+    ['p_w', 14],
+    ['p_w', 15],
+    ['p_b', 16],
+    ['p_b', 17],
+    ['p_b', 18],
+    ['p_b', 19],
+    ['p_b', 20],
+    ['p_b', 21],
+    ['p_b', 22],
+    ['p_b', 23],
+    ['r_b', 24],
+    ['n_b', 25],
+    ['b_b', 26],
+    ['q_b', 27],
+    ['k_b', 28],
+    ['b_b', 29],
+    ['n_b', 30],
+    ['r_b', 31]
   ]);
 }
