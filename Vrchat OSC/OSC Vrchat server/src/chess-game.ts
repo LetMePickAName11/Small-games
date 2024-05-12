@@ -135,7 +135,8 @@ export class ChessGame implements OSCVrChatGameLogic {
       }
 
       // Will throw an error is invalid move
-      this.chess.move({ from: this.getSelectedPiece<string>(), to: this.getSelectedPosition<string>(), promotion: this.getPromotionMove() });
+      const promotion: string = this.getPromotionMove();
+      this.chess.move({ from: this.getSelectedPiece<string>(), to: this.getSelectedPosition<string>(), promotion: promotion });
       const potentialCapturedPiece: [ChessIndexName, Square] | undefined = [...this.alivePieces].find(([_key, val]: [ChessIndexName, Square]) => val == this.getSelectedPosition());
       const movedPiece: [ChessIndexName, Square] | undefined = [...this.alivePieces].find(([_key, val]: [ChessIndexName, Square]) => val == this.getSelectedPiece());
 
@@ -156,6 +157,10 @@ export class ChessGame implements OSCVrChatGameLogic {
       }
       else {
         this.alivePieces.set(movedPiece[0], this.getSelectedPosition());
+      }
+
+      if (promotion !== undefined) {
+        this.pawnPromotions.set(movedPiece[0], this.pawnPromotionMap.get(promotion)!);
       }
     } catch {
       // Simply reset input and display invalid move
@@ -253,7 +258,7 @@ export class ChessGame implements OSCVrChatGameLogic {
   }
 
   private getPawnPromotion(pawnName: ChessIndexName): number {
-    return this.pawnPromotions.get(pawnName)!;
+    return this.alivePieces.has(pawnName) ? this.pawnPromotions.get(pawnName)! : 0;
   }
 
   private getPiecePosition(pieceName: ChessIndexName): number {
@@ -335,22 +340,22 @@ export class ChessGame implements OSCVrChatGameLogic {
     [ChessIndexName.Rook_Black_2, 'h8']
   ]);
   private readonly pawnPromotions: Map<ChessIndexName, number> = new Map<ChessIndexName, number>([
-    [ChessIndexName.Pawn_White_1, 0],
-    [ChessIndexName.Pawn_White_2, 0],
-    [ChessIndexName.Pawn_White_3, 0],
-    [ChessIndexName.Pawn_White_4, 0],
-    [ChessIndexName.Pawn_White_5, 0],
-    [ChessIndexName.Pawn_White_6, 0],
-    [ChessIndexName.Pawn_White_7, 0],
-    [ChessIndexName.Pawn_White_8, 0],
-    [ChessIndexName.Pawn_Black_1, 0],
-    [ChessIndexName.Pawn_Black_2, 0],
-    [ChessIndexName.Pawn_Black_3, 0],
-    [ChessIndexName.Pawn_Black_4, 0],
-    [ChessIndexName.Pawn_Black_5, 0],
-    [ChessIndexName.Pawn_Black_6, 0],
-    [ChessIndexName.Pawn_Black_7, 0],
-    [ChessIndexName.Pawn_Black_8, 0],
+    [ChessIndexName.Pawn_White_1, 1],
+    [ChessIndexName.Pawn_White_2, 1],
+    [ChessIndexName.Pawn_White_3, 1],
+    [ChessIndexName.Pawn_White_4, 1],
+    [ChessIndexName.Pawn_White_5, 1],
+    [ChessIndexName.Pawn_White_6, 1],
+    [ChessIndexName.Pawn_White_7, 1],
+    [ChessIndexName.Pawn_White_8, 1],
+    [ChessIndexName.Pawn_Black_1, 1],
+    [ChessIndexName.Pawn_Black_2, 1],
+    [ChessIndexName.Pawn_Black_3, 1],
+    [ChessIndexName.Pawn_Black_4, 1],
+    [ChessIndexName.Pawn_Black_5, 1],
+    [ChessIndexName.Pawn_Black_6, 1],
+    [ChessIndexName.Pawn_Black_7, 1],
+    [ChessIndexName.Pawn_Black_8, 1],
   ]);
   private readonly twinMap: Map<ChessIndexName, ChessIndexName> = new Map<ChessIndexName, ChessIndexName>([
     [ChessIndexName.Rook_White_1, ChessIndexName.Rook_White_2],
@@ -399,5 +404,9 @@ export class ChessGame implements OSCVrChatGameLogic {
     [ChessIndexName.Bishop_Black_2, ChessIndexName.King_Black_1],
     [ChessIndexName.Knight_Black_2, ChessIndexName.King_Black_1],
     [ChessIndexName.Rook_Black_2, ChessIndexName.King_Black_1]
+  ]);
+  private readonly pawnPromotionMap: Map<string, number> = new Map<string, number>([
+    ['k', 2],
+    ['q', 3],
   ]);
 }
