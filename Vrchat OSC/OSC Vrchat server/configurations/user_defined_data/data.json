@@ -425,42 +425,42 @@
   },
   {
     "size": 5,
-    "name": "Bishop_White_1_Position",
+    "name": "Bishop_White_1_PositionBishop",
     "objectNames": [
       "Bishop_White_1/Bishop"
     ],
     "shaderParameters": [
-      "Position"
+      "PositionBishop"
     ]
   },
   {
     "size": 5,
-    "name": "Bishop_White_2_Position",
+    "name": "Bishop_White_2_PositionBishop",
     "objectNames": [
       "Bishop_White_2/Bishop"
     ],
     "shaderParameters": [
-      "Position"
+      "PositionBishop"
     ]
   },
   {
     "size": 5,
-    "name": "Bishop_Black_1_Position",
+    "name": "Bishop_Black_1_PositionBishop",
     "objectNames": [
       "Bishop_Black_1/Bishop"
     ],
     "shaderParameters": [
-      "Position"
+      "PositionBishop"
     ]
   },
   {
     "size": 5,
-    "name": "Bishop_Black_2_Position",
+    "name": "Bishop_Black_2_PositionBishop",
     "objectNames": [
       "Bishop_Black_2/Bishop"
     ],
     "shaderParameters": [
-      "Position"
+      "PositionBishop"
     ]
   },
   {

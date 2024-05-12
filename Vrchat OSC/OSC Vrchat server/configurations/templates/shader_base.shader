@@ -21,15 +21,22 @@ Shader "Unlit/NewUnlitShader"
         
         __[REPLACEME_VARIABLES]__
         
-        uint ExtractBits(float stChunk, float poChunk, float index) {
-            uint startChunk = (uint)(stChunk + 0.1f); // + 0.1f to avoid float imprecission problems
-            uint potentialOverflowChunk = (uint)(poChunk + 0.1f); // + 0.1f to avoid float imprecission problems
-            uint bitStart = (uint)(index + 0.1f); // + 0.1f to avoid float imprecission problems
+        uint ExtractBits(float msb, float lsb, float index, uint bitSize) {
+            // Convert floats to uints to avoid float imprecision problems
+            uint msbChunk = (uint)(msb + 0.1f);
+            uint lsbChunk = (uint)(lsb + 0.1f);
+            uint bitStart = (uint)(index + 0.1f);
 
-            uint combinedChunks = (startChunk << 8) | potentialOverflowChunk;
+            // Combine the two chunks into one 16-bit number
+            uint combinedChunks = (msbChunk << 8) | lsbChunk;
+
+            // Shift right to the start bit position
             uint shiftedForExtraction = combinedChunks >> bitStart;
-            uint mask = 63; // 0b111111 for 6 bits
 
+            // Create a mask with the correct bit size
+            uint mask = (1u << bitSize) - 1u;
+
+            // Return the extracted bits
             return shiftedForExtraction & mask;
         }
 

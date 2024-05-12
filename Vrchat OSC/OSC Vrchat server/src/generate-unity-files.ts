@@ -91,12 +91,12 @@ export class GenerateUnityFiles {
         range: range,
         msbName: this.bitIndexToEightBitName[(range.start - range.start % 8) / 8]!,
         lsbName: this.bitIndexToEightBitName[(range.start - range.start % 8) / 8 + 1]!,
-        bitIndex: 15 - (range.start % 16),
+        bitIndex: range.start % 8,
         shaderParameters: [`LSB${bitAllocation.shaderParameters}`, `MSB${bitAllocation.shaderParameters}`]
       };
       startIndex += bitAllocation.size;
       bitAllocations.push(res);
-    };
+    }
 
     const allocatedBitsSize: number = bitAllocations.reduce((acc, val) => acc + val.size, 0);
     const allocatedInputBitsSize: number = inputData.length; // Input data is array of 1-bits
@@ -108,11 +108,11 @@ export class GenerateUnityFiles {
 
       // Filter out the overflow bit allocations from the original array
       const nonOverflows: Array<BitAllocation> = bitAllocations.filter(b => b.range.start < minrange);
-      const lastChunkBeforeOverflow: string = nonOverflows[nonOverflows.length - 1]!.msbName;
+      const lastChunkBeforeOverflow: string = nonOverflows[nonOverflows.length - 1]!.lsbName;
 
       nonOverflows
-        .filter((bitAllocation: BitAllocation) => bitAllocation.msbName === lastChunkBeforeOverflow)
-        .forEach((bitAllocation: BitAllocation) => bitAllocation.msbName = bitAllocation.lsbName);
+        .filter((bitAllocation: BitAllocation) => bitAllocation.lsbName === lastChunkBeforeOverflow)
+        .forEach((bitAllocation: BitAllocation) => bitAllocation.lsbName = bitAllocation.msbName);
 
       // Handle the overflow allocations
       overflows.forEach((overflow, index) => {
@@ -329,7 +329,7 @@ export class GenerateUnityFiles {
       m_Events: []`;
     }
 
-    const generateAnimationPairData = (suffix: string, allocations: Array<BitAllocation>, maxValue: number) =>{
+    const generateAnimationPairData = (suffix: string, allocations: Array<BitAllocation>, maxValue: number) => {
       const defaultValue: number = suffix === 'Start' ? 0 : maxValue;
       const attributeId: number = this.generateUniqueId();
       const pathId: number = this.generateUniqueId();
@@ -357,7 +357,7 @@ export class GenerateUnityFiles {
     );
 
 
-    for (const name of uniqueStartNames){
+    for (const name of uniqueStartNames) {
       ['Start', 'End'].forEach((suffix: string) => {
         const maxValue: number = name.includes('Overflow') ? 1 : 255;
         const [newFloatCurves, newGenericBindings, newEditorCurves]: Array<string> = generateAnimationPairData(suffix, data.filter((bitAllocation: BitAllocation) => bitAllocation.lsbName === name).map((bitAllocation: BitAllocation) => {
@@ -383,10 +383,10 @@ export class GenerateUnityFiles {
 
         const outputPath: string = `${this.outputExternalDirectory}Animations/${name}_${suffix}.anim`;
         const outputMetaPath: string = `${this.outputExternalDirectory}Animations/${name}_${suffix}.anim.meta`;
-  
+
         FileService.copyFile(this.templateDirectory + 'animation_base.anim', outputPath);
         FileService.appendToFile(outputPath, generateAnimationClip(`${name}_${suffix}`, floatCurves, genericBindings, editorCurves));
-  
+
         FileService.copyFile(this.templateDirectory + 'animation_base.anim.meta', outputMetaPath);
         FileService.replaceInFile(outputMetaPath, '__[REPLACEME]__', this.generateGuid());
       });
@@ -412,7 +412,7 @@ export class GenerateUnityFiles {
         animatorStateTransitionId: Array.from({ length: uniqueNameList.length }, (_, __) => this.generateUniqueId()),
         blendTreeId: Array.from({ length: uniqueNameList.length }, (_, __) => this.generateUniqueId()),
         minThreshold: new Array(uniqueNameList.length).fill(0),
-        maxThreshold: uniqueNameList.map((name) => name.includes('Overflow') ? 1 : 255 ),
+        maxThreshold: uniqueNameList.map((name) => name.includes('Overflow') ? 1 : 255),
       };
 
       return animatorData;

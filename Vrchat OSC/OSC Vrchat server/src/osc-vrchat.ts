@@ -22,7 +22,7 @@ export class OSCVrChat {
     this.gameLogicCreator = gameLogicCreator;
     this.gameLogic = this.gameLogicCreator();
 
-    this.bitAllocations = FileService.getFileJson('configurations/user_defined_data/data.json');
+    this.bitAllocations = FileService.getFileJson('configurations/auto_generated_files_internal/data_mapped.json');
     this.bitAllocationConfigNames = this.bitAllocations.map((bitAllocation: BitAllocation) => bitAllocation.name);
     this.inputEventNames = FileService.getFileJson('configurations/user_defined_data/input.json');
 
@@ -77,7 +77,7 @@ export class OSCVrChat {
   }
 
   private piecePositionsToEightBitChunks(gameState: { [key in string]: number }): Array<{ name: EightBitChunkNames, value: number }> {
-    const chunkedBits = this.getAllocatedBits('noOverflow');
+    const chunkedBits: Array<BitAllocation> = this.getAllocatedBits('noOverflow');
     let positionBitsString: string = ''.padStart(this.getAllocatedBitsSize(chunkedBits), '0');
     let currentIndex: number = 0;
 
