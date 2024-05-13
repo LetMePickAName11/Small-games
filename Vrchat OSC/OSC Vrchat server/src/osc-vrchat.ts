@@ -11,12 +11,6 @@ import { SocketType } from './models/socket_type';
 import { BitAllocation, EightBitChunkName, EightBitChunkNames, WebsocketName } from 'shared-lib';
 import { FileService } from './file-service';
 
-// TODO
-// Better handling of read/write of inputs as they are currently saved without ! prefix but need it for testing
-// Fix naming of elements.
-// Clean up constructor and functions
-// Improve debug and gamestate strings for websocket
-
 export class OSCVrChat {
   constructor(gameLogicCreator: () => OSCVrChatGameLogic) {
     this.gameLogicCreator = gameLogicCreator;

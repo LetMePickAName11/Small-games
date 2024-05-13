@@ -13,11 +13,6 @@ import { BitAllocation } from 'shared-lib';
   styleUrl: './configure-configuration.component.scss'
 })
 export class ConfigureConfigurationComponent implements OnDestroy {
-    // TODO
-    // Fetch data from websocket service
-    // Improve visuals
-    // Ensure fetch and update works
-    // Build files via button
     public readonly maxBits: number = 256;
     private readonly bitAllocationColorMap = new Map([
       [1, 'rgb(153, 204, 153)'],   //# Green

@@ -20,6 +20,7 @@ Version 1.0
  2.14 Textbox information
 3. Fix selected piece highlight value
 4. Test highlight piece
+5. Update base shader logic
 
 
 Version 1.1
@@ -33,3 +34,10 @@ Version 1.1
 4. Cleanup naming schemes
 5. Cleanup code
 6. Add documentation
+
+
+
+Version 1.2
+1. Don't overwrite existing shader logic
+2. Have default values for vrc expression paramters
+3. Add default properties to data.json
