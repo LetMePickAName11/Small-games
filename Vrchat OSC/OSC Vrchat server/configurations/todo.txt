@@ -1,8 +1,35 @@
 Copy folders via directory and not directly into unity program. Animations won't get linked correctly otherwise
 
-2. Test this fucking shit <.<
-  2.1 Test that unity correctly recognizes files generated
-  2.2 Test OSC code to see if it works
-  2.3 Test Chess code to see if it works
 
-4. Unify the way files are created and filled out <.<
+Version 1.0
+1. Replace chess board texture (one that does not fuck up ranks and files)
+2. Test chess logic
+ 2.1 Movement
+ 2.2 Captures
+ 2.3 Checks
+ 2.4 Checkmate
+ 2.5 Inputs
+ 2.6 Promotion
+ 2.7 Castling
+ 2.8 En passant
+ 2.9 Illegal moves
+ 2.10 Stalemate
+ 2.11 Insufficient material
+ 2.12 Threefold repitition
+ 2.13 Fifty move rule
+ 2.14 Textbox information
+3. Fix selected piece highlight value
+4. Test highlight piece
+
+
+Version 1.1
+1. Add automatical file transfer to unity
+2. Add automatical material, animation controller, vrc expressions linking to their gameobjects
+3. Finish UI
+ 3.1 Finish debug page
+ 3.2 Fix config view for both configuration and Inputs
+ 3.3 Update configuration and Inputs via UI
+ 3.4 Build via UI
+4. Cleanup naming schemes
+5. Cleanup code
+6. Add documentation
