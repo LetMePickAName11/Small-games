@@ -30,8 +30,11 @@ Shader "Unlit/NewUnlitShader"
             // Combine the two chunks into one 16-bit number
             uint combinedChunks = (msbChunk << 8) | lsbChunk;
 
+            // Calculate the actual start bit position from MSB (index 0)
+            uint shiftAmount = 16 - bitStart - bitSize;
+
             // Shift right to the start bit position
-            uint shiftedForExtraction = combinedChunks >> bitStart;
+            uint shiftedForExtraction = combinedChunks >> shiftAmount;
 
             // Create a mask with the correct bit size
             uint mask = (1u << bitSize) - 1u;
