@@ -1,4 +1,4 @@
-import { Chess, Piece, Square } from "chess.js";
+import { Chess, Square } from "chess.js";
 import { ChessIndexName } from "./models/enums";
 import { OSCVrChatGameLogic } from "./models/osc_vrchat_game_logic";
 import { GameLogicResponse } from "./models/game_logic_response";
@@ -280,9 +280,8 @@ export class ChessGame implements OSCVrChatGameLogic {
       return 0;
     }
 
-    const square: Square = this.getSelectedPiece();
-    const piece: Piece = this.chess.get(square);
-    return this.pieceIndexMap.get(`${piece.type}_${piece.color}`)!;
+    const chessIndexName: ChessIndexName = [...this.alivePieces].find(([_key, val]) => val === this.getSelectedPiece<Square>())?.[0]!;
+    return this.pieceIndexMap.get(chessIndexName)!;
   }
 
   private getSelectedPositionBit(): number {
@@ -419,37 +418,37 @@ export class ChessGame implements OSCVrChatGameLogic {
     ['q', 3],
   ]);
   private readonly pieceIndexMap: Map<string, number> = new Map<string, number>([
-    ['r_w', 0],
-    ['n_w', 1],
-    ['b_w', 2],
-    ['q_w', 3],
-    ['k_w', 4],
-    ['b_w', 5],
-    ['n_w', 6],
-    ['r_w', 7],
-    ['p_w', 8],
-    ['p_w', 9],
-    ['p_w', 10],
-    ['p_w', 11],
-    ['p_w', 12],
-    ['p_w', 13],
-    ['p_w', 14],
-    ['p_w', 15],
-    ['p_b', 16],
-    ['p_b', 17],
-    ['p_b', 18],
-    ['p_b', 19],
-    ['p_b', 20],
-    ['p_b', 21],
-    ['p_b', 22],
-    ['p_b', 23],
-    ['r_b', 24],
-    ['n_b', 25],
-    ['b_b', 26],
-    ['q_b', 27],
-    ['k_b', 28],
-    ['b_b', 29],
-    ['n_b', 30],
-    ['r_b', 31]
+    [ChessIndexName.Rook_White_1, 0],
+    [ChessIndexName.Knight_White_1, 1],
+    [ChessIndexName.Bishop_White_1, 2],
+    [ChessIndexName.Queen_White_1, 3],
+    [ChessIndexName.King_White_1, 4],
+    [ChessIndexName.Bishop_White_2, 5],
+    [ChessIndexName.Knight_White_2, 6],
+    [ChessIndexName.Rook_White_2, 7],
+    [ChessIndexName.Pawn_White_1, 8],
+    [ChessIndexName.Pawn_White_2, 9],
+    [ChessIndexName.Pawn_White_3, 10],
+    [ChessIndexName.Pawn_White_4, 11],
+    [ChessIndexName.Pawn_White_5, 12],
+    [ChessIndexName.Pawn_White_6, 13],
+    [ChessIndexName.Pawn_White_7, 14],
+    [ChessIndexName.Pawn_White_8, 15],
+    [ChessIndexName.Pawn_Black_1, 16],
+    [ChessIndexName.Pawn_Black_2, 17],
+    [ChessIndexName.Pawn_Black_3, 18],
+    [ChessIndexName.Pawn_Black_4, 19],
+    [ChessIndexName.Pawn_Black_5, 20],
+    [ChessIndexName.Pawn_Black_6, 21],
+    [ChessIndexName.Pawn_Black_7, 22],
+    [ChessIndexName.Pawn_Black_8, 23],
+    [ChessIndexName.Rook_Black_1, 24],
+    [ChessIndexName.Knight_Black_1, 25],
+    [ChessIndexName.Bishop_Black_1, 26],
+    [ChessIndexName.Queen_Black_1, 27],
+    [ChessIndexName.King_Black_1, 28],
+    [ChessIndexName.Bishop_Black_2, 29],
+    [ChessIndexName.Knight_Black_2, 30],
+    [ChessIndexName.Rook_Black_2, 31]
   ]);
 }
