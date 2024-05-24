@@ -7,6 +7,6 @@ export interface ChessInput {
   newPositionRank: string;
   waitingForPromotionInput: boolean;
   promotionInput: number;
-  selectedPath: Piece | null;
+  selectedPosition: Piece | null;
   selectedPiece: Piece | null;
 }

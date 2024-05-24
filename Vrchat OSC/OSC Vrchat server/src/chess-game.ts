@@ -108,7 +108,7 @@ export class ChessGame implements OSCVrChatGameLogic {
     // If fourth input; set the selected new position rank, selected position and continue
     if (this.input.newPositionRank === '') {
       this.input.newPositionRank = `${inputNumber}`;
-      this.input.selectedPath = this.chess.get(this.getSelectedPosition());
+      this.input.selectedPosition = this.chess.get(this.getSelectedPosition());
 
       // If selected piece and position is the same. Reset input
       if (this.input.pieceFile === this.input.newPositionFile && this.input.pieceRank === this.input.newPositionRank) {
@@ -196,18 +196,18 @@ export class ChessGame implements OSCVrChatGameLogic {
     if (squareFile === undefined || squareRank === undefined) {
       return 0;
     }
-  
+
     const file = squareFile.charCodeAt(0) - 'a'.charCodeAt(0); // Calculates file index: 'a' -> 0, 'b' -> 1, ..., 'h' -> 7
     const rank = parseInt(squareRank) - 1; // Converts rank to 0-based index: '1' -> 0, '2' -> 1, ..., '8' -> 7
     const index = rank * 8 + file;
-    
+
     // Ensure index is valid for bishops on either black or white squares
     if (isWhiteSquare && (index % 2 !== 0)) {
       throw new Error("Invalid square for white bishop");
     } else if (!isWhiteSquare && (index % 2 !== 1)) {
       throw new Error("Invalid square for black bishop");
     }
-  
+
     // Return 5-bit integer representation (0-31)
     return Math.floor(index / 2);
   }
@@ -230,7 +230,7 @@ export class ChessGame implements OSCVrChatGameLogic {
     this.input.newPositionRank = '';
     this.input.waitingForPromotionInput = false;
     this.input.promotionInput = -1;
-    this.input.selectedPath = null;
+    this.input.selectedPosition = null;
     this.input.selectedPiece = null;
   }
 
@@ -276,22 +276,30 @@ export class ChessGame implements OSCVrChatGameLogic {
   }
 
   private getSelectedPieceBit(): number {
+    if (this.input.selectedPiece === null) {
+      return 0;
+    }
+
     const square: Square = this.getSelectedPiece();
     const piece: Piece = this.chess.get(square);
     return this.pieceIndexMap.get(`${piece.type}_${piece.color}`)!;
   }
 
   private getSelectedPositionBit(): number {
+    if (this.input.selectedPosition === null) {
+      return 0;
+    }
+  
     const square: Square = this.getSelectedPosition<Square>();
     return this.chessSquareToIndex(square);
   }
 
   private getSelectedPieceShown(): number {
-    return this.getSelectedPiece<string>().length === 2 ? 0 : 1;
+    return Number(this.input.selectedPiece !== null);
   }
 
   private getSelectedPositionShown(): number {
-    return this.getSelectedPosition<string>().length === 2 ? 0 : 1;
+    return Number(this.input.selectedPosition !== null);
   }
 
 
@@ -302,7 +310,7 @@ export class ChessGame implements OSCVrChatGameLogic {
     newPositionRank: '',
     waitingForPromotionInput: false,
     promotionInput: -1,
-    selectedPath: null,
+    selectedPosition: null,
     selectedPiece: null,
   };
   private readonly chess: Chess = new Chess();
