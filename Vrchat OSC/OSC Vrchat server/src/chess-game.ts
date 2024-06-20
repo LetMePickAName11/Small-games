@@ -1,4 +1,4 @@
-import { Chess, Square } from "chess.js";
+import { Chess, Move, Square } from "chess.js";
 import { ChessIndexName } from "./models/enums";
 import { OSCVrChatGameLogic } from "./models/osc_vrchat_game_logic";
 import { GameLogicResponse } from "./models/game_logic_response";
@@ -43,10 +43,10 @@ export class ChessGame implements OSCVrChatGameLogic {
       Rook_White_2_Position: this.getPiecePosition(ChessIndexName['Rook_White_2']),
       Rook_Black_1_Position: this.getPiecePosition(ChessIndexName['Rook_Black_1']),
       Rook_Black_2_Position: this.getPiecePosition(ChessIndexName['Rook_Black_2']),
-      Bishop_White_1_PositionBishop: this.getPiecePositionBishop(ChessIndexName['Bishop_White_1'], true),
-      Bishop_White_2_PositionBishop: this.getPiecePositionBishop(ChessIndexName['Bishop_White_2'], false),
-      Bishop_Black_1_PositionBishop: this.getPiecePositionBishop(ChessIndexName['Bishop_Black_1'], true),
-      Bishop_Black_2_PositionBishop: this.getPiecePositionBishop(ChessIndexName['Bishop_Black_2'], false),
+      Bishop_White_1_PositionBishop: this.getPiecePositionBishop(ChessIndexName['Bishop_White_1']),
+      Bishop_White_2_PositionBishop: this.getPiecePositionBishop(ChessIndexName['Bishop_White_2']),
+      Bishop_Black_1_PositionBishop: this.getPiecePositionBishop(ChessIndexName['Bishop_Black_1']),
+      Bishop_Black_2_PositionBishop: this.getPiecePositionBishop(ChessIndexName['Bishop_Black_2']),
       Knight_White_1_Position: this.getPiecePosition(ChessIndexName['Knight_White_1']),
       Knight_White_2_Position: this.getPiecePosition(ChessIndexName['Knight_White_2']),
       Knight_Black_1_Position: this.getPiecePosition(ChessIndexName['Knight_Black_1']),
@@ -95,7 +95,7 @@ export class ChessGame implements OSCVrChatGameLogic {
       // If no piece was selected or it is the other persons piece. Then reset input
       if (this.input.selectedPiece === null || this.chess.turn() !== this.input.selectedPiece.color) {
         this.resetInput();
-        return { updateVrc: false, message: "Invalid piece selected." };
+        return { updateVrc: true, message: "Invalid piece selected." };
       }
       return { updateVrc: true, message: null };
     }
@@ -113,7 +113,7 @@ export class ChessGame implements OSCVrChatGameLogic {
       // If selected piece and position is the same. Reset input
       if (this.input.pieceFile === this.input.newPositionFile && this.input.pieceRank === this.input.newPositionRank) {
         this.resetInput();
-        return { updateVrc: false, message: 'Selected same position as piece, input reset.' };
+        return { updateVrc: true, message: 'Selected same position as piece, input reset.' };
       }
     }
 
@@ -122,16 +122,42 @@ export class ChessGame implements OSCVrChatGameLogic {
   }
 
   public debugInfo(): string {
-    return this.chess.ascii();
+    return `${this.chess.ascii()}\n${this.debugStateString()}`;
   }
 
+  private debugStateString(): string {
+    return `   +------------------------+
+ 8 | ${this.getSquareDebug('a8')}  ${this.getSquareDebug('b8')}  ${this.getSquareDebug('c8')}  ${this.getSquareDebug('d8')}  ${this.getSquareDebug('e8')}  ${this.getSquareDebug('f8')}  ${this.getSquareDebug('g8')}  ${this.getSquareDebug('h8')} |
+ 7 | ${this.getSquareDebug('a7')}  ${this.getSquareDebug('b7')}  ${this.getSquareDebug('c7')}  ${this.getSquareDebug('d7')}  ${this.getSquareDebug('e7')}  ${this.getSquareDebug('f7')}  ${this.getSquareDebug('g7')}  ${this.getSquareDebug('h7')} |
+ 6 | ${this.getSquareDebug('a6')}  ${this.getSquareDebug('b6')}  ${this.getSquareDebug('c6')}  ${this.getSquareDebug('d6')}  ${this.getSquareDebug('e6')}  ${this.getSquareDebug('f6')}  ${this.getSquareDebug('g6')}  ${this.getSquareDebug('h6')} |
+ 5 | ${this.getSquareDebug('a5')}  ${this.getSquareDebug('b5')}  ${this.getSquareDebug('c5')}  ${this.getSquareDebug('d5')}  ${this.getSquareDebug('e5')}  ${this.getSquareDebug('f5')}  ${this.getSquareDebug('g5')}  ${this.getSquareDebug('h5')} |
+ 4 | ${this.getSquareDebug('a4')}  ${this.getSquareDebug('b4')}  ${this.getSquareDebug('c4')}  ${this.getSquareDebug('d4')}  ${this.getSquareDebug('e4')}  ${this.getSquareDebug('f4')}  ${this.getSquareDebug('g4')}  ${this.getSquareDebug('h4')} |
+ 3 | ${this.getSquareDebug('a3')}  ${this.getSquareDebug('b3')}  ${this.getSquareDebug('c3')}  ${this.getSquareDebug('d3')}  ${this.getSquareDebug('e3')}  ${this.getSquareDebug('f3')}  ${this.getSquareDebug('g3')}  ${this.getSquareDebug('h3')} |
+ 2 | ${this.getSquareDebug('a2')}  ${this.getSquareDebug('b2')}  ${this.getSquareDebug('c2')}  ${this.getSquareDebug('d2')}  ${this.getSquareDebug('e2')}  ${this.getSquareDebug('f2')}  ${this.getSquareDebug('g2')}  ${this.getSquareDebug('h2')} |
+ 1 | ${this.getSquareDebug('a1')}  ${this.getSquareDebug('b1')}  ${this.getSquareDebug('c1')}  ${this.getSquareDebug('d1')}  ${this.getSquareDebug('e1')}  ${this.getSquareDebug('f1')}  ${this.getSquareDebug('g1')}  ${this.getSquareDebug('h1')} |
+   +------------------------+
+     a  b  c  d  e  f  g  h`;
+  }
 
+  private getSquareDebug(square: Square): string {
+    const sqaurePiece: ChessIndexName | undefined = this.getKeyByValue<ChessIndexName, string>(this.alivePieces, square);
+    return sqaurePiece === undefined ? '.' : this.chessPieceToDebugString.get(sqaurePiece)!;
+  }
+
+  private getKeyByValue<K, V>(map: Map<K, V>, value: V): K | undefined {
+    for (let [key, val] of map.entries()) {
+      if (val === value) {
+        return key;
+      }
+    }
+    return undefined;
+  }
 
   private attemptMove(): GameLogicResponse {
     try {
       if (this.input.selectedPiece?.type === 'p' && (this.input.newPositionRank === '1' || this.input.newPositionRank === '8') && this.chess.moves({ square: this.getSelectedPiece() }).length !== 0 && this.input.promotionInput === -1) {
         this.input.waitingForPromotionInput = true;
-        return { updateVrc: false, message: 'Please select a piece to promote to.' };
+        return { updateVrc: true, message: 'Please select a piece to promote to.' };
       }
 
       // Will throw an error is invalid move
@@ -144,9 +170,17 @@ export class ChessGame implements OSCVrChatGameLogic {
         throw new Error(`private attemptMove() moved piece is null something fucked up big time`);
       }
 
+      const moveHistory: Array<Move> = this.chess.history({ verbose: true });
+      const currentMove: Move = moveHistory[moveHistory.length - 1]!;
+      let previousMove: Move | undefined = undefined;
+
+      if (moveHistory.length > 1) {
+        previousMove = moveHistory[moveHistory.length - 2]!;
+      }
+
       if (potentialCapturedPiece !== undefined) {
         // Only time this will be a valid move is when castling
-        if (this.chess.get(this.getSelectedPiece()).color === this.chess.get(this.getSelectedPosition()).color) {
+        if (this.chess.get(movedPiece[1]).color === this.chess.get(potentialCapturedPiece[1]).color) {
           this.alivePieces.set(movedPiece[0], potentialCapturedPiece[1]);
           this.alivePieces.set(potentialCapturedPiece[0], movedPiece[1]);
         } // else remove the captured piece and set the selected piece position to the caputured
@@ -154,6 +188,11 @@ export class ChessGame implements OSCVrChatGameLogic {
           this.alivePieces.delete(potentialCapturedPiece[0]);
           this.alivePieces.set(movedPiece[0], potentialCapturedPiece[1]);
         }
+      }
+      else if (['P', 'p'].includes(currentMove.piece) && ['P', 'p'].includes(currentMove.captured!) && (Math.abs(Number(previousMove?.lan[1]) - Number(previousMove?.lan[3])) === 2)) {
+        const capturedPawn: ChessIndexName = this.getKeyByValue(this.alivePieces, previousMove?.to)!;
+        this.alivePieces.delete(capturedPawn);
+        this.alivePieces.set(movedPiece[0], currentMove.to);
       }
       else {
         this.alivePieces.set(movedPiece[0], this.getSelectedPosition());
@@ -165,7 +204,7 @@ export class ChessGame implements OSCVrChatGameLogic {
     } catch {
       // Simply reset input and display invalid move
       this.resetInput();
-      return { updateVrc: false, message: 'Invalid move.' };
+      return { updateVrc: true, message: 'Invalid move.' };
     }
     const message: string = this.generateChessMoveText();
     this.resetInput();
@@ -191,7 +230,7 @@ export class ChessGame implements OSCVrChatGameLogic {
     return rank * 8 + file;
   }
 
-  private chessSquareToIndexBishop(square: Square, isWhiteSquare: boolean): number {
+  private chessSquareToIndexBishop(square: Square): number {
     const [squareFile, squareRank] = square;
     if (squareFile === undefined || squareRank === undefined) {
       return 0;
@@ -200,13 +239,6 @@ export class ChessGame implements OSCVrChatGameLogic {
     const file = squareFile.charCodeAt(0) - 'a'.charCodeAt(0); // Calculates file index: 'a' -> 0, 'b' -> 1, ..., 'h' -> 7
     const rank = parseInt(squareRank) - 1; // Converts rank to 0-based index: '1' -> 0, '2' -> 1, ..., '8' -> 7
     const index = rank * 8 + file;
-
-    // Ensure index is valid for bishops on either black or white squares
-    if (isWhiteSquare && (index % 2 !== 0)) {
-      throw new Error("Invalid square for white bishop");
-    } else if (!isWhiteSquare && (index % 2 !== 1)) {
-      throw new Error("Invalid square for black bishop");
-    }
 
     // Return 5-bit integer representation (0-31)
     return Math.floor(index / 2);
@@ -266,9 +298,9 @@ export class ChessGame implements OSCVrChatGameLogic {
     return this.chessSquareToIndex(pieceSquare);
   }
 
-  private getPiecePositionBishop(pieceName: ChessIndexName, isWhiteSquare: boolean): number {
+  private getPiecePositionBishop(pieceName: ChessIndexName): number {
     const pieceSquare: Square = this.alivePieces.get(pieceName)! || this.alivePieces.get(this.twinMap.get(pieceName)!)! || this.alivePieces.get(this.kingMap.get(pieceName)!)!;
-    return this.chessSquareToIndexBishop(pieceSquare, isWhiteSquare);
+    return this.chessSquareToIndexBishop(pieceSquare);
   }
 
   private getPieceTypeCaptured(pieceType: ChessIndexName): number {
@@ -288,7 +320,7 @@ export class ChessGame implements OSCVrChatGameLogic {
     if (this.input.selectedPosition === null) {
       return 0;
     }
-  
+
     const square: Square = this.getSelectedPosition<Square>();
     return this.chessSquareToIndex(square);
   }
@@ -450,5 +482,39 @@ export class ChessGame implements OSCVrChatGameLogic {
     [ChessIndexName.Bishop_Black_2, 29],
     [ChessIndexName.Knight_Black_2, 30],
     [ChessIndexName.Rook_Black_2, 31]
+  ]);
+  private readonly chessPieceToDebugString: Map<ChessIndexName, string> = new Map<ChessIndexName, string>([
+    [ChessIndexName.Rook_White_1, 'R'],
+    [ChessIndexName.Knight_White_1, 'N'],
+    [ChessIndexName.Bishop_White_1, 'B'],
+    [ChessIndexName.Queen_White_1, 'Q'],
+    [ChessIndexName.King_White_1, 'K'],
+    [ChessIndexName.Bishop_White_2, 'B'],
+    [ChessIndexName.Knight_White_2, 'N'],
+    [ChessIndexName.Rook_White_2, 'R'],
+    [ChessIndexName.Pawn_White_1, 'P'],
+    [ChessIndexName.Pawn_White_2, 'P'],
+    [ChessIndexName.Pawn_White_3, 'P'],
+    [ChessIndexName.Pawn_White_4, 'P'],
+    [ChessIndexName.Pawn_White_5, 'P'],
+    [ChessIndexName.Pawn_White_6, 'P'],
+    [ChessIndexName.Pawn_White_7, 'P'],
+    [ChessIndexName.Pawn_White_8, 'P'],
+    [ChessIndexName.Pawn_Black_1, 'p'],
+    [ChessIndexName.Pawn_Black_2, 'p'],
+    [ChessIndexName.Pawn_Black_3, 'p'],
+    [ChessIndexName.Pawn_Black_4, 'p'],
+    [ChessIndexName.Pawn_Black_5, 'p'],
+    [ChessIndexName.Pawn_Black_6, 'p'],
+    [ChessIndexName.Pawn_Black_7, 'p'],
+    [ChessIndexName.Pawn_Black_8, 'p'],
+    [ChessIndexName.Rook_Black_1, 'r'],
+    [ChessIndexName.Knight_Black_1, 'n'],
+    [ChessIndexName.Bishop_Black_1, 'b'],
+    [ChessIndexName.Queen_Black_1, 'q'],
+    [ChessIndexName.King_Black_1, 'k'],
+    [ChessIndexName.Bishop_Black_2, 'b'],
+    [ChessIndexName.Knight_Black_2, 'n'],
+    [ChessIndexName.Rook_Black_2, 'r']
   ]);
 }
