@@ -21,6 +21,10 @@ Version 1.0
 3. Fix selected piece highlight value ✓
 4. Test highlight piece
 5. Update base shader logic ✓
+Fix promotion ✓
+Fix highlighting ✓
+Reset current input
+Fix chatbox 
 
 
 Version 1.1

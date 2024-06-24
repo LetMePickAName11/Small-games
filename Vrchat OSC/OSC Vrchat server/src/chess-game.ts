@@ -141,7 +141,29 @@ export class ChessGame implements OSCVrChatGameLogic {
 
   private getSquareDebug(square: Square): string {
     const sqaurePiece: ChessIndexName | undefined = this.getKeyByValue<ChessIndexName, string>(this.alivePieces, square);
-    return sqaurePiece === undefined ? '.' : this.chessPieceToDebugString.get(sqaurePiece)!;
+
+    if(sqaurePiece === undefined){
+      return '.';
+    }
+
+    const pieceSymbol: string = this.chessPieceToDebugString.get(sqaurePiece)!;
+
+    if (['P', 'p'].includes(pieceSymbol)) {
+      const pawnPromotionNumber: number = this.pawnPromotions.get(sqaurePiece)!;
+
+      if (pawnPromotionNumber === 1) {
+        return pieceSymbol;
+      }
+
+      if (this.chess.turn() === 'w') {
+        return this.getKeyByValue<string, number>(this.pawnPromotionMap, pawnPromotionNumber)!.toUpperCase();
+      }
+      else {
+        return this.getKeyByValue<string, number>(this.pawnPromotionMap, pawnPromotionNumber)!;
+      }
+    }
+
+    return pieceSymbol;
   }
 
   private getKeyByValue<K, V>(map: Map<K, V>, value: V): K | undefined {
@@ -446,7 +468,7 @@ export class ChessGame implements OSCVrChatGameLogic {
     [ChessIndexName.Rook_Black_2, ChessIndexName.King_Black_1]
   ]);
   private readonly pawnPromotionMap: Map<string, number> = new Map<string, number>([
-    ['k', 2],
+    ['n', 2],
     ['q', 3],
   ]);
   private readonly pieceIndexMap: Map<string, number> = new Map<string, number>([
