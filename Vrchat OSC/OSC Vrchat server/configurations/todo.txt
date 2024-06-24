@@ -3,16 +3,16 @@ Copy folders via directory and not directly into unity program. Animations won't
 
 Version 1.0
 1. Replace chess board texture (one that does not fuck up ranks and files) ✓
-2. Test chess logic
- 2.1 Movement
- 2.2 Captures
- 2.3 Checks
+2. Test chess logic ✓
+ 2.1 Movement ✓
+ 2.2 Captures ✓
+ 2.3 Checks ✓
  2.4 Checkmate
- 2.5 Inputs
- 2.6 Promotion
- 2.7 Castling
- 2.8 En passant
- 2.9 Illegal moves
+ 2.5 Inputs ✓
+ 2.6 Promotion ✓
+ 2.7 Castling ✓
+ 2.8 En passant ✓
+ 2.9 Illegal moves ✓
  2.10 Stalemate
  2.11 Insufficient material
  2.12 Threefold repitition
@@ -23,8 +23,6 @@ Version 1.0
 5. Update base shader logic ✓
 Fix promotion ✓
 Fix highlighting ✓
-Reset current input
-Fix chatbox 
 
 
 Version 1.1
@@ -37,7 +35,8 @@ Version 1.1
  3.4 Build via UI
 4. Cleanup naming schemes
 5. Cleanup code
-6. Add documentation
+6. Reset current input
+7. Add documentation
 
 
 
