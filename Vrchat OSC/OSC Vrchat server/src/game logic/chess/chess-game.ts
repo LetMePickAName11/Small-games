@@ -292,10 +292,7 @@ export class ChessGame implements OSCVrChatGameLogic {
     let res = '';
     res += `${this.getSelectedPiece()} -> ${this.getSelectedPosition()}.`;
 
-    if (this.chess.isCheck()) {
-      res += ' Check.';
-    }
-    else if (this.chess.isCheckmate()) {
+    if (this.chess.isCheckmate()) {
       res += ' Check mate.'
     }
     else if (this.chess.isThreefoldRepetition()) {
@@ -306,7 +303,10 @@ export class ChessGame implements OSCVrChatGameLogic {
     }
     else if (this.chess.isDraw()) {
       res += ' Draw.'
-    } // Add fifty move rule
+    }
+    else if (this.chess.isCheck()) {
+      res += ' Check.';
+    }
 
     return res;
   }
