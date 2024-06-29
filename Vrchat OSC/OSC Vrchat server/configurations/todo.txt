@@ -19,7 +19,7 @@ Version 1.0
  2.13 Fifty move rule
  2.14 Textbox information
 3. Fix selected piece highlight value ✓
-4. Test highlight piece
+4. Test highlight piece  ✓
 5. Update base shader logic ✓
 Fix promotion ✓
 Fix highlighting ✓

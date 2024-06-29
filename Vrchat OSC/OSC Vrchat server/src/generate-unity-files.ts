@@ -1,5 +1,19 @@
 import { BitAllocation, EightBitChunkName } from 'shared-lib';
 import { FileService } from './file-service';
+import { UnityMetadata } from './models/unity_yaml/unityMetadata';
+import { FloatCurve } from './models/unity_yaml/floatCurve';
+import { GenericBinding } from './models/unity_yaml/genericBounding';
+import { EditorCurve } from './models/unity_yaml/editorCurve';
+import { AnimationClip } from './models/unity_yaml/animationClip';
+import { AnimatorController } from './models/unity_yaml/animatorController';
+import { AnimationParamter } from './models/unity_yaml/animationParamter';
+import { AnimationLayer } from './models/unity_yaml/animationLayer';
+import { MAnimatorParamter } from './models/unity_yaml/mAnimatorParameter';
+import { AnimatorState } from './models/unity_yaml/animatorState';
+import { BlendTree } from './models/unity_yaml/blendTree';
+import { AnimatorStateTransition } from './models/unity_yaml/animatorStateTransition';
+import { UnityYamlTag, YamlDocument } from './yaml-parser';
+import { AnimatorStateMachine } from './models/unity_yaml/animatorStateMachine';
 
 export class GenerateUnityFiles {
   public generateFiles(): void {
@@ -47,6 +61,7 @@ export class GenerateUnityFiles {
         if (!(objectName in gameObjectToShaders)) {
           gameObjectToShaders[objectName] = new Set<Set<string>>();
         }
+
         gameObjectToShaders[objectName]!.add(shaderParameters);
       }
     }
@@ -143,224 +158,250 @@ export class GenerateUnityFiles {
   }
 
   private generateVrcExpressionParamters(): void {
-    const createParamter = (name: string, valueType: number, saved: number, defaultValue: number, networkSynced: number) => {
-      return `
-  - name: ${name}
-    valueType: ${valueType}
-    saved: ${saved}
-    defaultValue: ${defaultValue}
-    networkSynced: ${networkSynced}`;
-    };
-
     const dataConfigurations: Array<BitAllocation> = FileService.getFileJson(this.outputInternalDirectory + 'data_mapped.json');
     const dataInputs: Array<string> = FileService.getFileJson(this.userInputDirectory + 'input.json');
 
     const chunks: Array<string> = [];
-    const overflows: Array<string> = [];
+    const overflowingBits: Array<string> = [];
 
-    for (const d of dataConfigurations) {
-      if (!d.lsbName.includes('Overflow')) {
-        if (!chunks.includes(d.lsbName)) {
-          chunks.push(d.lsbName);
+    dataConfigurations.forEach((data: BitAllocation) => {
+      if (data.lsbName.includes('Overflow')) {
+        if (!overflowingBits.includes(data.lsbName)) {
+          overflowingBits.push(data.lsbName);
         }
-        if (!chunks.includes(d.msbName)) {
-          chunks.push(d.msbName);
+
+        return;
+      }
+
+      if (!chunks.includes(data.lsbName)) {
+        chunks.push(data.lsbName);
+      }
+      if (!chunks.includes(data.msbName)) {
+        chunks.push(data.msbName);
+      }
+    });
+
+    const yamlDocument: Array<YamlDocument> = [{
+      tag: this.documentNameToIdentifier.get('MonoBehaviour')!,
+      anchor: this.generateUniqueId(),
+      data: {
+        MonoBehaviour: {
+          m_ObjectHideFlags: 0,
+          m_CorrespondingSourceObject: { fileID: 0 },
+          m_PrefabInstance: { fileID: 0 },
+          m_PrefabAsset: { fileID: 0 },
+          m_GameObject: { fileID: 0 },
+          m_Enabled: 1,
+          m_EditorHideFlags: 0,
+          m_Script: { fileID: -1506855854, guid: '67cc4cb7839cd3741b63733d5adf0442', type: 3 }, // hardcoded but probably needs to be dynamic
+          m_Name: 'VRCExpressionParameters',
+          m_EditorClassIdentifier: null,
+          parameters: chunks.map((chunk) => {
+            return {
+              name: chunk,
+              valueType: 0, // 0 == 8-bit integer
+              saved: 0,
+              defaultValue: 0,
+              networkSynced: 1
+            }
+          }).concat(overflowingBits.map((overflow) => {
+            return {
+              name: overflow,
+              valueType: 2, // 2 == boolean
+              saved: 0,
+              defaultValue: 0,
+              networkSynced: 1
+            }
+          }).concat(dataInputs.map((input) => {
+            return {
+              name: `!${input}`,
+              valueType: 2, // 2 == boolean
+              saved: 0,
+              defaultValue: 0,
+              networkSynced: 1
+            }
+          })))
         }
       }
-      else if (!overflows.includes(d.lsbName)) {
-        overflows.push(d.lsbName)
+    }];
+
+    const yamlMetadata: UnityMetadata = {
+      fileFormatVersion: 2,
+      guid: this.generateGuid(),
+      NativeFormatImporter: {
+        externalObjects: {},
+        mainObjectFileID: 11400000,
+        userData: null,
+        assetBundleName: '',
+        assetBundleVariant: null,
       }
-    }
+    };
 
-    const parametersInfo = chunks.map((chunk) => {
-      return {
-        name: chunk,
-        valueType: 0, // 0 == 8-bit integer
-        saved: 0,
-        defaultValue: 0,
-        networkSynced: 1
-      }
-    }).concat(overflows.map((overflow) => {
-      return {
-        name: overflow,
-        valueType: 2, // 2 == boolean
-        saved: 0,
-        defaultValue: 0,
-        networkSynced: 1
-      }
-    }).concat(dataInputs.map((input) => {
-      return {
-        name: `!${input}`,
-        valueType: 2, // 2 == boolean
-        saved: 0,
-        defaultValue: 0,
-        networkSynced: 1
-      }
-    })));
-
-    const outputPath = this.outputExternalDirectory + 'Vrchat/VRCExpressionParameters.asset';
-    const outputMetaPath = this.outputExternalDirectory + 'Vrchat/VRCExpressionParameters.asset.meta';
-
-    FileService.copyFile(this.templateDirectory + 'vrc_expression_parameters.asset.meta', outputMetaPath);
-    FileService.replaceInFile(outputMetaPath, '__[REPLACEME]__', this.generateGuid());
-
-    FileService.copyFile(this.templateDirectory + 'vrc_expression_parameters.asset', outputPath);
-
-    for (const row of parametersInfo) {
-      FileService.appendToFile(outputPath, createParamter(row.name, row.valueType, row.saved, row.defaultValue, row.networkSynced));
-    }
+    FileService.createYamlDocuments(yamlDocument, this.unityHeader, this.outputExternalDirectory + 'Vrchat/VRCExpressionParameters.asset');
+    FileService.createYamlDocument(yamlMetadata, null, this.outputExternalDirectory + 'Vrchat/VRCExpressionParameters.asset.meta');
   }
 
   private generateAnimations(): void {
-    const generateFloatCurve = (value: number, attribute: string, path: string): string => {
-      return `
-      - serializedVersion: 2
-        curve:
-          serializedVersion: 2
-          m_Curve:
-          - serializedVersion: 3
-            time: 0
-            value: ${value}
-            inSlope: 0
-            outSlope: 0
-            tangentMode: 136
-            weightedMode: 0
-            inWeight: 0.33333334
-            outWeight: 0.33333334
-          m_PreInfinity: 2
-          m_PostInfinity: 2
-          m_RotationOrder: 4
-        attribute: material.${attribute}
-        path: ${path}
-        classID: 23
-        script: {fileID: 0}
-        flags: 16`;
+    const data: Array<BitAllocation> = FileService.getFileJson(this.outputInternalDirectory + 'data_mapped.json');
+    const uniqueStartNames: Array<string> = [...new Set(data.flatMap(allocation => [allocation.lsbName, allocation.msbName]))];
+
+    const generateFloatCurve = (value: number, attribute: string, path: string): FloatCurve => {
+      return {
+        serializedVersion: 2,
+        curve: {
+          serializedVersion: 2,
+          m_Curve: [
+            {
+              serializedVersion: 3,
+              time: 0,
+              value: value,
+              inSlope: 0,
+              outSlope: 0,
+              tangentMode: 136,
+              weightedMode: 0,
+              inWeight: 0.33333334,
+              outWeight: 0.33333334,
+            },
+          ],
+          m_PreInfinity: 2,
+          m_PostInfinity: 2,
+          m_RotationOrder: 4,
+        },
+        attribute: `material.${attribute}`,
+        path: path,
+        classID: 23,
+        script: { fileID: 0 },
+        flags: 16
+      };
+    };
+
+    const generateGenericBinding = (pathId: number, attributeId: number): GenericBinding => {
+      return {
+        serializedVersion: 2,
+        path: pathId,
+        attribute: attributeId,
+        script: { fileID: 0 },
+        typeID: 23,
+        customType: 22,
+        isPPtrCurve: 0,
+        isIntCurve: 0,
+        isSerializeReferenceCurve: 0
+      }
+    };
+
+    const generateEditorCurves = (value: number, attribute: string, path: string): EditorCurve => {
+      return {
+        serializedVersion: 2,
+        curve: {
+          serializedVersion: 2,
+          m_Curve: {
+            serializedVersion: 3,
+            time: 0,
+            value: value,
+            inSlope: 0,
+            outSlope: 0,
+            tangentMode: 136,
+            weightedMode: 0,
+            inWeight: 0.33333334,
+            outWeight: 0.33333334,
+          },
+          m_PreInfinity: 2,
+          m_PostInfinity: 2,
+          m_RotationOrder: 4,
+        },
+        attribute: `material.${attribute}`,
+        path: path,
+        classID: 23,
+        script: { fileID: 0 },
+        flags: 16,
+      };
     }
 
-    const generateGenericBinding = (pathId: number, attributeId: number): string => {
-      return `
-        - serializedVersion: 2
-          path: ${pathId}
-          attribute: ${attributeId}
-          script: {fileID: 0}
-          typeID: 23
-          customType: 22
-          isPPtrCurve: 0
-          isIntCurve: 0
-          isSerializeReferenceCurve: 0`;
+    const generateAnimationClip = (name: string, floatCurves: Array<FloatCurve>, genericBindings: Array<GenericBinding>, editorCurves: Array<EditorCurve>): AnimationClip => {
+      return {
+        AnimationClip: {
+          m_ObjectHideFlags: 0,
+          m_CorrespondingSourceObject: { fileID: 0 },
+          m_PrefabInstance: { fileID: 0 },
+          m_PrefabAsset: { fileID: 0 },
+          m_Name: name,
+          serializedVersion: 7,
+          m_Legacy: 0,
+          m_Compressed: 0,
+          m_UseHighQualityCurve: 1,
+          m_RotationCurves: [],
+          m_CompressedRotationCurves: [],
+          m_EulerCurves: [],
+          m_PositionCurves: [],
+          m_ScaleCurves: [],
+          m_FloatCurves: floatCurves,
+          m_PPtrCurves: [],
+          m_SampleRate: 60,
+          m_WrapMode: 0,
+          m_Bounds: {
+            m_Center: { x: 0, y: 0, z: 0 },
+            m_Extent: { x: 0, y: 0, z: 0 },
+          },
+          m_ClipBindingConstant: {
+            genericBindings: genericBindings,
+            pptrCurveMapping: [],
+          },
+          m_AnimationClipSettings: {
+            serializedVersion: 2,
+            m_AdditiveReferencePoseClip: { fileID: 0 },
+            m_AdditiveReferencePoseTime: 0,
+            m_StartTime: 0,
+            m_StopTime: 0,
+            m_OrientationOffsetY: 0,
+            m_Level: 0,
+            m_CycleOffset: 0,
+            m_HasAdditiveReferencePose: 0,
+            m_LoopTime: 0,
+            m_LoopBlend: 0,
+            m_LoopBlendOrientation: 0,
+            m_LoopBlendPositionY: 0,
+            m_LoopBlendPositionXZ: 0,
+            m_KeepOriginalOrientation: 0,
+            m_KeepOriginalPositionY: 1,
+            m_KeepOriginalPositionXZ: 0,
+            m_HeightFromFeet: 0,
+            m_Mirror: 0,
+          },
+          m_EditorCurves: editorCurves,
+          m_EulerEditorCurves: [],
+          m_HasGenericRootTransform: 0,
+          m_HasMotionFloatCurves: 0,
+          m_Events: [],
+        }
+      };
     }
 
-    const generateEditorCurves = (value: number, attribute: string, path: string): string => {
-      return `
-      - serializedVersion: 2
-        curve:
-          serializedVersion: 2
-          m_Curve:
-          - serializedVersion: 3
-            time: 0
-            value: ${value}
-            inSlope: 0
-            outSlope: 0
-            tangentMode: 136
-            weightedMode: 0
-            inWeight: 0.33333334
-            outWeight: 0.33333334
-          m_PreInfinity: 2
-          m_PostInfinity: 2
-          m_RotationOrder: 4
-        attribute: material.${attribute}
-        path: ${path}
-        classID: 23
-        script: {fileID: 0}
-        flags: 16`;
-    }
-
-    const generateAnimationClip = (name: string, floatCurves: string, genericBindings: string, editorCurves: string): string => {
-      return `
-    AnimationClip:
-      m_ObjectHideFlags: 0
-      m_CorrespondingSourceObject: {fileID: 0}
-      m_PrefabInstance: {fileID: 0}
-      m_PrefabAsset: {fileID: 0}
-      m_Name: ${name}
-      serializedVersion: 7
-      m_Legacy: 0
-      m_Compressed: 0
-      m_UseHighQualityCurve: 1
-      m_RotationCurves: []
-      m_CompressedRotationCurves: []
-      m_EulerCurves: []
-      m_PositionCurves: []
-      m_ScaleCurves: []
-      m_FloatCurves: ${floatCurves}
-      m_PPtrCurves: []
-      m_SampleRate: 60
-      m_WrapMode: 0
-      m_Bounds:
-        m_Center: {x: 0, y: 0, z: 0}
-        m_Extent: {x: 0, y: 0, z: 0}
-      m_ClipBindingConstant:
-        genericBindings: ${genericBindings}
-        pptrCurveMapping: []
-      m_AnimationClipSettings:
-        serializedVersion: 2
-        m_AdditiveReferencePoseClip: {fileID: 0}
-        m_AdditiveReferencePoseTime: 0
-        m_StartTime: 0
-        m_StopTime: 0
-        m_OrientationOffsetY: 0
-        m_Level: 0
-        m_CycleOffset: 0
-        m_HasAdditiveReferencePose: 0
-        m_LoopTime: 0
-        m_LoopBlend: 0
-        m_LoopBlendOrientation: 0
-        m_LoopBlendPositionY: 0
-        m_LoopBlendPositionXZ: 0
-        m_KeepOriginalOrientation: 0
-        m_KeepOriginalPositionY: 1
-        m_KeepOriginalPositionXZ: 0
-        m_HeightFromFeet: 0
-        m_Mirror: 0
-      m_EditorCurves: ${editorCurves}
-      m_EulerEditorCurves: []
-      m_HasGenericRootTransform: 0
-      m_HasMotionFloatCurves: 0
-      m_Events: []`;
-    }
-
-    const generateAnimationPairData = (suffix: string, allocations: Array<BitAllocation>, maxValue: number) => {
+    const generateAnimationPairData = (suffix: string, allocations: Array<BitAllocation>, maxValue: number): [FloatCurve[], GenericBinding[], EditorCurve[]] => {
       const defaultValue: number = suffix === 'Start' ? 0 : maxValue;
       const attributeId: number = this.generateUniqueId();
       const pathId: number = this.generateUniqueId();
 
       return [
-        allocations.map((allocation: BitAllocation) => {
-          return allocation.objectNames.map((path: string) => generateFloatCurve(defaultValue, `_${allocation.shaderParameters[0]}`, path)).join('');
-        }).join(''),
+        allocations.flatMap((allocation: BitAllocation): Array<FloatCurve> => {
+          return allocation.objectNames.map((path: string) => generateFloatCurve(defaultValue, `_${allocation.shaderParameters[0]}`, path));
+        }),
 
-        allocations.map((allocation: BitAllocation) => {
-          return allocation.objectNames
-            .map((_: string) => generateGenericBinding(pathId, attributeId)).join('');
-        }).join(''),
+        allocations.flatMap((allocation: BitAllocation): Array<GenericBinding> => {
+          return allocation.objectNames.map((_: string) => generateGenericBinding(pathId, attributeId));
+        }),
 
-        allocations.map((allocation: BitAllocation) => {
-          return allocation.objectNames.map((path: string) => generateEditorCurves(defaultValue, `_${allocation.shaderParameters[0]}`, path)).join('');
-        }).join('')
+        allocations.flatMap((allocation: BitAllocation): Array<EditorCurve> => {
+          return allocation.objectNames.map((path: string) => generateEditorCurves(defaultValue, `_${allocation.shaderParameters[0]}`, path));
+        })
       ];
     }
-
-    const data: Array<BitAllocation> = FileService.getFileJson(this.outputInternalDirectory + 'data_mapped.json');
-
-    const uniqueStartNames: Array<string> = Array.from(
-      new Set(data.map(promotion => promotion.lsbName).concat(data.map(promotion => promotion.msbName)))
-    );
 
 
     for (const name of uniqueStartNames) {
       ['Start', 'End'].forEach((suffix: string) => {
         const maxValue: number = name.includes('Overflow') ? 1 : 255;
-        const [newFloatCurves, newGenericBindings, newEditorCurves]: Array<string> = generateAnimationPairData(suffix, data.filter((bitAllocation: BitAllocation) => bitAllocation.lsbName === name).map((bitAllocation: BitAllocation) => {
+
+        const [newFloatCurves, newGenericBindings, newEditorCurves] = generateAnimationPairData(suffix, data.filter((bitAllocation: BitAllocation) => bitAllocation.lsbName === name).map((bitAllocation: BitAllocation) => {
           return {
             ...bitAllocation,
             shaderParameters: [
@@ -368,7 +409,8 @@ export class GenerateUnityFiles {
             ]
           }
         }), maxValue);
-        const [newFloatCurves2, newGenericBindings2, newEditorCurves2]: Array<string> = generateAnimationPairData(suffix, data.filter((bitAllocation: BitAllocation) => bitAllocation.msbName === name).map((bitAllocation: BitAllocation) => {
+
+        const [newFloatCurves2, newGenericBindings2, newEditorCurves2] = generateAnimationPairData(suffix, data.filter((bitAllocation: BitAllocation) => bitAllocation.msbName === name).map((bitAllocation: BitAllocation) => {
           return {
             ...bitAllocation,
             shaderParameters: [
@@ -377,18 +419,29 @@ export class GenerateUnityFiles {
           }
         }), maxValue);
 
-        const floatCurves: string = newFloatCurves + newFloatCurves2!;
-        const genericBindings: string = newGenericBindings + newGenericBindings2!;
-        const editorCurves: string = newEditorCurves + newEditorCurves2!;
+        const floatCurves: Array<FloatCurve> = [...newFloatCurves, ...newFloatCurves2];
+        const genericBindings: Array<GenericBinding> = [...newGenericBindings, ...newGenericBindings2];
+        const editorCurves: Array<EditorCurve> = [...newEditorCurves, ...newEditorCurves2];
 
-        const outputPath: string = `${this.outputExternalDirectory}Animations/${name}_${suffix}.anim`;
-        const outputMetaPath: string = `${this.outputExternalDirectory}Animations/${name}_${suffix}.anim.meta`;
+        const animation: Array<YamlDocument> = [{
+          tag: this.documentNameToIdentifier.get('AnimationClip')!,
+          anchor: this.generateUniqueId(),
+          data: generateAnimationClip(`${name}_${suffix}`, floatCurves, genericBindings, editorCurves)
+        }];
+        const metadata: UnityMetadata = {
+          fileFormatVersion: 2,
+          guid: this.generateGuid(),
+          NativeFormatImporter: {
+            externalObjects: {},
+            mainObjectFileID: 7400000,
+            userData: null,
+            assetBundleName: '',
+            assetBundleVariant: null,
+          }
+        };
 
-        FileService.copyFile(this.templateDirectory + 'animation_base.anim', outputPath);
-        FileService.appendToFile(outputPath, generateAnimationClip(`${name}_${suffix}`, floatCurves, genericBindings, editorCurves));
-
-        FileService.copyFile(this.templateDirectory + 'animation_base.anim.meta', outputMetaPath);
-        FileService.replaceInFile(outputMetaPath, '__[REPLACEME]__', this.generateGuid());
+        FileService.createYamlDocuments(animation, this.unityHeader, `${this.outputExternalDirectory}Animations/${name}_${suffix}.anim`);
+        FileService.createYamlDocument(metadata, null, `${this.outputExternalDirectory}Animations/${name}_${suffix}.anim.meta`);
       });
     }
   }
@@ -418,206 +471,238 @@ export class GenerateUnityFiles {
       return animatorData;
     }
 
-    const generateAnimatorParameter = (name: string): string => {
-      const template = `
-  - m_Name: ${name}
-    m_Type: 1
-    m_DefaultFloat: 0
-    m_DefaultInt: 0
-    m_DefaultBool: 0
-    m_Controller: {fileID: 9100000}`;
-      return template;
+    const generateAnimatorParameter = (name: string): MAnimatorParamter => {
+      return {
+        m_Name: name,
+        m_Type: 1,
+        m_DefaultFloat: 0,
+        m_DefaultInt: 0,
+        m_DefaultBool: 0,
+        m_Controller: { fileID: 9100000 }
+      }
     }
 
-    const generateAnimatorLayer = (name: string, animatorStateMachineId: number): string => {
-      const template = `
-  - serializedVersion: 5
-    m_Name: ${name}
-    m_StateMachine: {fileID: ${animatorStateMachineId}}
-    m_Mask: {fileID: 0}
-    m_Motions: []
-    m_Behaviours: []
-    m_BlendingMode: 0
-    m_SyncedLayerIndex: -1
-    m_DefaultWeight: 1
-    m_IKPass: 0
-    m_SyncedLayerAffectsTiming: 0
-    m_Controller: {fileID: 9100000}`;
-      return template;
+    const generateAnimatorLayer = (name: string, animatorStateMachineId: number): AnimationLayer => {
+      return {
+        serializedVersion: 5,
+        m_Name: name,
+        m_StateMachine: { fileID: animatorStateMachineId },
+        m_Mask: { fileID: 0 },
+        m_Motions: [],
+        m_Behaviours: [],
+        m_BlendingMode: 0,
+        m_SyncedLayerIndex: -1,
+        m_DefaultWeight: 1,
+        m_IKPass: 0,
+        m_SyncedLayerAffectsTiming: 0,
+        m_Controller: { fileID: 9100000 },
+      };
     }
 
-    const generateAnimatorController = (animatorParamaters: string, animatorLayers: string) => {
-      const template = `
---- !u!91 &9100000
-AnimatorController:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: FX
-  serializedVersion: 5
-  m_AnimatorParameters:${animatorParamaters}
-  m_AnimatorLayers:${animatorLayers}`;
-      return template;
+    const generateAnimatorController = (animatorParamaters: Array<AnimationParamter>, animatorLayers: Array<AnimationLayer>): AnimatorController => {
+      return {
+        m_ObjectHideFlags: 0,
+        m_CorrespondingSourceObject: { fileID: 0 },
+        m_PrefabInstance: { fileID: 0 },
+        m_PrefabAsset: { fileID: 0 },
+        m_Name: 'FX',
+        serializedVersion: 5,
+        m_AnimatorParameters: animatorParamaters,
+        m_AnimatorLayers: animatorLayers,
+      };
     }
 
-    const generateAnimatorState = (animatorStateId: number, animatorStateTransitionId: number, blendTreeId: number) => {
-      const template = `
---- !u!1102 &${animatorStateId}
-AnimatorState:
-  serializedVersion: 6
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: Blend Tree
-  m_Speed: 1
-  m_CycleOffset: 0
-  m_Transitions:
-  - {fileID: ${animatorStateTransitionId}}
-  m_StateMachineBehaviours: []
-  m_Position: {x: 50, y: 50, z: 0}
-  m_IKOnFeet: 0
-  m_WriteDefaultValues: 1
-  m_Mirror: 0
-  m_SpeedParameterActive: 0
-  m_MirrorParameterActive: 0
-  m_CycleOffsetParameterActive: 0
-  m_TimeParameterActive: 0
-  m_Motion: {fileID: ${blendTreeId}}
-  m_Tag: 
-  m_SpeedParameter: 
-  m_MirrorParameter: 
-  m_CycleOffsetParameter: 
-  m_TimeParameter: `
-      return template;
+    const generateAnimatorState = (animatorStateTransitionId: number, blendTreeId: number): AnimatorState => {
+      return {
+        AnimatorState: {
+          serializedVersion: 6,
+          m_ObjectHideFlags: 1,
+          m_CorrespondingSourceObject: { fileID: 0 },
+          m_PrefabInstance: { fileID: 0 },
+          m_PrefabAsset: { fileID: 0 },
+          m_Name: 'Blend Tree',
+          m_Speed: 1,
+          m_CycleOffset: 0,
+          m_Transitions: [{ fileID: animatorStateTransitionId }],
+          m_StateMachineBehaviours: [],
+          m_Position: { x: 50, y: 50, z: 0 },
+          m_IKOnFeet: 0,
+          m_WriteDefaultValues: 1,
+          m_Mirror: 0,
+          m_SpeedParameterActive: 0,
+          m_MirrorParameterActive: 0,
+          m_CycleOffsetParameterActive: 0,
+          m_TimeParameterActive: 0,
+          m_Motion: { fileID: blendTreeId },
+          m_Tag: null,
+          m_SpeedParameter: null,
+          m_MirrorParameter: null,
+          m_CycleOffsetParameter: null,
+          m_TimeParameter: null,
+        }
+      };
     }
 
-    const generateAnimatorStateMachine = (name: string, animatorStateMachineId: number, animatorStateId: number) => {
-      const template = `
---- !u!1107 &${animatorStateMachineId}
-AnimatorStateMachine:
-  serializedVersion: 6
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: ${name}
-  m_ChildStates:
-  - serializedVersion: 1
-    m_State: {fileID: ${animatorStateId}}
-    m_Position: {x: 300, y: 120, z: 0}
-  m_ChildStateMachines: []
-  m_AnyStateTransitions: []
-  m_EntryTransitions: []
-  m_StateMachineTransitions: {}
-  m_StateMachineBehaviours: []
-  m_AnyStatePosition: {x: 50, y: 20, z: 0}
-  m_EntryPosition: {x: 50, y: 120, z: 0}
-  m_ExitPosition: {x: 600, y: 120, z: 0}
-  m_ParentStateMachinePosition: {x: 600, y: 20, z: 0}
-  m_DefaultState: {fileID: ${animatorStateId}}`
-      return template;
+    const generateAnimatorStateMachine = (name: string, animatorStateId: number): AnimatorStateMachine => {
+      return {
+        AnimatorStateMachine: {
+          serializedVersion: 6,
+          m_ObjectHideFlags: 1,
+          m_CorrespondingSourceObject: { fileID: 0 },
+          m_PrefabInstance: { fileID: 0 },
+          m_PrefabAsset: { fileID: 0 },
+          m_Name: name,
+          m_ChildStates: [{
+            serializedVersion: 1,
+            m_State: { fileID: animatorStateId },
+            m_Position: { x: 300, y: 120, z: 0 },
+          }],
+          m_ChildStateMachines: [],
+          m_AnyStateTransitions: [],
+          m_EntryTransitions: [],
+          m_StateMachineTransitions: {},
+          m_StateMachineBehaviours: [],
+          m_AnyStatePosition: { x: 50, y: 20, z: 0 },
+          m_EntryPosition: { x: 50, y: 120, z: 0 },
+          m_ExitPosition: { x: 600, y: 120, z: 0 },
+          m_ParentStateMachinePosition: { x: 600, y: 20, z: 0 },
+          m_DefaultState: { fileID: animatorStateId }
+        }
+      };
     }
 
-    const generateBlendTree = (name: string, blendTreeId: number, motionStartGuid: string, motionEndGuid: string, minThreshold: number, maxThreshold: number) => {
-      const template = `
---- !u!206 &${blendTreeId}
-BlendTree:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: Blend Tree
-  m_Childs:
-  - serializedVersion: 2
-    m_Motion: {fileID: 7400000, guid: ${motionStartGuid}, type: 2}
-    m_Threshold: ${minThreshold}
-    m_Position: {x: 0, y: 0}
-    m_TimeScale: 1
-    m_CycleOffset: 0
-    m_DirectBlendParameter: ${name}
-    m_Mirror: 0
-  - serializedVersion: 2
-    m_Motion: {fileID: 7400000, guid: ${motionEndGuid}, type: 2}
-    m_Threshold: ${maxThreshold}
-    m_Position: {x: 0, y: 0}
-    m_TimeScale: 1
-    m_CycleOffset: 0
-    m_DirectBlendParameter: ${name}
-    m_Mirror: 0
-  m_BlendParameter: ${name}
-  m_BlendParameterY: ${name}
-  m_MinThreshold: ${minThreshold}
-  m_MaxThreshold: ${maxThreshold}
-  m_UseAutomaticThresholds: 0
-  m_NormalizedBlendValues: 0
-  m_BlendType: 0`
-      return template;
+    const generateBlendTree = (name: string, motionStartGuid: string, motionEndGuid: string, minThreshold: number, maxThreshold: number): BlendTree => {
+      return {
+        BlendTree: {
+          m_ObjectHideFlags: 1,
+          m_CorrespondingSourceObject: { fileID: 0 },
+          m_PrefabInstance: { fileID: 0 },
+          m_PrefabAsset: { fileID: 0 },
+          m_Name: 'Blend Tree',
+          m_Childs: [
+            {
+              serializedVersion: 2,
+              m_Motion: { fileID: 7400000, guid: motionStartGuid, type: 2 },
+              m_Threshold: minThreshold,
+              m_Position: { x: 0, y: 0 },
+              m_TimeScale: 1,
+              m_CycleOffset: 0,
+              m_DirectBlendParameter: name,
+              m_Mirror: 0,
+            },
+            {
+              serializedVersion: 2,
+              m_Motion: { fileID: 7400000, guid: motionEndGuid, type: 2 },
+              m_Threshold: maxThreshold,
+              m_Position: { x: 0, y: 0 },
+              m_TimeScale: 1,
+              m_CycleOffset: 0,
+              m_DirectBlendParameter: name,
+              m_Mirror: 0,
+            }
+          ],
+          m_BlendParameter: name,
+          m_BlendParameterY: name,
+          m_MinThreshold: minThreshold,
+          m_MaxThreshold: maxThreshold,
+          m_UseAutomaticThresholds: 0,
+          m_NormalizedBlendValues: 0,
+          m_BlendType: 0,
+        }
+      }
     }
 
-    const generateAnimatorStateTransition = (animatorStateTransitionId: number) => {
-      const template = `
---- !u!1101 &${animatorStateTransitionId}
-AnimatorStateTransition:
-  m_ObjectHideFlags: 1
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: 
-  m_Conditions: []
-  m_DstStateMachine: {fileID: 0}
-  m_DstState: {fileID: 0}
-  m_Solo: 0
-  m_Mute: 0
-  m_IsExit: 1
-  serializedVersion: 3
-  m_TransitionDuration: 0.25
-  m_TransitionOffset: 0
-  m_ExitTime: 0.75
-  m_HasExitTime: 1
-  m_HasFixedDuration: 1
-  m_InterruptionSource: 0
-  m_OrderedInterruption: 1
-  m_CanTransitionToSelf: 1`;
-      return template;
+    const generateAnimatorStateTransition = (): AnimatorStateTransition => {
+      return {
+        AnimatorStateTransition: {
+          m_ObjectHideFlags: 1,
+          m_CorrespondingSourceObject: { fileID: 0 },
+          m_PrefabInstance: { fileID: 0 },
+          m_PrefabAsset: { fileID: 0 },
+          m_Name: '',
+          m_Conditions: [],
+          m_DstStateMachine: { fileID: 0 },
+          m_DstState: { fileID: 0 },
+          m_Solo: 0,
+          m_Mute: 0,
+          m_IsExit: 1,
+          serializedVersion: 3,
+          m_TransitionDuration: 0.25,
+          m_TransitionOffset: 0,
+          m_ExitTime: 0.75,
+          m_HasExitTime: 1,
+          m_HasFixedDuration: 1,
+          m_InterruptionSource: 0,
+          m_OrderedInterruption: 1,
+          m_CanTransitionToSelf: 1,
+        }
+      };
     }
 
-    const animatiorControllerOutputPath: string = this.outputExternalDirectory + 'Animations/FX.controller';
-    const animatiorControllerMetaOutputPath: string = this.outputExternalDirectory + 'Animations/FX.controller.meta';
-
-
-    FileService.copyFile(this.templateDirectory + 'animator_controller_base.controller.meta', animatiorControllerMetaOutputPath);
-    FileService.replaceInFile(animatiorControllerMetaOutputPath, '__[REPLACEME]__', this.generateGuid());
-
-    FileService.copyFile(this.templateDirectory + 'animator_controller_base.controller', animatiorControllerOutputPath);
     const jsonData: AnimatorData = mapJsonConfig();
-
-    const animatorParameters: string = jsonData.name.map((name: string) => generateAnimatorParameter(name)).join('');
-    const animatorLayers: string = jsonData.name.map((name: string, index: number) => generateAnimatorLayer(name, jsonData.animatorStateMachineId[index]!)).join('');
-
-    FileService.appendToFile(animatiorControllerOutputPath, generateAnimatorController(animatorParameters, animatorLayers));
-
     const animationNames: Array<string> = FileService.getFileNamesInDir(this.outputExternalDirectory + 'Animations').filter((v: string) => v.includes('.meta'));
+
+    const animatorParameters: Array<AnimationParamter> = jsonData.name.map((name: string) => generateAnimatorParameter(name));
+    const animatorLayers: Array<AnimationLayer> = jsonData.name.map((name: string, index: number) => generateAnimatorLayer(name, jsonData.animatorStateMachineId[index]!));
+
+    const yamls: Array<YamlDocument> = [
+      {
+        tag: this.documentNameToIdentifier.get('AnimatorController')!,
+        anchor: this.generateUniqueId(),
+        data: {
+          AnimatorController: generateAnimatorController(animatorParameters, animatorLayers)
+        }
+      }
+    ];
 
     for (let i = 0; i < jsonData.name.length; i++) {
       const name: string = jsonData.name[i]!;
-      const animatorStateMachineId: number = jsonData.animatorStateMachineId[i]!;
       const animatorStateId: number = jsonData.animatorStateId[i]!;
       const animatorStateTransitionId: number = jsonData.animatorStateTransitionId[i]!;
       const blendTreeId: number = jsonData.blendTreeId[i]!;
       const minT: number = jsonData.minThreshold[i]!;
       const maxT: number = jsonData.maxThreshold[i]!;
-      const startAnimationName = `${this.outputExternalDirectory}Animations/${animationNames.filter((v: string) => v === `${name}_Start.anim.meta`).find(v => v.includes('_Start'))}`;
-      const endAnimationName = `${this.outputExternalDirectory}Animations/${animationNames.filter((v: string) => v === `${name}_End.anim.meta`).find(v => v.includes('_End'))}`;
+      const startAnimationName: string = `${this.outputExternalDirectory}Animations/${animationNames.filter((v: string) => v === `${name}_Start.anim.meta`).find(v => v.includes('_Start'))}`;
+      const endAnimationName: string = `${this.outputExternalDirectory}Animations/${animationNames.filter((v: string) => v === `${name}_End.anim.meta`).find(v => v.includes('_End'))}`;
       const motionStartGuid: string = FileService.findInFile(startAnimationName, /guid: ([a-f0-9]+)/g).replace('guid: ', '');
       const motionEndGuid: string = FileService.findInFile(endAnimationName, /guid: ([a-f0-9]+)/g).replace('guid: ', '');
 
-      FileService.appendToFile(animatiorControllerOutputPath, generateAnimatorStateMachine(name, animatorStateMachineId, animatorStateId));
-      FileService.appendToFile(animatiorControllerOutputPath, generateAnimatorState(animatorStateId, animatorStateTransitionId, blendTreeId));
-      FileService.appendToFile(animatiorControllerOutputPath, generateAnimatorStateTransition(animatorStateTransitionId));
-      FileService.appendToFile(animatiorControllerOutputPath, generateBlendTree(name, blendTreeId, motionStartGuid, motionEndGuid, minT, maxT));
+      yamls.push({
+        tag: this.documentNameToIdentifier.get('AnimatorStateMachine')!,
+        anchor: this.generateUniqueId(),
+        data: [generateAnimatorStateMachine(name, animatorStateId)]
+      });
+      yamls.push({
+        tag: this.documentNameToIdentifier.get('AnimatorState')!,
+        anchor: this.generateUniqueId(),
+        data: [generateAnimatorState(animatorStateTransitionId, blendTreeId)]
+      });
+      yamls.push({
+        tag: this.documentNameToIdentifier.get('AnimatorStateTransition')!,
+        anchor: this.generateUniqueId(),
+        data: [generateAnimatorStateTransition()]
+      });
+      yamls.push({
+        tag: this.documentNameToIdentifier.get('BlendTree')!,
+        anchor: this.generateUniqueId(),
+        data: [generateBlendTree(name, motionStartGuid, motionEndGuid, minT, maxT)]
+      });
     }
+
+    const metadata: UnityMetadata = {
+      fileFormatVersion: 2,
+      guid: this.generateGuid(),
+      NativeFormatImporter: {
+        externalObjects: {},
+        mainObjectFileID: 7400000,
+        userData: null,
+        assetBundleName: '',
+        assetBundleVariant: null,
+      }
+    }
+
+    FileService.createYamlDocuments(yamls, this.unityHeader, this.outputExternalDirectory + 'Animations/FX.controller');
+    FileService.createYamlDocument(metadata, null, this.outputExternalDirectory + 'Animations/FX.controller.meta');
   }
 
   private generateShadersAndMaterials(): void {
@@ -693,6 +778,17 @@ AnimatorStateTransition:
   private readonly outputInternalDirectory: string = './configurations/auto_generated_files_internal/';
   private readonly outputExternalDirectory: string = './configurations/auto_generated_files_external/';
   private readonly bitIndexToEightBitName: Array<string> = Object.keys(EightBitChunkName);
+
+  private readonly unityHeader: string = '%YAML 1.1\n%TAG !u! tag:unity3d.com,2011:';
+  private readonly documentNameToIdentifier: Map<string, UnityYamlTag> = new Map<string, UnityYamlTag>([
+    ['AnimationClip', '--- !u!74',],
+    ['AnimatorController', '--- !u!91',],
+    ['MonoBehaviour', '--- !u!114',],
+    ['BlendTree', '--- !u!206',],
+    ['AnimatorStateTransition', '--- !u!1101',],
+    ['AnimatorState', '--- !u!1102',],
+    ['AnimatorStateMachine', '--- !u!1107',],
+  ]);
 }
 
 

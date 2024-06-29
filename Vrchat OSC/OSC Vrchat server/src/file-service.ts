@@ -1,5 +1,6 @@
 // @ts-ignore
 import fs from 'fs-extra';
+import { YamlDocument, YamlParser } from './yaml-parser';
 
 export class FileService {
   public static getFile(path: string): string {
@@ -47,5 +48,23 @@ export class FileService {
   public static replaceInFile(path: string, placeholder: string, replacement: string): void {
     const content = this.getFile(path).replace(placeholder, replacement);
     fs.outputFileSync(path, content);
+  }
+
+  public static createYamlDocument(data: object | Array<object>, fileHeader: string | null, path: string): void {
+    const yamlParser: YamlParser = new YamlParser(fileHeader);
+    const yamlString: string = yamlParser.parseDocumentless(data, !!fileHeader);
+
+    this.writeToFile(path, yamlString);
+  }
+
+  public static createYamlDocuments(documents: Array<YamlDocument>, fileHeader: string, path: string): void {
+    const yamlParser: YamlParser = new YamlParser(fileHeader);
+    const yamlString: string = yamlParser.parseDocuments(documents, !!fileHeader);
+
+    this.writeToFile(path, yamlString);
+  }
+
+  public static parseYamlFile<T>(path: string): T {
+    throw Error(path);
   }
 }
