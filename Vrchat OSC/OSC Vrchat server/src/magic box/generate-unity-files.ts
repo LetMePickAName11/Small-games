@@ -1,19 +1,19 @@
 import { BitAllocation, EightBitChunkName } from 'shared-lib';
 import { FileService } from './file-service';
-import { UnityMetadata } from './models/unity_yaml/unityMetadata';
-import { FloatCurve } from './models/unity_yaml/floatCurve';
-import { GenericBinding } from './models/unity_yaml/genericBounding';
-import { EditorCurve } from './models/unity_yaml/editorCurve';
-import { AnimationClip } from './models/unity_yaml/animationClip';
-import { AnimatorController } from './models/unity_yaml/animatorController';
-import { AnimationParamter } from './models/unity_yaml/animationParamter';
-import { AnimationLayer } from './models/unity_yaml/animationLayer';
-import { MAnimatorParamter } from './models/unity_yaml/mAnimatorParameter';
-import { AnimatorState } from './models/unity_yaml/animatorState';
-import { BlendTree } from './models/unity_yaml/blendTree';
-import { AnimatorStateTransition } from './models/unity_yaml/animatorStateTransition';
+import { UnityMetadata } from '../models/unity_yaml/unityMetadata';
+import { FloatCurve } from '../models/unity_yaml/floatCurve';
+import { GenericBinding } from '../models/unity_yaml/genericBounding';
+import { EditorCurve } from '../models/unity_yaml/editorCurve';
+import { AnimationClip } from '../models/unity_yaml/animationClip';
+import { AnimatorController } from '../models/unity_yaml/animatorController';
+import { AnimationParamter } from '../models/unity_yaml/animationParamter';
+import { AnimationLayer } from '../models/unity_yaml/animationLayer';
+import { MAnimatorParamter } from '../models/unity_yaml/mAnimatorParameter';
+import { AnimatorState } from '../models/unity_yaml/animatorState';
+import { BlendTree } from '../models/unity_yaml/blendTree';
+import { AnimatorStateTransition } from '../models/unity_yaml/animatorStateTransition';
 import { UnityYamlTag, YamlDocument } from './yaml-parser';
-import { AnimatorStateMachine } from './models/unity_yaml/animatorStateMachine';
+import { AnimatorStateMachine } from '../models/unity_yaml/animatorStateMachine';
 
 export class GenerateUnityFiles {
   public generateFiles(): void {

@@ -5,9 +5,9 @@ import http from 'http';
 import { Server } from 'socket.io';
 import cors from 'cors';
 
-import { OSCVrChatGameLogic } from './models/osc_vrchat_game_logic';
-import { GameLogicResponse } from './models/game_logic_response';
-import { SocketType } from './models/socket_type';
+import { OSCVrChatGameLogic } from '../models/osc_vrchat_game_logic';
+import { GameLogicResponse } from '../models/game_logic_response';
+import { SocketType } from '../models/socket_type';
 import { BitAllocation, EightBitChunkName, EightBitChunkNames, WebsocketName } from 'shared-lib';
 import { FileService } from './file-service';
 

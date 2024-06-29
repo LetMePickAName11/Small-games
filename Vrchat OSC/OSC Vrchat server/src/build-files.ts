@@ -1,4 +1,4 @@
-import { GenerateUnityFiles } from "./generate-unity-files";
+import { GenerateUnityFiles } from "./magic box/generate-unity-files";
 
 console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 console.log("Starting to generate files.");

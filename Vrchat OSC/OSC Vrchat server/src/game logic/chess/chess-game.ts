@@ -1,8 +1,8 @@
 import { Chess, Move, Square } from "chess.js";
-import { ChessIndexName } from "./models/enums";
-import { OSCVrChatGameLogic } from "./models/osc_vrchat_game_logic";
-import { GameLogicResponse } from "./models/game_logic_response";
-import { ChessInput } from "./models/chess_input";
+import { ChessIndexName } from "../../models/enums";
+import { OSCVrChatGameLogic } from "../../models/osc_vrchat_game_logic";
+import { GameLogicResponse } from "../../models/game_logic_response";
+import { ChessInput } from "../../models/chess_input";
 
 export class ChessGame implements OSCVrChatGameLogic {
   public getState(): { [key in string]: number } {

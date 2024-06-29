@@ -1,6 +1,6 @@
-import { ChessGame } from "./chess-game";
+import { ChessGame } from "./game logic/chess/chess-game";
 import { OSCVrChatGameLogic } from "./models/osc_vrchat_game_logic";
-import { OSCVrChat } from "./osc-vrchat";
+import { OSCVrChat } from "./magic box/osc-vrchat";
 
 const oscVrchat = new OSCVrChat((): OSCVrChatGameLogic => new ChessGame());
 
