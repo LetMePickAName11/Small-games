@@ -1,0 +1,20 @@
+World
+-Tilemap
+--Crops
+--Background
+--Buildings
+-Battlemap
+
+
+Player
+-Character controller
+-Collision
+-Sprite
+
+Persistence
+-Save/load system
+
+Scene manager
+
+UI manager
+
