@@ -10,14 +10,8 @@ export class YamlParser {
       yamlLines.push(this.settings.fileHeader!);
     }
 
-    const indentation: YamlRecursionData = {
-      number: 0,
-      isArrayElement: false,
-      isFirstElement: false
-    };
-
     // Parse the object into YAML lines
-    this.iterateDocument(data, yamlLines, indentation);
+    yamlLines.push(...this.iterateDocument(data));
 
     // Remove first line skipping
     if (yamlLines[0]?.includes('\n')) {
@@ -34,98 +28,128 @@ export class YamlParser {
       yamlLines.push(this.settings.fileHeader!);
     }
 
-    const indentation: YamlRecursionData = {
-      number: 0,
-      isArrayElement: false,
-      isFirstElement: false
-    };
-
     documents.forEach((document: YamlDocument) => {
       // Add document start marker
       yamlLines.push(`\n${document.tag} &${document.anchor}`);
       // Parse the object into YAML lines
-      this.iterateDocument(document.data, yamlLines, indentation);
+      yamlLines.push(...this.iterateDocument(document.data));
     });
 
     return yamlLines.join('');
   }
 
-  private iterateDocument(value: object | Array<object>, data: Array<string>, recursionData: YamlRecursionData): void {
-    if (Array.isArray(value) && value.length !== 0) {
-      // If the value is an array, set the flag and iterate over each element
-      recursionData.isArrayElement = true;
-      value.forEach((element) => {
-        recursionData.isFirstElement = true;
-        this.iterateDocument(element, data, recursionData);
+  public iterateDocument(documentObject: object | Array<object>): Array<string> {
+    const result: Array<string> = [];
+    let lineTokens: Array<YamlLineToken> = [];
+
+    if (Array.isArray(documentObject)) {
+      documentObject.forEach((element) => {
+        lineTokens.concat(Object.entries(element).map(([key, value]: [string, any]) => this.GenerateToken(key, value, 0)));
       });
-      // Reset the flags after processing the array
-      recursionData.isArrayElement = false;
-      recursionData.isFirstElement = false;
-      return;
+    }
+    else {
+      lineTokens = Object.entries(documentObject).map(([key, value]: [string, any]) => this.GenerateToken(key, value, 0));
     }
 
-    for (const [childKey, childValue] of Object.entries(value)) {
-      let indentation: string = '';
-      let elementPrefix: string = '';
-      let line: string = '';
+    lineTokens.forEach((token: YamlLineToken) => {
+      this.TokenToLine(token, result);
+    });
 
-      if (childValue !== null && childValue !== undefined && typeof childValue === 'object' && childValue.length !== 0 && !(Object.keys(childValue).length === 0 && childValue.constructor === Object)) {
-        // For nested objects, increase the indentation and add the key
-        indentation = ' '.repeat(recursionData.number);
-        line = `${childKey}:`;
-        data.push(`\n${indentation}${elementPrefix}${line}`);
+    return result;
+  }
 
-        // Recurse into the nested object
-        recursionData.number += this.settings.indentationLevel;
-        recursionData.isArrayElement = false;
+  private GenerateToken(key: string, value: any, indentation: number, preFix: string = '', isArrayElement: boolean = false): YamlLineToken {
+    let type: YamlDataType;
+    let val: any = value;
 
-        this.iterateDocument(childValue, data, recursionData);
-        // Restore the previous indentation level
-        recursionData.number -= this.settings.indentationLevel;
-        continue;
+    if (value === undefined || value === null) {
+      type = 'empty';
+    }
+    else if (Array.isArray(value)) {
+      type = value.length === 0 ? 'emptyArray' : 'array';
+    }
+    else if (typeof value === 'object') {
+      type = (Object.keys(value).length === 0 && value.constructor === Object) ? 'emptyObject' : 'object';
+    }
+    else {
+      type = 'primitive';
+    }
+
+    if (type === 'object') {
+      val = Object.entries(value).map(([nestedKey, nestedValue]: [string, any]) => this.GenerateToken(nestedKey, nestedValue, indentation + 2));
+    }
+
+    if (type === 'array') {
+      val = [];
+      value.forEach((element: any) => {
+        val.push(Object.entries(element).map(([nestedKey, nestedValue]: [string, any], index: number) => this.GenerateToken(nestedKey, nestedValue, index === 0 ? indentation : indentation + 2, index === 0 ? '- ' : '', true)));
+      });
+    }
+
+    return {
+      type: type,
+      key: key,
+      value: val,
+      indentation: indentation,
+      preFix: preFix,
+      isArrayElement: isArrayElement
+    }
+  }
+
+  private TokenToLine(token: YamlLineToken, yamlLines: Array<string>): void {
+    let preFix = `\n${' '.repeat(token.indentation)}${token.preFix}`;
+
+    if (token.type === 'primitive') {
+      if (token.isArrayElement && Number.isInteger(Number(token.key))) {
+        yamlLines.push(`${preFix}${token.value}`);
       }
-
-      // For primitive and object values, calculate the correct indentation and format the line
-      if (typeof value === 'object') {
-        indentation = ' '.repeat(recursionData.number - (recursionData.isArrayElement && recursionData.isFirstElement ? 2 : 0));
-        elementPrefix = recursionData.isArrayElement && recursionData.isFirstElement ? '- ' : '';
-        if (Array.isArray(childValue)) {
-          line = `${childKey}: []`
-        }
-        else if (childValue === null || childValue === undefined ) {
-          line = `${childKey}: `;
-        }
-        else if((Object.keys(childValue).length === 0 && childValue.constructor === Object)){
-          line = `${childKey}: {}`;
-        }
-        else {
-          line = `${childKey}: ${childValue}`;
-        }
-      } 
       else {
-        indentation = ' '.repeat(recursionData.number - (recursionData.isArrayElement ? 2 : 0));
-        elementPrefix = recursionData.isArrayElement ? '- ' : '';
-        line = `${childValue}`;
+        yamlLines.push(`${preFix}${token.key}: ${token.value}`);
       }
-      // Reset the first element flag after the first iteration
-      if (recursionData.isFirstElement) {
-        recursionData.isFirstElement = false;
-      }
-      // Add the formatted line to the data array
-      data.push(`\n${indentation}${elementPrefix}${line}`);
+    }
+    else if (token.type === 'empty') {
+      yamlLines.push(`${preFix}${token.key}: `);
+    }
+    else if (token.type === 'emptyArray') {
+      yamlLines.push(`${preFix}${token.key}: []`);
+    }
+    else if (token.type === 'emptyObject') {
+      yamlLines.push(`${preFix}${token.key}: {}`);
+    }
+    else if (token.type === 'object') {
+      yamlLines.push(`${preFix}${token.key}: `);
+
+      token.value.forEach((element: YamlLineToken) => {
+        this.TokenToLine(element, yamlLines);
+      });
+    }
+    else if (token.type === 'array') {
+      yamlLines.push(`${preFix}${token.key}: `);
+
+      token.value.forEach((element: Array<YamlLineToken>) => {
+        element.forEach((elm: YamlLineToken) => {
+          this.TokenToLine(elm, yamlLines);
+        });
+      });
+    }
+    else {
+      throw Error(`Missing YamlLineToken type: ${token.type}`);
     }
   }
 
   private readonly settings: { indentationLevel: number; fileHeader: string | null; } = { indentationLevel: 2, fileHeader: null };
 }
 
+type YamlDataType = 'object' | 'array' | 'primitive' | 'emptyObject' | 'emptyArray' | 'empty';
 
-export interface YamlRecursionData {
-  number: number;
+interface YamlLineToken {
+  type: YamlDataType;
+  key: string;
+  value: any | Array<YamlLineToken>;
+  indentation: number;
+  preFix: string;
   isArrayElement: boolean;
-  isFirstElement: boolean;
 }
 
 export interface YamlDocument { tag: UnityYamlTag, anchor: number, data: object | Array<object> }
-
 export type UnityYamlTag = '--- !u!74' | '--- !u!91' | '--- !u!114' | '--- !u!206' | '--- !u!1101' | '--- !u!1102' | '--- !u!1107';

@@ -571,7 +571,7 @@ export class GenerateUnityFiles {
       };
     }
 
-    const generateBlendTree = (name: string, motionStartGuid: string, motionEndGuid: string, minThreshold: number, maxThreshold: number): BlendTree => {
+    const generateBlendTree = (name: string, motionStartGuid: string, motionEndGuid: string, minThreshold: number, maxThreshold: number, motionStartFileId: number, motionEndFileId: number): BlendTree => {
       return {
         BlendTree: {
           m_ObjectHideFlags: 1,
@@ -582,7 +582,7 @@ export class GenerateUnityFiles {
           m_Childs: [
             {
               serializedVersion: 2,
-              m_Motion: { fileID: 7400000, guid: motionStartGuid, type: 2 },
+              m_Motion: { fileID: motionStartFileId, guid: motionStartGuid, type: 2 },
               m_Threshold: minThreshold,
               m_Position: { x: 0, y: 0 },
               m_TimeScale: 1,
@@ -592,7 +592,7 @@ export class GenerateUnityFiles {
             },
             {
               serializedVersion: 2,
-              m_Motion: { fileID: 7400000, guid: motionEndGuid, type: 2 },
+              m_Motion: { fileID: motionEndFileId, guid: motionEndGuid, type: 2 },
               m_Threshold: maxThreshold,
               m_Position: { x: 0, y: 0 },
               m_TimeScale: 1,
@@ -640,7 +640,8 @@ export class GenerateUnityFiles {
     }
 
     const jsonData: AnimatorData = mapJsonConfig();
-    const animationNames: Array<string> = FileService.getFileNamesInDir(this.outputExternalDirectory + 'Animations').filter((v: string) => v.includes('.meta'));
+    const animationMetaNames: Array<string> = FileService.getFileNamesInDir(this.outputExternalDirectory + 'Animations').filter((v: string) => v.includes('.meta'));
+    const animationNames: Array<string> = FileService.getFileNamesInDir(this.outputExternalDirectory + 'Animations').filter((v: string) => v.includes('.anim') && !v.includes('.meta'));
 
     const animatorParameters: Array<AnimationParamter> = jsonData.name.map((name: string) => generateAnimatorParameter(name));
     const animatorLayers: Array<AnimationLayer> = jsonData.name.map((name: string, index: number) => generateAnimatorLayer(name, jsonData.animatorStateMachineId[index]!));
@@ -648,7 +649,7 @@ export class GenerateUnityFiles {
     const yamls: Array<YamlDocument> = [
       {
         tag: this.documentNameToIdentifier.get('AnimatorController')!,
-        anchor: this.generateUniqueId(),
+        anchor: 9100000,
         data: {
           AnimatorController: generateAnimatorController(animatorParameters, animatorLayers)
         }
@@ -659,33 +660,39 @@ export class GenerateUnityFiles {
       const name: string = jsonData.name[i]!;
       const animatorStateId: number = jsonData.animatorStateId[i]!;
       const animatorStateTransitionId: number = jsonData.animatorStateTransitionId[i]!;
+      const animatorStateMachineId: number  = jsonData.animatorStateMachineId[i]!;
       const blendTreeId: number = jsonData.blendTreeId[i]!;
       const minT: number = jsonData.minThreshold[i]!;
       const maxT: number = jsonData.maxThreshold[i]!;
-      const startAnimationName: string = `${this.outputExternalDirectory}Animations/${animationNames.filter((v: string) => v === `${name}_Start.anim.meta`).find(v => v.includes('_Start'))}`;
-      const endAnimationName: string = `${this.outputExternalDirectory}Animations/${animationNames.filter((v: string) => v === `${name}_End.anim.meta`).find(v => v.includes('_End'))}`;
-      const motionStartGuid: string = FileService.findInFile(startAnimationName, /guid: ([a-f0-9]+)/g).replace('guid: ', '');
-      const motionEndGuid: string = FileService.findInFile(endAnimationName, /guid: ([a-f0-9]+)/g).replace('guid: ', '');
+      const startAnimationMetaName: string = `${this.outputExternalDirectory}Animations/${animationMetaNames.filter((v: string) => v === `${name}_Start.anim.meta`).find(v => v.includes('_Start'))}`;
+      const endAnimationMetaName: string = `${this.outputExternalDirectory}Animations/${animationMetaNames.filter((v: string) => v === `${name}_End.anim.meta`).find(v => v.includes('_End'))}`;
+      const startAnimationName: string = `${this.outputExternalDirectory}Animations/${animationNames.filter((v: string) => v === `${name}_Start.anim`).find(v => v.includes('_Start'))}`;
+      const endAnimationName: string = `${this.outputExternalDirectory}Animations/${animationNames.filter((v: string) => v === `${name}_End.anim`).find(v => v.includes('_End'))}`;
+      const motionStartGuid: string = FileService.findInFile(startAnimationMetaName, /guid: ([a-f0-9]+)/g).replace('guid: ', '');
+      const motionEndGuid: string = FileService.findInFile(endAnimationMetaName, /guid: ([a-f0-9]+)/g).replace('guid: ', '');
+      const motionStartFileId: string = FileService.findInFile(startAnimationName, /--- !u!74 &([0-9]*)/g).replace('--- !u!74 &', '');
+      const motionEndFileId: string = FileService.findInFile(endAnimationName, /--- !u!74 &([0-9]*)/g).replace('--- !u!74 &', '');
+      console.log(motionStartFileId)
 
       yamls.push({
         tag: this.documentNameToIdentifier.get('AnimatorStateMachine')!,
-        anchor: this.generateUniqueId(),
-        data: [generateAnimatorStateMachine(name, animatorStateId)]
+        anchor: animatorStateMachineId,
+        data: generateAnimatorStateMachine(name, animatorStateId)
       });
       yamls.push({
         tag: this.documentNameToIdentifier.get('AnimatorState')!,
-        anchor: this.generateUniqueId(),
-        data: [generateAnimatorState(animatorStateTransitionId, blendTreeId)]
+        anchor: animatorStateId,
+        data: generateAnimatorState(animatorStateTransitionId, blendTreeId)
       });
       yamls.push({
         tag: this.documentNameToIdentifier.get('AnimatorStateTransition')!,
-        anchor: this.generateUniqueId(),
-        data: [generateAnimatorStateTransition()]
+        anchor: animatorStateTransitionId,
+        data: generateAnimatorStateTransition()
       });
       yamls.push({
         tag: this.documentNameToIdentifier.get('BlendTree')!,
-        anchor: this.generateUniqueId(),
-        data: [generateBlendTree(name, motionStartGuid, motionEndGuid, minT, maxT)]
+        anchor: blendTreeId,
+        data: generateBlendTree(name, motionStartGuid, motionEndGuid, minT, maxT, Number(motionStartFileId), Number(motionEndFileId))
       });
     }
 

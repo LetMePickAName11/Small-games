@@ -1,0 +1,798 @@
+[
+  {
+    "size": 2,
+    "name": "Pawn_White_1_Promotion",
+    "objectNames": [
+      "Pawn_White_1/Pawn",
+      "Pawn_White_1/Queen",
+      "Pawn_White_1/Knight"
+    ],
+    "shaderParameters": [
+      "Promotion"
+    ]
+  },
+  {
+    "size": 2,
+    "name": "Pawn_White_2_Promotion",
+    "objectNames": [
+      "Pawn_White_2/Pawn",
+      "Pawn_White_2/Queen",
+      "Pawn_White_2/Knight"
+    ],
+    "shaderParameters": [
+      "Promotion"
+    ]
+  },
+  {
+    "size": 2,
+    "name": "Pawn_White_3_Promotion",
+    "objectNames": [
+      "Pawn_White_3/Pawn",
+      "Pawn_White_3/Queen",
+      "Pawn_White_3/Knight"
+    ],
+    "shaderParameters": [
+      "Promotion"
+    ]
+  },
+  {
+    "size": 2,
+    "name": "Pawn_White_4_Promotion",
+    "objectNames": [
+      "Pawn_White_4/Pawn",
+      "Pawn_White_4/Queen",
+      "Pawn_White_4/Knight"
+    ],
+    "shaderParameters": [
+      "Promotion"
+    ]
+  },
+  {
+    "size": 2,
+    "name": "Pawn_White_5_Promotion",
+    "objectNames": [
+      "Pawn_White_5/Pawn",
+      "Pawn_White_5/Queen",
+      "Pawn_White_5/Knight"
+    ],
+    "shaderParameters": [
+      "Promotion"
+    ]
+  },
+  {
+    "size": 2,
+    "name": "Pawn_White_6_Promotion",
+    "objectNames": [
+      "Pawn_White_6/Pawn",
+      "Pawn_White_6/Queen",
+      "Pawn_White_6/Knight"
+    ],
+    "shaderParameters": [
+      "Promotion"
+    ]
+  },
+  {
+    "size": 2,
+    "name": "Pawn_White_7_Promotion",
+    "objectNames": [
+      "Pawn_White_7/Pawn",
+      "Pawn_White_7/Queen",
+      "Pawn_White_7/Knight"
+    ],
+    "shaderParameters": [
+      "Promotion"
+    ]
+  },
+  {
+    "size": 2,
+    "name": "Pawn_White_8_Promotion",
+    "objectNames": [
+      "Pawn_White_8/Pawn",
+      "Pawn_White_8/Queen",
+      "Pawn_White_8/Knight"
+    ],
+    "shaderParameters": [
+      "Promotion"
+    ]
+  },
+  {
+    "size": 2,
+    "name": "Pawn_Black_1_Promotion",
+    "objectNames": [
+      "Pawn_Black_1/Pawn",
+      "Pawn_Black_1/Queen",
+      "Pawn_Black_1/Knight"
+    ],
+    "shaderParameters": [
+      "Promotion"
+    ]
+  },
+  {
+    "size": 2,
+    "name": "Pawn_Black_2_Promotion",
+    "objectNames": [
+      "Pawn_Black_2/Pawn",
+      "Pawn_Black_2/Queen",
+      "Pawn_Black_2/Knight"
+    ],
+    "shaderParameters": [
+      "Promotion"
+    ]
+  },
+  {
+    "size": 2,
+    "name": "Pawn_Black_3_Promotion",
+    "objectNames": [
+      "Pawn_Black_3/Pawn",
+      "Pawn_Black_3/Queen",
+      "Pawn_Black_3/Knight"
+    ],
+    "shaderParameters": [
+      "Promotion"
+    ]
+  },
+  {
+    "size": 2,
+    "name": "Pawn_Black_4_Promotion",
+    "objectNames": [
+      "Pawn_Black_4/Pawn",
+      "Pawn_Black_4/Queen",
+      "Pawn_Black_4/Knight"
+    ],
+    "shaderParameters": [
+      "Promotion"
+    ]
+  },
+  {
+    "size": 2,
+    "name": "Pawn_Black_5_Promotion",
+    "objectNames": [
+      "Pawn_Black_5/Pawn",
+      "Pawn_Black_5/Queen",
+      "Pawn_Black_5/Knight"
+    ],
+    "shaderParameters": [
+      "Promotion"
+    ]
+  },
+  {
+    "size": 2,
+    "name": "Pawn_Black_6_Promotion",
+    "objectNames": [
+      "Pawn_Black_6/Pawn",
+      "Pawn_Black_6/Queen",
+      "Pawn_Black_6/Knight"
+    ],
+    "shaderParameters": [
+      "Promotion"
+    ]
+  },
+  {
+    "size": 2,
+    "name": "Pawn_Black_7_Promotion",
+    "objectNames": [
+      "Pawn_Black_7/Pawn",
+      "Pawn_Black_7/Queen",
+      "Pawn_Black_7/Knight"
+    ],
+    "shaderParameters": [
+      "Promotion"
+    ]
+  },
+  {
+    "size": 2,
+    "name": "Pawn_Black_8_Promotion",
+    "objectNames": [
+      "Pawn_Black_8/Pawn",
+      "Pawn_Black_8/Queen",
+      "Pawn_Black_8/Knight"
+    ],
+    "shaderParameters": [
+      "Promotion"
+    ]
+  },
+  {
+    "size": 6,
+    "name": "Pawn_White_1_Position",
+    "objectNames": [
+      "Pawn_White_1/Pawn",
+      "Pawn_White_1/Queen",
+      "Pawn_White_1/Knight"
+    ],
+    "shaderParameters": [
+      "Position"
+    ]
+  },
+  {
+    "size": 6,
+    "name": "Pawn_White_2_Position",
+    "objectNames": [
+      "Pawn_White_2/Pawn",
+      "Pawn_White_2/Queen",
+      "Pawn_White_2/Knight"
+    ],
+    "shaderParameters": [
+      "Position"
+    ]
+  },
+  {
+    "size": 6,
+    "name": "Pawn_White_3_Position",
+    "objectNames": [
+      "Pawn_White_3/Pawn",
+      "Pawn_White_3/Queen",
+      "Pawn_White_3/Knight"
+    ],
+    "shaderParameters": [
+      "Position"
+    ]
+  },
+  {
+    "size": 6,
+    "name": "Pawn_White_4_Position",
+    "objectNames": [
+      "Pawn_White_4/Pawn",
+      "Pawn_White_4/Queen",
+      "Pawn_White_4/Knight"
+    ],
+    "shaderParameters": [
+      "Position"
+    ]
+  },
+  {
+    "size": 6,
+    "name": "Pawn_White_5_Position",
+    "objectNames": [
+      "Pawn_White_5/Pawn",
+      "Pawn_White_5/Queen",
+      "Pawn_White_5/Knight"
+    ],
+    "shaderParameters": [
+      "Position"
+    ]
+  },
+  {
+    "size": 6,
+    "name": "Pawn_White_6_Position",
+    "objectNames": [
+      "Pawn_White_6/Pawn",
+      "Pawn_White_6/Queen",
+      "Pawn_White_6/Knight"
+    ],
+    "shaderParameters": [
+      "Position"
+    ]
+  },
+  {
+    "size": 6,
+    "name": "Pawn_White_7_Position",
+    "objectNames": [
+      "Pawn_White_7/Pawn",
+      "Pawn_White_7/Queen",
+      "Pawn_White_7/Knight"
+    ],
+    "shaderParameters": [
+      "Position"
+    ]
+  },
+  {
+    "size": 6,
+    "name": "Pawn_White_8_Position",
+    "objectNames": [
+      "Pawn_White_8/Pawn",
+      "Pawn_White_8/Queen",
+      "Pawn_White_8/Knight"
+    ],
+    "shaderParameters": [
+      "Position"
+    ]
+  },
+  {
+    "size": 6,
+    "name": "Pawn_Black_1_Position",
+    "objectNames": [
+      "Pawn_Black_1/Pawn",
+      "Pawn_Black_1/Queen",
+      "Pawn_Black_1/Knight"
+    ],
+    "shaderParameters": [
+      "Position"
+    ]
+  },
+  {
+    "size": 6,
+    "name": "Pawn_Black_2_Position",
+    "objectNames": [
+      "Pawn_Black_2/Pawn",
+      "Pawn_Black_2/Queen",
+      "Pawn_Black_2/Knight"
+    ],
+    "shaderParameters": [
+      "Position"
+    ]
+  },
+  {
+    "size": 6,
+    "name": "Pawn_Black_3_Position",
+    "objectNames": [
+      "Pawn_Black_3/Pawn",
+      "Pawn_Black_3/Queen",
+      "Pawn_Black_3/Knight"
+    ],
+    "shaderParameters": [
+      "Position"
+    ]
+  },
+  {
+    "size": 6,
+    "name": "Pawn_Black_4_Position",
+    "objectNames": [
+      "Pawn_Black_4/Pawn",
+      "Pawn_Black_4/Queen",
+      "Pawn_Black_4/Knight"
+    ],
+    "shaderParameters": [
+      "Position"
+    ]
+  },
+  {
+    "size": 6,
+    "name": "Pawn_Black_5_Position",
+    "objectNames": [
+      "Pawn_Black_5/Pawn",
+      "Pawn_Black_5/Queen",
+      "Pawn_Black_5/Knight"
+    ],
+    "shaderParameters": [
+      "Position"
+    ]
+  },
+  {
+    "size": 6,
+    "name": "Pawn_Black_6_Position",
+    "objectNames": [
+      "Pawn_Black_6/Pawn",
+      "Pawn_Black_6/Queen",
+      "Pawn_Black_6/Knight"
+    ],
+    "shaderParameters": [
+      "Position"
+    ]
+  },
+  {
+    "size": 6,
+    "name": "Pawn_Black_7_Position",
+    "objectNames": [
+      "Pawn_Black_7/Pawn",
+      "Pawn_Black_7/Queen",
+      "Pawn_Black_7/Knight"
+    ],
+    "shaderParameters": [
+      "Position"
+    ]
+  },
+  {
+    "size": 6,
+    "name": "Pawn_Black_8_Position",
+    "objectNames": [
+      "Pawn_Black_8/Pawn",
+      "Pawn_Black_8/Queen",
+      "Pawn_Black_8/Knight"
+    ],
+    "shaderParameters": [
+      "Position"
+    ]
+  },
+  {
+    "size": 6,
+    "name": "Rook_White_1_Position",
+    "objectNames": [
+      "Rook_White_1/Rook"
+    ],
+    "shaderParameters": [
+      "Position"
+    ]
+  },
+  {
+    "size": 6,
+    "name": "Rook_White_2_Position",
+    "objectNames": [
+      "Rook_White_2/Rook"
+    ],
+    "shaderParameters": [
+      "Position"
+    ]
+  },
+  {
+    "size": 6,
+    "name": "Rook_Black_1_Position",
+    "objectNames": [
+      "Rook_Black_1/Rook"
+    ],
+    "shaderParameters": [
+      "Position"
+    ]
+  },
+  {
+    "size": 6,
+    "name": "Rook_Black_2_Position",
+    "objectNames": [
+      "Rook_Black_2/Rook"
+    ],
+    "shaderParameters": [
+      "Position"
+    ]
+  },
+  {
+    "size": 5,
+    "name": "Bishop_White_1_PositionBishop",
+    "objectNames": [
+      "Bishop_White_1/Bishop"
+    ],
+    "shaderParameters": [
+      "PositionBishop"
+    ]
+  },
+  {
+    "size": 5,
+    "name": "Bishop_White_2_PositionBishop",
+    "objectNames": [
+      "Bishop_White_2/Bishop"
+    ],
+    "shaderParameters": [
+      "PositionBishop"
+    ]
+  },
+  {
+    "size": 5,
+    "name": "Bishop_Black_1_PositionBishop",
+    "objectNames": [
+      "Bishop_Black_1/Bishop"
+    ],
+    "shaderParameters": [
+      "PositionBishop"
+    ]
+  },
+  {
+    "size": 5,
+    "name": "Bishop_Black_2_PositionBishop",
+    "objectNames": [
+      "Bishop_Black_2/Bishop"
+    ],
+    "shaderParameters": [
+      "PositionBishop"
+    ]
+  },
+  {
+    "size": 6,
+    "name": "Knight_White_1_Position",
+    "objectNames": [
+      "Knight_White_1/Knight"
+    ],
+    "shaderParameters": [
+      "Position"
+    ]
+  },
+  {
+    "size": 6,
+    "name": "Knight_White_2_Position",
+    "objectNames": [
+      "Knight_White_2/Knight"
+    ],
+    "shaderParameters": [
+      "Position"
+    ]
+  },
+  {
+    "size": 6,
+    "name": "Knight_Black_1_Position",
+    "objectNames": [
+      "Knight_Black_1/Knight"
+    ],
+    "shaderParameters": [
+      "Position"
+    ]
+  },
+  {
+    "size": 6,
+    "name": "Knight_Black_2_Position",
+    "objectNames": [
+      "Knight_Black_2/Knight"
+    ],
+    "shaderParameters": [
+      "Position"
+    ]
+  },
+  {
+    "size": 6,
+    "name": "Queen_White_1_Position",
+    "objectNames": [
+      "Queen_White_1/Queen"
+    ],
+    "shaderParameters": [
+      "Position"
+    ]
+  },
+  {
+    "size": 6,
+    "name": "King_White_1_Position",
+    "objectNames": [
+      "King_White_1/King"
+    ],
+    "shaderParameters": [
+      "Position"
+    ]
+  },
+  {
+    "size": 6,
+    "name": "Queen_Black_1_Position",
+    "objectNames": [
+      "Queen_Black_1/Queen"
+    ],
+    "shaderParameters": [
+      "Position"
+    ]
+  },
+  {
+    "size": 6,
+    "name": "King_Black_1_Position",
+    "objectNames": [
+      "King_Black_1/King"
+    ],
+    "shaderParameters": [
+      "Position"
+    ]
+  },
+  {
+    "size": 1,
+    "name": "Rook_White_Both_Captured",
+    "objectNames": [
+      "Rook_White_1/Rook",
+      "Rook_White_2/Rook"
+    ],
+    "shaderParameters": [
+      "BothCaptured"
+    ]
+  },
+  {
+    "size": 1,
+    "name": "Rook_Black_Both_Captured",
+    "objectNames": [
+      "Rook_Black_1/Rook",
+      "Rook_Black_2/Rook"
+    ],
+    "shaderParameters": [
+      "BothCaptured"
+    ]
+  },
+  {
+    "size": 1,
+    "name": "Bishop_White_Both_Captured",
+    "objectNames": [
+      "Bishop_White_1/Bishop",
+      "Bishop_White_2/Bishop"
+    ],
+    "shaderParameters": [
+      "BothCaptured"
+    ]
+  },
+  {
+    "size": 1,
+    "name": "Bishop_Black_Both_Captured",
+    "objectNames": [
+      "Bishop_Black_1/Bishop",
+      "Bishop_Black_2/Bishop"
+    ],
+    "shaderParameters": [
+      "BothCaptured"
+    ]
+  },
+  {
+    "size": 1,
+    "name": "Knight_White_Both_Captured",
+    "objectNames": [
+      "Knight_White_1/Knight",
+      "Knight_White_2/Knight"
+    ],
+    "shaderParameters": [
+      "BothCaptured"
+    ]
+  },
+  {
+    "size": 1,
+    "name": "Knight_Black_Both_Captured",
+    "objectNames": [
+      "Knight_Black_1/Knight",
+      "Knight_Black_2/Knight"
+    ],
+    "shaderParameters": [
+      "BothCaptured"
+    ]
+  },
+  {
+    "size": 1,
+    "name": "Queen_White_1_Captured",
+    "objectNames": [
+      "Queen_White_1/Queen"
+    ],
+    "shaderParameters": [
+      "BothCaptured"
+    ]
+  },
+  {
+    "size": 1,
+    "name": "Queen_Black_1_Captured",
+    "objectNames": [
+      "Queen_Black_1/Queen"
+    ],
+    "shaderParameters": [
+      "BothCaptured"
+    ]
+  },
+  {
+    "size": 5,
+    "name": "Selected_Piece",
+    "objectNames": [
+      "Rook_White_1/Rook",
+      "Rook_White_2/Rook",
+      "Rook_Black_1/Rook",
+      "Rook_Black_2/Rook",
+      "Bishop_White_1/Bishop",
+      "Bishop_White_2/Bishop",
+      "Bishop_Black_1/Bishop",
+      "Bishop_Black_2/Bishop",
+      "Knight_White_1/Knight",
+      "Knight_White_2/Knight",
+      "Knight_Black_1/Knight",
+      "Knight_Black_2/Knight",
+      "King_White_1/King",
+      "King_Black_1/King",
+      "Queen_White_1/Queen",
+      "Queen_Black_1/Queen",
+      "Pawn_White_1/Pawn",
+      "Pawn_White_1/Queen",
+      "Pawn_White_1/Knight",
+      "Pawn_White_2/Pawn",
+      "Pawn_White_2/Queen",
+      "Pawn_White_2/Knight",
+      "Pawn_White_3/Pawn",
+      "Pawn_White_3/Queen",
+      "Pawn_White_3/Knight",
+      "Pawn_White_4/Pawn",
+      "Pawn_White_4/Queen",
+      "Pawn_White_4/Knight",
+      "Pawn_White_5/Pawn",
+      "Pawn_White_5/Queen",
+      "Pawn_White_5/Knight",
+      "Pawn_White_6/Pawn",
+      "Pawn_White_6/Queen",
+      "Pawn_White_6/Knight",
+      "Pawn_White_7/Pawn",
+      "Pawn_White_7/Queen",
+      "Pawn_White_7/Knight",
+      "Pawn_White_8/Pawn",
+      "Pawn_White_8/Queen",
+      "Pawn_White_8/Knight",
+      "Pawn_Black_1/Pawn",
+      "Pawn_Black_1/Queen",
+      "Pawn_Black_1/Knight",
+      "Pawn_Black_2/Pawn",
+      "Pawn_Black_2/Queen",
+      "Pawn_Black_2/Knight",
+      "Pawn_Black_3/Pawn",
+      "Pawn_Black_3/Queen",
+      "Pawn_Black_3/Knight",
+      "Pawn_Black_4/Pawn",
+      "Pawn_Black_4/Queen",
+      "Pawn_Black_4/Knight",
+      "Pawn_Black_5/Pawn",
+      "Pawn_Black_5/Queen",
+      "Pawn_Black_5/Knight",
+      "Pawn_Black_6/Pawn",
+      "Pawn_Black_6/Queen",
+      "Pawn_Black_6/Knight",
+      "Pawn_Black_7/Pawn",
+      "Pawn_Black_7/Queen",
+      "Pawn_Black_7/Knight",
+      "Pawn_Black_8/Pawn",
+      "Pawn_Black_8/Queen",
+      "Pawn_Black_8/Knight"
+    ],
+    "shaderParameters": [
+      "SelectedPiece"
+    ]
+  },
+  {
+    "size": 6,
+    "name": "Selected_Position",
+    "objectNames": [
+      "Selected_Position"
+    ],
+    "shaderParameters": [
+      "SelectedPosition"
+    ]
+  },
+  {
+    "size": 1,
+    "name": "Selected_Piece_Shown",
+    "objectNames": [
+      "Rook_White_1/Rook",
+      "Rook_White_2/Rook",
+      "Rook_Black_1/Rook",
+      "Rook_Black_2/Rook",
+      "Bishop_White_1/Bishop",
+      "Bishop_White_2/Bishop",
+      "Bishop_Black_1/Bishop",
+      "Bishop_Black_2/Bishop",
+      "Knight_White_1/Knight",
+      "Knight_White_2/Knight",
+      "Knight_Black_1/Knight",
+      "Knight_Black_2/Knight",
+      "King_White_1/King",
+      "King_Black_1/King",
+      "Queen_White_1/Queen",
+      "Queen_Black_1/Queen",
+      "Pawn_White_1/Pawn",
+      "Pawn_White_1/Queen",
+      "Pawn_White_1/Knight",
+      "Pawn_White_2/Pawn",
+      "Pawn_White_2/Queen",
+      "Pawn_White_2/Knight",
+      "Pawn_White_3/Pawn",
+      "Pawn_White_3/Queen",
+      "Pawn_White_3/Knight",
+      "Pawn_White_4/Pawn",
+      "Pawn_White_4/Queen",
+      "Pawn_White_4/Knight",
+      "Pawn_White_5/Pawn",
+      "Pawn_White_5/Queen",
+      "Pawn_White_5/Knight",
+      "Pawn_White_6/Pawn",
+      "Pawn_White_6/Queen",
+      "Pawn_White_6/Knight",
+      "Pawn_White_7/Pawn",
+      "Pawn_White_7/Queen",
+      "Pawn_White_7/Knight",
+      "Pawn_White_8/Pawn",
+      "Pawn_White_8/Queen",
+      "Pawn_White_8/Knight",
+      "Pawn_Black_1/Pawn",
+      "Pawn_Black_1/Queen",
+      "Pawn_Black_1/Knight",
+      "Pawn_Black_2/Pawn",
+      "Pawn_Black_2/Queen",
+      "Pawn_Black_2/Knight",
+      "Pawn_Black_3/Pawn",
+      "Pawn_Black_3/Queen",
+      "Pawn_Black_3/Knight",
+      "Pawn_Black_4/Pawn",
+      "Pawn_Black_4/Queen",
+      "Pawn_Black_4/Knight",
+      "Pawn_Black_5/Pawn",
+      "Pawn_Black_5/Queen",
+      "Pawn_Black_5/Knight",
+      "Pawn_Black_6/Pawn",
+      "Pawn_Black_6/Queen",
+      "Pawn_Black_6/Knight",
+      "Pawn_Black_7/Pawn",
+      "Pawn_Black_7/Queen",
+      "Pawn_Black_7/Knight",
+      "Pawn_Black_8/Pawn",
+      "Pawn_Black_8/Queen",
+      "Pawn_Black_8/Knight"
+    ],
+    "shaderParameters": [
+      "SelectedPieceShown"
+    ]
+  },
+  {
+    "size": 1,
+    "name": "Selected_Position_Shown",
+    "objectNames": [
+      "Selected_Position"
+    ],
+    "shaderParameters": [
+      "SelectedPositionShown"
+    ]
+  }
+]

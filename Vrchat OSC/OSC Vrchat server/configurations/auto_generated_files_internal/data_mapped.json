@@ -1,423 +1,232 @@
 [
   {
-    "size": 6,
-    "name": "Pawn_White_1_Position",
+    "size": 11,
+    "name": "Community_Pool",
     "objectNames": [
-      "Pawn_White_1/Pawn",
-      "Pawn_White_1/Queen",
-      "Pawn_White_1/Knight"
+      "Table/Pool"
     ],
     "shaderParameters": [
-      "LSBPosition",
-      "MSBPosition"
+      "LSBPoolValue",
+      "MSBPoolValue"
     ],
     "range": {
       "start": 0,
-      "end": 5
+      "end": 10
     },
     "msbName": "BitChunk0",
     "lsbName": "BitChunk1",
     "bitIndex": 0
   },
   {
-    "size": 6,
-    "name": "Pawn_White_2_Position",
+    "size": 11,
+    "name": "Bet_Value",
     "objectNames": [
-      "Pawn_White_2/Pawn",
-      "Pawn_White_2/Queen",
-      "Pawn_White_2/Knight"
+      "Player_1/Info_Panel",
+      "Player_2/Info_Panel",
+      "Player_3/Info_Panel",
+      "Player_4/Info_Panel",
+      "Player_5/Info_Panel",
+      "Player_6/Info_Panel",
+      "Player_7/Info_Panel",
+      "Player_8/Info_Panel"
     ],
     "shaderParameters": [
-      "LSBPosition",
-      "MSBPosition"
+      "LSBBetValue",
+      "MSBBetValue"
     ],
     "range": {
-      "start": 6,
-      "end": 11
-    },
-    "msbName": "BitChunk0",
-    "lsbName": "BitChunk1",
-    "bitIndex": 6
-  },
-  {
-    "size": 6,
-    "name": "Pawn_White_3_Position",
-    "objectNames": [
-      "Pawn_White_3/Pawn",
-      "Pawn_White_3/Queen",
-      "Pawn_White_3/Knight"
-    ],
-    "shaderParameters": [
-      "LSBPosition",
-      "MSBPosition"
-    ],
-    "range": {
-      "start": 12,
-      "end": 17
+      "start": 11,
+      "end": 21
     },
     "msbName": "BitChunk1",
     "lsbName": "BitChunk2",
-    "bitIndex": 4
+    "bitIndex": 3
   },
   {
-    "size": 6,
-    "name": "Pawn_White_4_Position",
+    "size": 11,
+    "name": "Player_1_Pool",
     "objectNames": [
-      "Pawn_White_4/Pawn",
-      "Pawn_White_4/Queen",
-      "Pawn_White_4/Knight"
+      "Player_1/Pool"
     ],
     "shaderParameters": [
-      "LSBPosition",
-      "MSBPosition"
+      "LSBPoolValue",
+      "MSBPoolValue"
     ],
     "range": {
-      "start": 18,
-      "end": 23
+      "start": 22,
+      "end": 32
     },
     "msbName": "BitChunk2",
     "lsbName": "BitChunk3",
-    "bitIndex": 2
-  },
-  {
-    "size": 6,
-    "name": "Pawn_White_5_Position",
-    "objectNames": [
-      "Pawn_White_5/Pawn",
-      "Pawn_White_5/Queen",
-      "Pawn_White_5/Knight"
-    ],
-    "shaderParameters": [
-      "LSBPosition",
-      "MSBPosition"
-    ],
-    "range": {
-      "start": 24,
-      "end": 29
-    },
-    "msbName": "BitChunk3",
-    "lsbName": "BitChunk4",
-    "bitIndex": 0
-  },
-  {
-    "size": 6,
-    "name": "Pawn_White_6_Position",
-    "objectNames": [
-      "Pawn_White_6/Pawn",
-      "Pawn_White_6/Queen",
-      "Pawn_White_6/Knight"
-    ],
-    "shaderParameters": [
-      "LSBPosition",
-      "MSBPosition"
-    ],
-    "range": {
-      "start": 30,
-      "end": 35
-    },
-    "msbName": "BitChunk3",
-    "lsbName": "BitChunk4",
     "bitIndex": 6
   },
   {
-    "size": 6,
-    "name": "Pawn_White_7_Position",
+    "size": 11,
+    "name": "Player_2_Pool",
     "objectNames": [
-      "Pawn_White_7/Pawn",
-      "Pawn_White_7/Queen",
-      "Pawn_White_7/Knight"
+      "Player_2/Pool"
     ],
     "shaderParameters": [
-      "LSBPosition",
-      "MSBPosition"
+      "LSBPoolValue",
+      "MSBPoolValue"
     ],
     "range": {
-      "start": 36,
-      "end": 41
+      "start": 33,
+      "end": 43
     },
     "msbName": "BitChunk4",
     "lsbName": "BitChunk5",
-    "bitIndex": 4
+    "bitIndex": 1
   },
   {
-    "size": 6,
-    "name": "Pawn_White_8_Position",
+    "size": 11,
+    "name": "Player_3_Pool",
     "objectNames": [
-      "Pawn_White_8/Pawn",
-      "Pawn_White_8/Queen",
-      "Pawn_White_8/Knight"
+      "Player_3/Pool"
     ],
     "shaderParameters": [
-      "LSBPosition",
-      "MSBPosition"
+      "LSBPoolValue",
+      "MSBPoolValue"
     ],
     "range": {
-      "start": 42,
-      "end": 47
+      "start": 44,
+      "end": 54
     },
     "msbName": "BitChunk5",
     "lsbName": "BitChunk6",
-    "bitIndex": 2
-  },
-  {
-    "size": 6,
-    "name": "Pawn_Black_1_Position",
-    "objectNames": [
-      "Pawn_Black_1/Pawn",
-      "Pawn_Black_1/Queen",
-      "Pawn_Black_1/Knight"
-    ],
-    "shaderParameters": [
-      "LSBPosition",
-      "MSBPosition"
-    ],
-    "range": {
-      "start": 48,
-      "end": 53
-    },
-    "msbName": "BitChunk6",
-    "lsbName": "BitChunk7",
-    "bitIndex": 0
-  },
-  {
-    "size": 6,
-    "name": "Pawn_Black_2_Position",
-    "objectNames": [
-      "Pawn_Black_2/Pawn",
-      "Pawn_Black_2/Queen",
-      "Pawn_Black_2/Knight"
-    ],
-    "shaderParameters": [
-      "LSBPosition",
-      "MSBPosition"
-    ],
-    "range": {
-      "start": 54,
-      "end": 59
-    },
-    "msbName": "BitChunk6",
-    "lsbName": "BitChunk7",
-    "bitIndex": 6
-  },
-  {
-    "size": 6,
-    "name": "Pawn_Black_3_Position",
-    "objectNames": [
-      "Pawn_Black_3/Pawn",
-      "Pawn_Black_3/Queen",
-      "Pawn_Black_3/Knight"
-    ],
-    "shaderParameters": [
-      "LSBPosition",
-      "MSBPosition"
-    ],
-    "range": {
-      "start": 60,
-      "end": 65
-    },
-    "msbName": "BitChunk7",
-    "lsbName": "BitChunk8",
     "bitIndex": 4
   },
   {
-    "size": 6,
-    "name": "Pawn_Black_4_Position",
+    "size": 11,
+    "name": "Player_4_Pool",
     "objectNames": [
-      "Pawn_Black_4/Pawn",
-      "Pawn_Black_4/Queen",
-      "Pawn_Black_4/Knight"
+      "Player_4/Pool"
     ],
     "shaderParameters": [
-      "LSBPosition",
-      "MSBPosition"
+      "LSBPoolValue",
+      "MSBPoolValue"
+    ],
+    "range": {
+      "start": 55,
+      "end": 65
+    },
+    "msbName": "BitChunk6",
+    "lsbName": "BitChunk7",
+    "bitIndex": 7
+  },
+  {
+    "size": 11,
+    "name": "Player_5_Pool",
+    "objectNames": [
+      "Player_5/Pool"
+    ],
+    "shaderParameters": [
+      "LSBPoolValue",
+      "MSBPoolValue"
     ],
     "range": {
       "start": 66,
-      "end": 71
+      "end": 76
     },
     "msbName": "BitChunk8",
     "lsbName": "BitChunk9",
     "bitIndex": 2
   },
   {
-    "size": 6,
-    "name": "Pawn_Black_5_Position",
+    "size": 11,
+    "name": "Player_6_Pool",
     "objectNames": [
-      "Pawn_Black_5/Pawn",
-      "Pawn_Black_5/Queen",
-      "Pawn_Black_5/Knight"
+      "Player_6/Pool"
     ],
     "shaderParameters": [
-      "LSBPosition",
-      "MSBPosition"
+      "LSBPoolValue",
+      "MSBPoolValue"
     ],
     "range": {
-      "start": 72,
-      "end": 77
+      "start": 77,
+      "end": 87
     },
     "msbName": "BitChunk9",
     "lsbName": "BitChunk10",
-    "bitIndex": 0
+    "bitIndex": 5
   },
   {
-    "size": 6,
-    "name": "Pawn_Black_6_Position",
+    "size": 11,
+    "name": "Player_7_Pool",
     "objectNames": [
-      "Pawn_Black_6/Pawn",
-      "Pawn_Black_6/Queen",
-      "Pawn_Black_6/Knight"
+      "Player_7/Pool"
     ],
     "shaderParameters": [
-      "LSBPosition",
-      "MSBPosition"
+      "LSBPoolValue",
+      "MSBPoolValue"
     ],
     "range": {
-      "start": 78,
-      "end": 83
-    },
-    "msbName": "BitChunk9",
-    "lsbName": "BitChunk10",
-    "bitIndex": 6
-  },
-  {
-    "size": 6,
-    "name": "Pawn_Black_7_Position",
-    "objectNames": [
-      "Pawn_Black_7/Pawn",
-      "Pawn_Black_7/Queen",
-      "Pawn_Black_7/Knight"
-    ],
-    "shaderParameters": [
-      "LSBPosition",
-      "MSBPosition"
-    ],
-    "range": {
-      "start": 84,
-      "end": 89
-    },
-    "msbName": "BitChunk10",
-    "lsbName": "BitChunk11",
-    "bitIndex": 4
-  },
-  {
-    "size": 6,
-    "name": "Pawn_Black_8_Position",
-    "objectNames": [
-      "Pawn_Black_8/Pawn",
-      "Pawn_Black_8/Queen",
-      "Pawn_Black_8/Knight"
-    ],
-    "shaderParameters": [
-      "LSBPosition",
-      "MSBPosition"
-    ],
-    "range": {
-      "start": 90,
-      "end": 95
+      "start": 88,
+      "end": 98
     },
     "msbName": "BitChunk11",
     "lsbName": "BitChunk12",
-    "bitIndex": 2
-  },
-  {
-    "size": 6,
-    "name": "Rook_White_1_Position",
-    "objectNames": [
-      "Rook_White_1/Rook"
-    ],
-    "shaderParameters": [
-      "LSBPosition",
-      "MSBPosition"
-    ],
-    "range": {
-      "start": 96,
-      "end": 101
-    },
-    "msbName": "BitChunk12",
-    "lsbName": "BitChunk13",
     "bitIndex": 0
   },
   {
-    "size": 6,
-    "name": "Rook_White_2_Position",
+    "size": 11,
+    "name": "Player_8_Pool",
     "objectNames": [
-      "Rook_White_2/Rook"
+      "Player_8/Pool"
     ],
     "shaderParameters": [
-      "LSBPosition",
-      "MSBPosition"
+      "LSBPoolValue",
+      "MSBPoolValue"
     ],
     "range": {
-      "start": 102,
-      "end": 107
+      "start": 99,
+      "end": 109
     },
     "msbName": "BitChunk12",
     "lsbName": "BitChunk13",
+    "bitIndex": 3
+  },
+  {
+    "size": 8,
+    "name": "Player_Turn",
+    "objectNames": [],
+    "shaderParameters": [
+      "LSB",
+      "MSB"
+    ],
+    "range": {
+      "start": 110,
+      "end": 117
+    },
+    "msbName": "BitChunk13",
+    "lsbName": "BitChunk14",
+    "bitIndex": 6
+  },
+  {
+    "size": 8,
+    "name": "Blind",
+    "objectNames": [],
+    "shaderParameters": [
+      "LSB",
+      "MSB"
+    ],
+    "range": {
+      "start": 118,
+      "end": 125
+    },
+    "msbName": "BitChunk14",
+    "lsbName": "BitChunk15",
     "bitIndex": 6
   },
   {
     "size": 6,
-    "name": "Rook_Black_1_Position",
+    "name": "Community_Card_1",
     "objectNames": [
-      "Rook_Black_1/Rook"
+      "Table/Card_1"
     ],
     "shaderParameters": [
-      "LSBPosition",
-      "MSBPosition"
-    ],
-    "range": {
-      "start": 108,
-      "end": 113
-    },
-    "msbName": "BitChunk13",
-    "lsbName": "BitChunk14",
-    "bitIndex": 4
-  },
-  {
-    "size": 6,
-    "name": "Rook_Black_2_Position",
-    "objectNames": [
-      "Rook_Black_2/Rook"
-    ],
-    "shaderParameters": [
-      "LSBPosition",
-      "MSBPosition"
-    ],
-    "range": {
-      "start": 114,
-      "end": 119
-    },
-    "msbName": "BitChunk14",
-    "lsbName": "BitChunk15",
-    "bitIndex": 2
-  },
-  {
-    "size": 6,
-    "name": "Knight_White_1_Position",
-    "objectNames": [
-      "Knight_White_1/Knight"
-    ],
-    "shaderParameters": [
-      "LSBPosition",
-      "MSBPosition"
-    ],
-    "range": {
-      "start": 120,
-      "end": 125
-    },
-    "msbName": "BitChunk15",
-    "lsbName": "BitChunk16",
-    "bitIndex": 0
-  },
-  {
-    "size": 6,
-    "name": "Knight_White_2_Position",
-    "objectNames": [
-      "Knight_White_2/Knight"
-    ],
-    "shaderParameters": [
-      "LSBPosition",
-      "MSBPosition"
+      "LSBCard_Index",
+      "MSBCard_Index"
     ],
     "range": {
       "start": 126,
@@ -429,13 +238,13 @@
   },
   {
     "size": 6,
-    "name": "Knight_Black_1_Position",
+    "name": "Community_Card_2",
     "objectNames": [
-      "Knight_Black_1/Knight"
+      "Table/Card_2"
     ],
     "shaderParameters": [
-      "LSBPosition",
-      "MSBPosition"
+      "LSBCard_Index",
+      "MSBCard_Index"
     ],
     "range": {
       "start": 132,
@@ -447,13 +256,13 @@
   },
   {
     "size": 6,
-    "name": "Knight_Black_2_Position",
+    "name": "Community_Card_3",
     "objectNames": [
-      "Knight_Black_2/Knight"
+      "Table/Card_3"
     ],
     "shaderParameters": [
-      "LSBPosition",
-      "MSBPosition"
+      "LSBCard_Index",
+      "MSBCard_Index"
     ],
     "range": {
       "start": 138,
@@ -465,13 +274,13 @@
   },
   {
     "size": 6,
-    "name": "Queen_White_1_Position",
+    "name": "Community_Card_4",
     "objectNames": [
-      "Queen_White_1/Queen"
+      "Table/Card_4"
     ],
     "shaderParameters": [
-      "LSBPosition",
-      "MSBPosition"
+      "LSBCard_Index",
+      "MSBCard_Index"
     ],
     "range": {
       "start": 144,
@@ -483,13 +292,13 @@
   },
   {
     "size": 6,
-    "name": "King_White_1_Position",
+    "name": "Community_Card_5",
     "objectNames": [
-      "King_White_1/King"
+      "Table/Card_5"
     ],
     "shaderParameters": [
-      "LSBPosition",
-      "MSBPosition"
+      "LSBCard_Index",
+      "MSBCard_Index"
     ],
     "range": {
       "start": 150,
@@ -501,13 +310,13 @@
   },
   {
     "size": 6,
-    "name": "Queen_Black_1_Position",
+    "name": "Player_1_Card_1",
     "objectNames": [
-      "Queen_Black_1/Queen"
+      "Player_1/Card_1"
     ],
     "shaderParameters": [
-      "LSBPosition",
-      "MSBPosition"
+      "LSBCard_Index",
+      "MSBCard_Index"
     ],
     "range": {
       "start": 156,
@@ -519,13 +328,13 @@
   },
   {
     "size": 6,
-    "name": "King_Black_1_Position",
+    "name": "Player_1_Card_2",
     "objectNames": [
-      "King_Black_1/King"
+      "Player_1/Card_2"
     ],
     "shaderParameters": [
-      "LSBPosition",
-      "MSBPosition"
+      "LSBCard_Index",
+      "MSBCard_Index"
     ],
     "range": {
       "start": 162,
@@ -537,13 +346,13 @@
   },
   {
     "size": 6,
-    "name": "Selected_Position",
+    "name": "Player_2_Card_1",
     "objectNames": [
-      "Selected_Position"
+      "Player_2/Card_1"
     ],
     "shaderParameters": [
-      "LSBSelectedPosition",
-      "MSBSelectedPosition"
+      "LSBCard_Index",
+      "MSBCard_Index"
     ],
     "range": {
       "start": 168,
@@ -554,725 +363,237 @@
     "bitIndex": 0
   },
   {
-    "size": 5,
-    "name": "Bishop_White_1_PositionBishop",
+    "size": 6,
+    "name": "Player_2_Card_2",
     "objectNames": [
-      "Bishop_White_1/Bishop"
+      "Player_2/Card_2"
     ],
     "shaderParameters": [
-      "LSBPositionBishop",
-      "MSBPositionBishop"
+      "LSBCard_Index",
+      "MSBCard_Index"
     ],
     "range": {
       "start": 174,
-      "end": 178
+      "end": 179
     },
     "msbName": "BitChunk21",
     "lsbName": "BitChunk22",
     "bitIndex": 6
   },
   {
-    "size": 5,
-    "name": "Bishop_White_2_PositionBishop",
+    "size": 6,
+    "name": "Player_1_Card_1",
     "objectNames": [
-      "Bishop_White_2/Bishop"
+      "Player_3/Card_1"
     ],
     "shaderParameters": [
-      "LSBPositionBishop",
-      "MSBPositionBishop"
+      "LSBCard_Index",
+      "MSBCard_Index"
     ],
     "range": {
-      "start": 179,
-      "end": 183
+      "start": 180,
+      "end": 185
     },
     "msbName": "BitChunk22",
     "lsbName": "BitChunk23",
-    "bitIndex": 3
+    "bitIndex": 4
   },
   {
-    "size": 5,
-    "name": "Bishop_Black_1_PositionBishop",
+    "size": 6,
+    "name": "Player_1_Card_2",
     "objectNames": [
-      "Bishop_Black_1/Bishop"
+      "Player_3/Card_2"
     ],
     "shaderParameters": [
-      "LSBPositionBishop",
-      "MSBPositionBishop"
+      "LSBCard_Index",
+      "MSBCard_Index"
     ],
     "range": {
-      "start": 184,
-      "end": 188
+      "start": 186,
+      "end": 191
     },
     "msbName": "BitChunk23",
     "lsbName": "BitChunk24",
-    "bitIndex": 0
-  },
-  {
-    "size": 5,
-    "name": "Bishop_Black_2_PositionBishop",
-    "objectNames": [
-      "Bishop_Black_2/Bishop"
-    ],
-    "shaderParameters": [
-      "LSBPositionBishop",
-      "MSBPositionBishop"
-    ],
-    "range": {
-      "start": 189,
-      "end": 193
-    },
-    "msbName": "BitChunk23",
-    "lsbName": "BitChunk24",
-    "bitIndex": 5
-  },
-  {
-    "size": 5,
-    "name": "Selected_Piece",
-    "objectNames": [
-      "Rook_White_1/Rook",
-      "Rook_White_2/Rook",
-      "Rook_Black_1/Rook",
-      "Rook_Black_2/Rook",
-      "Bishop_White_1/Bishop",
-      "Bishop_White_2/Bishop",
-      "Bishop_Black_1/Bishop",
-      "Bishop_Black_2/Bishop",
-      "Knight_White_1/Knight",
-      "Knight_White_2/Knight",
-      "Knight_Black_1/Knight",
-      "Knight_Black_2/Knight",
-      "King_White_1/King",
-      "King_Black_1/King",
-      "Queen_White_1/Queen",
-      "Queen_Black_1/Queen",
-      "Pawn_White_1/Pawn",
-      "Pawn_White_1/Queen",
-      "Pawn_White_1/Knight",
-      "Pawn_White_2/Pawn",
-      "Pawn_White_2/Queen",
-      "Pawn_White_2/Knight",
-      "Pawn_White_3/Pawn",
-      "Pawn_White_3/Queen",
-      "Pawn_White_3/Knight",
-      "Pawn_White_4/Pawn",
-      "Pawn_White_4/Queen",
-      "Pawn_White_4/Knight",
-      "Pawn_White_5/Pawn",
-      "Pawn_White_5/Queen",
-      "Pawn_White_5/Knight",
-      "Pawn_White_6/Pawn",
-      "Pawn_White_6/Queen",
-      "Pawn_White_6/Knight",
-      "Pawn_White_7/Pawn",
-      "Pawn_White_7/Queen",
-      "Pawn_White_7/Knight",
-      "Pawn_White_8/Pawn",
-      "Pawn_White_8/Queen",
-      "Pawn_White_8/Knight",
-      "Pawn_Black_1/Pawn",
-      "Pawn_Black_1/Queen",
-      "Pawn_Black_1/Knight",
-      "Pawn_Black_2/Pawn",
-      "Pawn_Black_2/Queen",
-      "Pawn_Black_2/Knight",
-      "Pawn_Black_3/Pawn",
-      "Pawn_Black_3/Queen",
-      "Pawn_Black_3/Knight",
-      "Pawn_Black_4/Pawn",
-      "Pawn_Black_4/Queen",
-      "Pawn_Black_4/Knight",
-      "Pawn_Black_5/Pawn",
-      "Pawn_Black_5/Queen",
-      "Pawn_Black_5/Knight",
-      "Pawn_Black_6/Pawn",
-      "Pawn_Black_6/Queen",
-      "Pawn_Black_6/Knight",
-      "Pawn_Black_7/Pawn",
-      "Pawn_Black_7/Queen",
-      "Pawn_Black_7/Knight",
-      "Pawn_Black_8/Pawn",
-      "Pawn_Black_8/Queen",
-      "Pawn_Black_8/Knight"
-    ],
-    "shaderParameters": [
-      "LSBSelectedPiece",
-      "MSBSelectedPiece"
-    ],
-    "range": {
-      "start": 194,
-      "end": 198
-    },
-    "msbName": "BitChunk24",
-    "lsbName": "BitChunk25",
     "bitIndex": 2
   },
   {
-    "size": 2,
-    "name": "Pawn_White_1_Promotion",
+    "size": 6,
+    "name": "Player_4_Card_1",
     "objectNames": [
-      "Pawn_White_1/Pawn",
-      "Pawn_White_1/Queen",
-      "Pawn_White_1/Knight"
+      "Player_4/Card_1"
     ],
     "shaderParameters": [
-      "LSBPromotion",
-      "MSBPromotion"
+      "LSBCard_Index",
+      "MSBCard_Index"
     ],
     "range": {
-      "start": 199,
-      "end": 200
+      "start": 192,
+      "end": 197
     },
     "msbName": "BitChunk24",
     "lsbName": "BitChunk25",
-    "bitIndex": 7
-  },
-  {
-    "size": 2,
-    "name": "Pawn_White_2_Promotion",
-    "objectNames": [
-      "Pawn_White_2/Pawn",
-      "Pawn_White_2/Queen",
-      "Pawn_White_2/Knight"
-    ],
-    "shaderParameters": [
-      "LSBPromotion",
-      "MSBPromotion"
-    ],
-    "range": {
-      "start": 201,
-      "end": 202
-    },
-    "msbName": "BitChunk25",
-    "lsbName": "BitChunk26",
-    "bitIndex": 1
-  },
-  {
-    "size": 2,
-    "name": "Pawn_White_3_Promotion",
-    "objectNames": [
-      "Pawn_White_3/Pawn",
-      "Pawn_White_3/Queen",
-      "Pawn_White_3/Knight"
-    ],
-    "shaderParameters": [
-      "LSBPromotion",
-      "MSBPromotion"
-    ],
-    "range": {
-      "start": 203,
-      "end": 204
-    },
-    "msbName": "BitChunk25",
-    "lsbName": "BitChunk26",
-    "bitIndex": 3
-  },
-  {
-    "size": 2,
-    "name": "Pawn_White_4_Promotion",
-    "objectNames": [
-      "Pawn_White_4/Pawn",
-      "Pawn_White_4/Queen",
-      "Pawn_White_4/Knight"
-    ],
-    "shaderParameters": [
-      "LSBPromotion",
-      "MSBPromotion"
-    ],
-    "range": {
-      "start": 205,
-      "end": 206
-    },
-    "msbName": "BitChunk25",
-    "lsbName": "BitChunk26",
-    "bitIndex": 5
-  },
-  {
-    "size": 2,
-    "name": "Pawn_White_5_Promotion",
-    "objectNames": [
-      "Pawn_White_5/Pawn",
-      "Pawn_White_5/Queen",
-      "Pawn_White_5/Knight"
-    ],
-    "shaderParameters": [
-      "LSBPromotion",
-      "MSBPromotion"
-    ],
-    "range": {
-      "start": 207,
-      "end": 208
-    },
-    "msbName": "BitChunk25",
-    "lsbName": "BitChunk26",
-    "bitIndex": 7
-  },
-  {
-    "size": 2,
-    "name": "Pawn_White_6_Promotion",
-    "objectNames": [
-      "Pawn_White_6/Pawn",
-      "Pawn_White_6/Queen",
-      "Pawn_White_6/Knight"
-    ],
-    "shaderParameters": [
-      "LSBPromotion",
-      "MSBPromotion"
-    ],
-    "range": {
-      "start": 209,
-      "end": 210
-    },
-    "msbName": "BitChunk26",
-    "lsbName": "BitChunk27",
-    "bitIndex": 1
-  },
-  {
-    "size": 2,
-    "name": "Pawn_White_7_Promotion",
-    "objectNames": [
-      "Pawn_White_7/Pawn",
-      "Pawn_White_7/Queen",
-      "Pawn_White_7/Knight"
-    ],
-    "shaderParameters": [
-      "LSBPromotion",
-      "MSBPromotion"
-    ],
-    "range": {
-      "start": 211,
-      "end": 212
-    },
-    "msbName": "BitChunk26",
-    "lsbName": "BitChunk27",
-    "bitIndex": 3
-  },
-  {
-    "size": 2,
-    "name": "Pawn_White_8_Promotion",
-    "objectNames": [
-      "Pawn_White_8/Pawn",
-      "Pawn_White_8/Queen",
-      "Pawn_White_8/Knight"
-    ],
-    "shaderParameters": [
-      "LSBPromotion",
-      "MSBPromotion"
-    ],
-    "range": {
-      "start": 213,
-      "end": 214
-    },
-    "msbName": "BitChunk26",
-    "lsbName": "BitChunk27",
-    "bitIndex": 5
-  },
-  {
-    "size": 2,
-    "name": "Pawn_Black_1_Promotion",
-    "objectNames": [
-      "Pawn_Black_1/Pawn",
-      "Pawn_Black_1/Queen",
-      "Pawn_Black_1/Knight"
-    ],
-    "shaderParameters": [
-      "LSBPromotion",
-      "MSBPromotion"
-    ],
-    "range": {
-      "start": 215,
-      "end": 216
-    },
-    "msbName": "BitChunk26",
-    "lsbName": "BitChunk27",
-    "bitIndex": 7
-  },
-  {
-    "size": 2,
-    "name": "Pawn_Black_2_Promotion",
-    "objectNames": [
-      "Pawn_Black_2/Pawn",
-      "Pawn_Black_2/Queen",
-      "Pawn_Black_2/Knight"
-    ],
-    "shaderParameters": [
-      "LSBPromotion",
-      "MSBPromotion"
-    ],
-    "range": {
-      "start": 217,
-      "end": 218
-    },
-    "msbName": "BitChunk27",
-    "lsbName": "BitChunk28",
-    "bitIndex": 1
-  },
-  {
-    "size": 2,
-    "name": "Pawn_Black_3_Promotion",
-    "objectNames": [
-      "Pawn_Black_3/Pawn",
-      "Pawn_Black_3/Queen",
-      "Pawn_Black_3/Knight"
-    ],
-    "shaderParameters": [
-      "LSBPromotion",
-      "MSBPromotion"
-    ],
-    "range": {
-      "start": 219,
-      "end": 220
-    },
-    "msbName": "BitChunk27",
-    "lsbName": "BitChunk28",
-    "bitIndex": 3
-  },
-  {
-    "size": 2,
-    "name": "Pawn_Black_4_Promotion",
-    "objectNames": [
-      "Pawn_Black_4/Pawn",
-      "Pawn_Black_4/Queen",
-      "Pawn_Black_4/Knight"
-    ],
-    "shaderParameters": [
-      "LSBPromotion",
-      "MSBPromotion"
-    ],
-    "range": {
-      "start": 221,
-      "end": 222
-    },
-    "msbName": "BitChunk27",
-    "lsbName": "BitChunk28",
-    "bitIndex": 5
-  },
-  {
-    "size": 2,
-    "name": "Pawn_Black_5_Promotion",
-    "objectNames": [
-      "Pawn_Black_5/Pawn",
-      "Pawn_Black_5/Queen",
-      "Pawn_Black_5/Knight"
-    ],
-    "shaderParameters": [
-      "LSBPromotion",
-      "MSBPromotion"
-    ],
-    "range": {
-      "start": 223,
-      "end": 224
-    },
-    "msbName": "BitChunk27",
-    "lsbName": "BitChunk28",
-    "bitIndex": 7
-  },
-  {
-    "size": 2,
-    "name": "Pawn_Black_6_Promotion",
-    "objectNames": [
-      "Pawn_Black_6/Pawn",
-      "Pawn_Black_6/Queen",
-      "Pawn_Black_6/Knight"
-    ],
-    "shaderParameters": [
-      "LSBPromotion",
-      "MSBPromotion"
-    ],
-    "range": {
-      "start": 225,
-      "end": 226
-    },
-    "msbName": "BitChunk28",
-    "lsbName": "BitChunk29",
-    "bitIndex": 1
-  },
-  {
-    "size": 2,
-    "name": "Pawn_Black_7_Promotion",
-    "objectNames": [
-      "Pawn_Black_7/Pawn",
-      "Pawn_Black_7/Queen",
-      "Pawn_Black_7/Knight"
-    ],
-    "shaderParameters": [
-      "LSBPromotion",
-      "MSBPromotion"
-    ],
-    "range": {
-      "start": 227,
-      "end": 228
-    },
-    "msbName": "BitChunk28",
-    "lsbName": "BitChunk29",
-    "bitIndex": 3
-  },
-  {
-    "size": 2,
-    "name": "Pawn_Black_8_Promotion",
-    "objectNames": [
-      "Pawn_Black_8/Pawn",
-      "Pawn_Black_8/Queen",
-      "Pawn_Black_8/Knight"
-    ],
-    "shaderParameters": [
-      "LSBPromotion",
-      "MSBPromotion"
-    ],
-    "range": {
-      "start": 229,
-      "end": 230
-    },
-    "msbName": "BitChunk28",
-    "lsbName": "BitChunk29",
-    "bitIndex": 5
-  },
-  {
-    "size": 1,
-    "name": "Rook_White_Both_Captured",
-    "objectNames": [
-      "Rook_White_1/Rook",
-      "Rook_White_2/Rook"
-    ],
-    "shaderParameters": [
-      "LSBBothCaptured",
-      "MSBBothCaptured"
-    ],
-    "range": {
-      "start": 231,
-      "end": 231
-    },
-    "msbName": "BitChunk28",
-    "lsbName": "BitChunk29",
-    "bitIndex": 7
-  },
-  {
-    "size": 1,
-    "name": "Rook_Black_Both_Captured",
-    "objectNames": [
-      "Rook_Black_1/Rook",
-      "Rook_Black_2/Rook"
-    ],
-    "shaderParameters": [
-      "LSBBothCaptured",
-      "MSBBothCaptured"
-    ],
-    "range": {
-      "start": 232,
-      "end": 232
-    },
-    "msbName": "BitChunk29",
-    "lsbName": "BitChunk29",
     "bitIndex": 0
   },
   {
-    "size": 1,
-    "name": "Bishop_White_Both_Captured",
+    "size": 6,
+    "name": "Player_4_Card_2",
     "objectNames": [
-      "Bishop_White_1/Bishop",
-      "Bishop_White_2/Bishop"
+      "Player_4/Card_2"
     ],
     "shaderParameters": [
-      "LSBBothCaptured",
-      "MSBBothCaptured"
+      "LSBCard_Index",
+      "MSBCard_Index"
     ],
     "range": {
-      "start": 233,
+      "start": 198,
+      "end": 203
+    },
+    "msbName": "BitChunk24",
+    "lsbName": "BitChunk25",
+    "bitIndex": 6
+  },
+  {
+    "size": 6,
+    "name": "Player_5_Card_1",
+    "objectNames": [
+      "Player_5/Card_1"
+    ],
+    "shaderParameters": [
+      "LSBCard_Index",
+      "MSBCard_Index"
+    ],
+    "range": {
+      "start": 204,
+      "end": 209
+    },
+    "msbName": "BitChunk25",
+    "lsbName": "BitChunk26",
+    "bitIndex": 4
+  },
+  {
+    "size": 6,
+    "name": "Player_5_Card_2",
+    "objectNames": [
+      "Player_5/Card_2"
+    ],
+    "shaderParameters": [
+      "LSBCard_Index",
+      "MSBCard_Index"
+    ],
+    "range": {
+      "start": 210,
+      "end": 215
+    },
+    "msbName": "BitChunk26",
+    "lsbName": "BitChunk27",
+    "bitIndex": 2
+  },
+  {
+    "size": 6,
+    "name": "Player_6_Card_1",
+    "objectNames": [
+      "Player_6/Card_1"
+    ],
+    "shaderParameters": [
+      "LSBCard_Index",
+      "MSBCard_Index"
+    ],
+    "range": {
+      "start": 216,
+      "end": 221
+    },
+    "msbName": "BitChunk27",
+    "lsbName": "BitChunk28",
+    "bitIndex": 0
+  },
+  {
+    "size": 6,
+    "name": "Player_6_Card_2",
+    "objectNames": [
+      "Player_6/Card_2"
+    ],
+    "shaderParameters": [
+      "LSBCard_Index",
+      "MSBCard_Index"
+    ],
+    "range": {
+      "start": 222,
+      "end": 227
+    },
+    "msbName": "BitChunk27",
+    "lsbName": "BitChunk28",
+    "bitIndex": 6
+  },
+  {
+    "size": 6,
+    "name": "Player_7_Card_1",
+    "objectNames": [
+      "Player_7/Card_1"
+    ],
+    "shaderParameters": [
+      "LSBCard_Index",
+      "MSBCard_Index"
+    ],
+    "range": {
+      "start": 228,
       "end": 233
     },
-    "msbName": "BitChunk29",
-    "lsbName": "BitChunk29",
-    "bitIndex": 1
-  },
-  {
-    "size": 1,
-    "name": "Bishop_Black_Both_Captured",
-    "objectNames": [
-      "Bishop_Black_1/Bishop",
-      "Bishop_Black_2/Bishop"
-    ],
-    "shaderParameters": [
-      "LSBBothCaptured",
-      "MSBBothCaptured"
-    ],
-    "range": {
-      "start": 234,
-      "end": 234
-    },
-    "msbName": "BitChunk29",
-    "lsbName": "BitChunk29",
-    "bitIndex": 2
-  },
-  {
-    "size": 1,
-    "name": "Knight_White_Both_Captured",
-    "objectNames": [
-      "Knight_White_1/Knight",
-      "Knight_White_2/Knight"
-    ],
-    "shaderParameters": [
-      "LSBBothCaptured",
-      "MSBBothCaptured"
-    ],
-    "range": {
-      "start": 235,
-      "end": 235
-    },
-    "msbName": "BitChunk29",
-    "lsbName": "BitChunk29",
-    "bitIndex": 3
-  },
-  {
-    "size": 1,
-    "name": "Knight_Black_Both_Captured",
-    "objectNames": [
-      "Knight_Black_1/Knight",
-      "Knight_Black_2/Knight"
-    ],
-    "shaderParameters": [
-      "LSBBothCaptured",
-      "MSBBothCaptured"
-    ],
-    "range": {
-      "start": 236,
-      "end": 236
-    },
-    "msbName": "BitChunk29",
+    "msbName": "BitChunk28",
     "lsbName": "BitChunk29",
     "bitIndex": 4
   },
   {
-    "size": 1,
-    "name": "Queen_White_1_Captured",
+    "size": 6,
+    "name": "Player_7_Card_2",
     "objectNames": [
-      "Queen_White_1/Queen"
+      "Player_7/Card_2"
     ],
     "shaderParameters": [
-      "LSBBothCaptured",
-      "MSBBothCaptured"
+      "LSBCard_Index",
+      "MSBCard_Index"
     ],
     "range": {
-      "start": 237,
-      "end": 237
-    },
-    "msbName": "BitChunk29",
-    "lsbName": "BitChunk29",
-    "bitIndex": 5
-  },
-  {
-    "size": 1,
-    "name": "Queen_Black_1_Captured",
-    "objectNames": [
-      "Queen_Black_1/Queen"
-    ],
-    "shaderParameters": [
-      "LSBBothCaptured",
-      "MSBBothCaptured"
-    ],
-    "range": {
-      "start": 238,
-      "end": 238
-    },
-    "msbName": "BitChunk29",
-    "lsbName": "BitChunk29",
-    "bitIndex": 6
-  },
-  {
-    "size": 1,
-    "name": "Selected_Piece_Shown",
-    "objectNames": [
-      "Rook_White_1/Rook",
-      "Rook_White_2/Rook",
-      "Rook_Black_1/Rook",
-      "Rook_Black_2/Rook",
-      "Bishop_White_1/Bishop",
-      "Bishop_White_2/Bishop",
-      "Bishop_Black_1/Bishop",
-      "Bishop_Black_2/Bishop",
-      "Knight_White_1/Knight",
-      "Knight_White_2/Knight",
-      "Knight_Black_1/Knight",
-      "Knight_Black_2/Knight",
-      "King_White_1/King",
-      "King_Black_1/King",
-      "Queen_White_1/Queen",
-      "Queen_Black_1/Queen",
-      "Pawn_White_1/Pawn",
-      "Pawn_White_1/Queen",
-      "Pawn_White_1/Knight",
-      "Pawn_White_2/Pawn",
-      "Pawn_White_2/Queen",
-      "Pawn_White_2/Knight",
-      "Pawn_White_3/Pawn",
-      "Pawn_White_3/Queen",
-      "Pawn_White_3/Knight",
-      "Pawn_White_4/Pawn",
-      "Pawn_White_4/Queen",
-      "Pawn_White_4/Knight",
-      "Pawn_White_5/Pawn",
-      "Pawn_White_5/Queen",
-      "Pawn_White_5/Knight",
-      "Pawn_White_6/Pawn",
-      "Pawn_White_6/Queen",
-      "Pawn_White_6/Knight",
-      "Pawn_White_7/Pawn",
-      "Pawn_White_7/Queen",
-      "Pawn_White_7/Knight",
-      "Pawn_White_8/Pawn",
-      "Pawn_White_8/Queen",
-      "Pawn_White_8/Knight",
-      "Pawn_Black_1/Pawn",
-      "Pawn_Black_1/Queen",
-      "Pawn_Black_1/Knight",
-      "Pawn_Black_2/Pawn",
-      "Pawn_Black_2/Queen",
-      "Pawn_Black_2/Knight",
-      "Pawn_Black_3/Pawn",
-      "Pawn_Black_3/Queen",
-      "Pawn_Black_3/Knight",
-      "Pawn_Black_4/Pawn",
-      "Pawn_Black_4/Queen",
-      "Pawn_Black_4/Knight",
-      "Pawn_Black_5/Pawn",
-      "Pawn_Black_5/Queen",
-      "Pawn_Black_5/Knight",
-      "Pawn_Black_6/Pawn",
-      "Pawn_Black_6/Queen",
-      "Pawn_Black_6/Knight",
-      "Pawn_Black_7/Pawn",
-      "Pawn_Black_7/Queen",
-      "Pawn_Black_7/Knight",
-      "Pawn_Black_8/Pawn",
-      "Pawn_Black_8/Queen",
-      "Pawn_Black_8/Knight"
-    ],
-    "shaderParameters": [
-      "LSBSelectedPieceShown",
-      "MSBSelectedPieceShown"
-    ],
-    "range": {
-      "start": 239,
+      "start": 234,
       "end": 239
     },
     "msbName": "BitChunk29",
-    "lsbName": "BitChunk29",
-    "bitIndex": 7
+    "lsbName": "BitChunk30",
+    "bitIndex": 2
   },
   {
-    "range": {
-      "start": 240,
-      "end": 240
-    },
-    "size": 1,
-    "name": "Selected_Position_Shown",
-    "lsbName": "Overflow_0_0",
-    "msbName": "Overflow_0_0",
-    "bitIndex": 0,
+    "size": 6,
+    "name": "Player_8_Card_1",
     "objectNames": [
-      "Selected_Position"
+      "Player_8/Card_1"
     ],
     "shaderParameters": [
-      "LSBSelectedPositionShown",
-      "MSBSelectedPositionShown"
-    ]
+      "LSBCard_Index",
+      "MSBCard_Index"
+    ],
+    "range": {
+      "start": 240,
+      "end": 245
+    },
+    "msbName": "BitChunk30",
+    "lsbName": "BitChunk30",
+    "bitIndex": 0
+  },
+  {
+    "size": 6,
+    "name": "Player_8_Card_2",
+    "objectNames": [
+      "Player_8/Card_2"
+    ],
+    "shaderParameters": [
+      "LSBCard_Index",
+      "MSBCard_Index"
+    ],
+    "range": {
+      "start": 246,
+      "end": 251
+    },
+    "msbName": "BitChunk30",
+    "lsbName": "BitChunk30",
+    "bitIndex": 6
   }
 ]
