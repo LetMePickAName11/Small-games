@@ -386,91 +386,102 @@ Player 8:
 
   private handRank(hand: Array<Card>): { type: number; highValue: number; kickerValue: number | null; } {
     const sorted: Array<Card> = [...hand, ...this._gameInfo.communityCards].sort((a: Card, b: Card) => b.value - a.value);
-
+  
     const kinds: { [key in string]: Array<Card> } = this.getKindsFromCards(sorted);
     const straight: Array<Card> = this.getStraightFromCards(sorted);
     const flush: Array<Card> | undefined = Object.values(kinds).find((v: Array<Card>) => v.length >= 5);
     const fourOfAKind = Object.values(kinds).find((v) => v.length === 4);
     const ThreeOfAKind = Object.values(kinds).filter((v) => v.length === 3);
     const TwoOfAKind = Object.values(kinds).filter((v) => v.length === 2);
-
+  
+    const getHighValue = (cards: Array<Card>): number => cards[0]?.value || 0;
+    const getKickerValue = (cards: Array<Card>): number | null => {
+      const handValues = hand.map(card => card.value);
+      for (const card of cards) {
+        if (!handValues.includes(card.value)) {
+          return card.value;
+        }
+      }
+      return null;
+    };
+  
     // Royal flush
-    if (straight && flush) {
+    if (straight && flush && getHighValue(straight) === 14) {
       return {
         type: 9,
-        highValue: 0,
-        kickerValue: 0
+        highValue: getHighValue(straight),
+        kickerValue: null
       };
     }
     // Straight flush
     if (straight && flush) {
       return {
         type: 8,
-        highValue: 0,
-        kickerValue: 0
+        highValue: getHighValue(straight),
+        kickerValue: null
       };
     }
     // Four of a kind
     if (fourOfAKind !== undefined) {
       return {
         type: 7,
-        highValue: 0,
-        kickerValue: 0
+        highValue: getHighValue(fourOfAKind),
+        kickerValue: getKickerValue(sorted.filter(card => card.value !== getHighValue(fourOfAKind)))
       };
     }
     // Full house
     if (ThreeOfAKind.length !== 0 && TwoOfAKind.length !== 0) {
       return {
         type: 6,
-        highValue: 0,
-        kickerValue: 0
+        highValue: getHighValue(ThreeOfAKind[0]!),
+        kickerValue: getHighValue(TwoOfAKind[0]!)
       };
     }
-    // flush
+    // Flush
     if (flush) {
       return {
         type: 5,
-        highValue: 0,
-        kickerValue: 0
+        highValue: getHighValue(flush),
+        kickerValue: null
       };
     }
     // Straight
     if (straight) {
       return {
         type: 4,
-        highValue: 0,
-        kickerValue: 0
+        highValue: getHighValue(straight),
+        kickerValue: null
       };
     }
     // Three of a kind
     if (ThreeOfAKind.length !== 0) {
       return {
         type: 3,
-        highValue: 0,
-        kickerValue: 0
+        highValue: getHighValue(ThreeOfAKind[0]!),
+        kickerValue: getKickerValue(sorted.filter(card => card.value !== getHighValue(ThreeOfAKind[0]!)))
       };
     }
     // Two pair
     if (TwoOfAKind.length > 1) {
       return {
         type: 2,
-        highValue: 0,
-        kickerValue: 0
+        highValue: getHighValue(TwoOfAKind[0]!),
+        kickerValue: getHighValue(TwoOfAKind[1]!)
       };
     }
     // Pair
     if (TwoOfAKind.length > 0) {
       return {
         type: 1,
-        highValue: TwoOfAKind.reduce((acc, cv) => cv[0]!.value > acc ? cv[0]!.value : acc, 0),
-        kickerValue: hand[0]!.value > hand[1]!.value ? hand[0]!.value : hand[1]!.value
+        highValue: getHighValue(TwoOfAKind[0]!),
+        kickerValue: getKickerValue(sorted.filter(card => card.value !== getHighValue(TwoOfAKind[0]!)))
       };
     }
     // High card
     return {
       type: 0,
-      highValue: 0,
-      kickerValue: 0
+      highValue: getHighValue(sorted),
+      kickerValue: getKickerValue(sorted)
     };
   }
 
