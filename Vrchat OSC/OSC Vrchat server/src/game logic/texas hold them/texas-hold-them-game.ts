@@ -439,7 +439,7 @@ Player 8:
       return {
         type: 4,
         highValue: 0,
-        kickerValue: 0
+        kickerValue: 0,
       };
     }
     // Three of a kind
@@ -447,7 +447,7 @@ Player 8:
       return {
         type: 3,
         highValue: 0,
-        kickerValue: 0
+        kickerValue: 0,
       };
     }
     // Two pair
@@ -455,22 +455,22 @@ Player 8:
       return {
         type: 2,
         highValue: 0,
-        kickerValue: 0
+        kickerValue: 0,
       };
     }
     // Pair
     if (TwoOfAKind.length > 0) {
       return {
         type: 1,
-        highValue: TwoOfAKind.reduce((acc, cv) => cv[0]!.value > acc ? cv[0]!.value : acc, 0),
-        kickerValue: hand[0]!.value > hand[1]!.value ? hand[0]!.value : hand[1]!.value
+        highValue: 0,
+        kickerValue: 0,
       };
     }
     // High card
     return {
       type: 0,
-      highValue: 0,
-      kickerValue: 0
+      highValue: hand.reduce((acc, cv) => acc = cv.value > acc ? cv.value : acc, 0),
+      kickerValue: hand.reduce((acc, cv) => acc = cv.value < acc ? cv.value : acc, 14),
     };
   }
 
