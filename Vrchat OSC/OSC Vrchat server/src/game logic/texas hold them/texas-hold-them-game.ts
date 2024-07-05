@@ -180,7 +180,6 @@ Player 8:
 
 
 
-
   private dealTheFlop(): GameLogicResponse {
     // Generate a deck
     const deck: Array<Card> = this.generateDeck();
