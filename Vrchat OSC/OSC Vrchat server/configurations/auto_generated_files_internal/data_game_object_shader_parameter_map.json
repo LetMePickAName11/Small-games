@@ -1,46 +1,50 @@
 {
-  "LSBPoolValue, MSBPoolValue": [
-    "Player_1/Pool",
-    "Player_2/Pool",
-    "Player_3/Pool",
-    "Player_4/Pool",
-    "Player_5/Pool",
-    "Player_6/Pool",
-    "Player_7/Pool",
-    "Player_8/Pool",
-    "Table/Pool"
+  "LSBPoolValue_0, LSBPoolValue_1, MSBPoolValue_0, MSBPoolValue_1": [
+    "Avatar/Community/Pool",
+    "Avatar/Player_2/Pool",
+    "Avatar/Player_3/Pool",
+    "Avatar/Player_5/Pool",
+    "Avatar/Player_6/Pool",
+    "Avatar/Player_7/Pool",
+    "Avatar/Player_8/Pool"
   ],
-  "LSBBetValue, MSBBetValue": [
-    "Player_1/Info_Panel",
-    "Player_2/Info_Panel",
-    "Player_3/Info_Panel",
-    "Player_4/Info_Panel",
-    "Player_5/Info_Panel",
-    "Player_6/Info_Panel",
-    "Player_7/Info_Panel",
-    "Player_8/Info_Panel"
+  "LSBBetValue_0, LSBBetValue_1, LSBInfo_Plane_0, MSBBetValue_0, MSBBetValue_1, MSBInfo_Plane_0": [
+    "Avatar/Player_1/Info_Plane",
+    "Avatar/Player_2/Info_Plane",
+    "Avatar/Player_3/Info_Plane",
+    "Avatar/Player_4/Info_Plane",
+    "Avatar/Player_5/Info_Plane",
+    "Avatar/Player_6/Info_Plane",
+    "Avatar/Player_7/Info_Plane",
+    "Avatar/Player_8/Info_Plane"
   ],
-  "LSBCard_Index, MSBCard_Index": [
-    "Player_1/Card_1",
-    "Player_1/Card_2",
-    "Player_2/Card_1",
-    "Player_2/Card_2",
-    "Player_3/Card_1",
-    "Player_3/Card_2",
-    "Player_4/Card_1",
-    "Player_4/Card_2",
-    "Player_5/Card_1",
-    "Player_5/Card_2",
-    "Player_6/Card_1",
-    "Player_6/Card_2",
-    "Player_7/Card_1",
-    "Player_7/Card_2",
-    "Player_8/Card_1",
-    "Player_8/Card_2",
-    "Table/Card_1",
-    "Table/Card_2",
-    "Table/Card_3",
-    "Table/Card_4",
-    "Table/Card_5"
+  "LSBPoolValue_0, LSBPoolValue_1, LSBPoolValue_2, MSBPoolValue_0, MSBPoolValue_1, MSBPoolValue_2": [
+    "Avatar/Player_1/Pool",
+    "Avatar/Player_4/Pool"
+  ],
+  "LSBCard_Index_0, LSBCard_Index_1, MSBCard_Index_0, MSBCard_Index_1": [
+    "Avatar/Community/Card_1",
+    "Avatar/Community/Card_2",
+    "Avatar/Community/Card_5",
+    "Avatar/Player_1/Card_1",
+    "Avatar/Player_2/Card_2",
+    "Avatar/Player_3/Card_1",
+    "Avatar/Player_4/Card_2",
+    "Avatar/Player_5/Card_1",
+    "Avatar/Player_6/Card_2",
+    "Avatar/Player_7/Card_1",
+    "Avatar/Player_8/Card_2"
+  ],
+  "LSBCard_Index_0, MSBCard_Index_0": [
+    "Avatar/Community/Card_3",
+    "Avatar/Community/Card_4",
+    "Avatar/Player_1/Card_2",
+    "Avatar/Player_2/Card_1",
+    "Avatar/Player_3/Card_2",
+    "Avatar/Player_4/Card_1",
+    "Avatar/Player_5/Card_2",
+    "Avatar/Player_6/Card_1",
+    "Avatar/Player_7/Card_2",
+    "Avatar/Player_8/Card_1"
   ]
 }

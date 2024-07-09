@@ -142,6 +142,10 @@ export class OSCVrChat {
       this.sendUdpMessage(`${bitAllocation.lsbName}`, [{ type: 'i', value: gameState[bitAllocation.name] }]);
     });
 
+    this.getAllocatedBits('defaults').forEach((bitAllocation: BitAllocation) => {
+      this.sendUdpMessage(`${bitAllocation.lsbName}`, [{ type: 'i', value: gameState[bitAllocation.name] }]);
+    });
+
     this.getgamestate();
     this.getdebuginfo();
   }
@@ -181,11 +185,12 @@ export class OSCVrChat {
     }
   }
 
-  private getAllocatedBits(includeOverflow: 'all' | 'overflow' | 'noOverflow'): Array<BitAllocation> {
+  private getAllocatedBits(includeOverflow: 'all' | 'overflow' | 'noOverflow' | 'defaults'): Array<BitAllocation> {
     switch (includeOverflow) {
       case 'all': return this.bitAllocations;
       case 'overflow': return this.bitAllocations.filter((bitAllocation) => bitAllocation.name.includes("Overflow"));
-      case 'noOverflow': return this.bitAllocations.filter((bitAllocation) => !bitAllocation.name.includes("Overflow"));
+      case 'noOverflow': return this.bitAllocations.filter((bitAllocation) => !bitAllocation.name.includes("Overflow") && bitAllocation.type === 'Shader');
+      case 'defaults': return this.bitAllocations.filter((bitAllocation) => !bitAllocation.name.includes("Overflow") && bitAllocation.type === 'Default');
     }
   }
 

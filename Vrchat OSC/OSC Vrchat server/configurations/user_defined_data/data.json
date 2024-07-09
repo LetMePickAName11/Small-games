@@ -3,329 +3,462 @@
     "size": 6,
     "name": "Community_Card_1",
     "objectNames": [
-      "Table/Card_1"
+      "Avatar/Community/Card_1"
     ],
     "shaderParameters": [
       "Card_Index"
-    ]
+    ],
+    "type": "Shader",
+    "defaultValue": 0
   },
   {
     "size": 6,
     "name": "Community_Card_2",
     "objectNames": [
-      "Table/Card_2"
+      "Avatar/Community/Card_2"
     ],
     "shaderParameters": [
       "Card_Index"
-    ]
+    ],
+    "type": "Shader",
+    "defaultValue": 0
   },
   {
     "size": 6,
     "name": "Community_Card_3",
     "objectNames": [
-      "Table/Card_3"
+      "Avatar/Community/Card_3"
     ],
     "shaderParameters": [
       "Card_Index"
-    ]
+    ],
+    "type": "Shader",
+    "defaultValue": 0
   },
   {
     "size": 6,
     "name": "Community_Card_4",
     "objectNames": [
-      "Table/Card_4"
+      "Avatar/Community/Card_4"
     ],
     "shaderParameters": [
       "Card_Index"
-    ]
+    ],
+    "type": "Shader",
+    "defaultValue": 0
   },
   {
     "size": 6,
     "name": "Community_Card_5",
     "objectNames": [
-      "Table/Card_5"
+      "Avatar/Community/Card_5"
     ],
     "shaderParameters": [
       "Card_Index"
-    ]
+    ],
+    "type": "Shader",
+    "defaultValue": 0
   },
   {
     "size": 11,
     "name": "Community_Pool",
     "objectNames": [
-      "Table/Pool"
+      "Avatar/Community/Pool"
     ],
     "shaderParameters": [
       "PoolValue"
-    ]
+    ],
+    "type": "Shader",
+    "defaultValue": 0
   },
   {
     "size": 11,
     "name": "Bet_Value",
     "objectNames": [
-      "Player_1/Info_Panel",
-      "Player_2/Info_Panel",
-      "Player_3/Info_Panel",
-      "Player_4/Info_Panel",
-      "Player_5/Info_Panel",
-      "Player_6/Info_Panel",
-      "Player_7/Info_Panel",
-      "Player_8/Info_Panel"
+      "Avatar/Player_1/Info_Plane",
+      "Avatar/Player_2/Info_Plane",
+      "Avatar/Player_3/Info_Plane",
+      "Avatar/Player_4/Info_Plane",
+      "Avatar/Player_5/Info_Plane",
+      "Avatar/Player_6/Info_Plane",
+      "Avatar/Player_7/Info_Plane",
+      "Avatar/Player_8/Info_Plane"
     ],
     "shaderParameters": [
       "BetValue"
-    ]
+    ],
+    "type": "Shader",
+    "defaultValue": 0
   },
   {
-    "size": 8,
-    "name": "Player_Turn",
+    "size": 1,
+    "name": "Player_1_Turn",
     "objectNames": [],
-    "shaderParameters": []
+    "shaderParameters": [],
+    "type": "Default",
+    "defaultValue": 0
   },
   {
-    "size": 8,
+    "size": 1,
+    "name": "Player_2_Turn",
+    "objectNames": [],
+    "shaderParameters": [],
+    "type": "Default",
+    "defaultValue": 0
+  },
+  {
+    "size": 1,
+    "name": "Player_3_Turn",
+    "objectNames": [],
+    "shaderParameters": [],
+    "type": "Default",
+    "defaultValue": 0
+  },
+  {
+    "size": 1,
+    "name": "Player_4_Turn",
+    "objectNames": [],
+    "shaderParameters": [],
+    "type": "Default",
+    "defaultValue": 0
+  },
+  {
+    "size": 1,
+    "name": "Player_5_Turn",
+    "objectNames": [],
+    "shaderParameters": [],
+    "type": "Default",
+    "defaultValue": 0
+  },
+  {
+    "size": 1,
+    "name": "Player_6_Turn",
+    "objectNames": [],
+    "shaderParameters": [],
+    "type": "Default",
+    "defaultValue": 0
+  },
+  {
+    "size": 1,
+    "name": "Player_7_Turn",
+    "objectNames": [],
+    "shaderParameters": [],
+    "type": "Default",
+    "defaultValue": 0
+  },
+  {
+    "size": 1,
+    "name": "Player_8_Turn",
+    "objectNames": [],
+    "shaderParameters": [],
+    "type": "Default",
+    "defaultValue": 0
+  },
+  {
+    "size": 4,
     "name": "Blind",
-    "objectNames": [],
-    "shaderParameters": []
+    "objectNames": [
+      "Avatar/Player_1/Info_Plane",
+      "Avatar/Player_2/Info_Plane",
+      "Avatar/Player_3/Info_Plane",
+      "Avatar/Player_4/Info_Plane",
+      "Avatar/Player_5/Info_Plane",
+      "Avatar/Player_6/Info_Plane",
+      "Avatar/Player_7/Info_Plane",
+      "Avatar/Player_8/Info_Plane"
+    ],
+    "shaderParameters": [
+      "Info_Plane"
+    ],
+    "type": "Shader",
+    "defaultValue": 0
   },
   {
     "size": 6,
     "name": "Player_1_Card_1",
     "objectNames": [
-      "Player_1/Card_1"
+      "Avatar/Player_1/Card_1"
     ],
     "shaderParameters": [
       "Card_Index"
-    ]
+    ],
+    "type": "Shader",
+    "defaultValue": 0
   },
   {
     "size": 6,
     "name": "Player_1_Card_2",
     "objectNames": [
-      "Player_1/Card_2"
+      "Avatar/Player_1/Card_2"
     ],
     "shaderParameters": [
       "Card_Index"
-    ]
+    ],
+    "type": "Shader",
+    "defaultValue": 0
   },
   {
     "size": 6,
     "name": "Player_2_Card_1",
     "objectNames": [
-      "Player_2/Card_1"
+      "Avatar/Player_2/Card_1"
     ],
     "shaderParameters": [
       "Card_Index"
-    ]
+    ],
+    "type": "Shader",
+    "defaultValue": 0
   },
   {
     "size": 6,
     "name": "Player_2_Card_2",
     "objectNames": [
-      "Player_2/Card_2"
+      "Avatar/Player_2/Card_2"
     ],
     "shaderParameters": [
       "Card_Index"
-    ]
+    ],
+    "type": "Shader",
+    "defaultValue": 0
   },
   {
     "size": 6,
     "name": "Player_1_Card_1",
     "objectNames": [
-      "Player_3/Card_1"
+      "Avatar/Player_3/Card_1"
     ],
     "shaderParameters": [
       "Card_Index"
-    ]
+    ],
+    "type": "Shader",
+    "defaultValue": 0
   },
   {
     "size": 6,
     "name": "Player_1_Card_2",
     "objectNames": [
-      "Player_3/Card_2"
+      "Avatar/Player_3/Card_2"
     ],
     "shaderParameters": [
       "Card_Index"
-    ]
+    ],
+    "type": "Shader",
+    "defaultValue": 0
   },
   {
     "size": 6,
     "name": "Player_4_Card_1",
     "objectNames": [
-      "Player_4/Card_1"
+      "Avatar/Player_4/Card_1"
     ],
     "shaderParameters": [
       "Card_Index"
-    ]
+    ],
+    "type": "Shader",
+    "defaultValue": 0
   },
   {
     "size": 6,
     "name": "Player_4_Card_2",
     "objectNames": [
-      "Player_4/Card_2"
+      "Avatar/Player_4/Card_2"
     ],
     "shaderParameters": [
       "Card_Index"
-    ]
+    ],
+    "type": "Shader",
+    "defaultValue": 0
   },
   {
     "size": 6,
     "name": "Player_5_Card_1",
     "objectNames": [
-      "Player_5/Card_1"
+      "Avatar/Player_5/Card_1"
     ],
     "shaderParameters": [
       "Card_Index"
-    ]
+    ],
+    "type": "Shader",
+    "defaultValue": 0
   },
   {
     "size": 6,
     "name": "Player_5_Card_2",
     "objectNames": [
-      "Player_5/Card_2"
+      "Avatar/Player_5/Card_2"
     ],
     "shaderParameters": [
       "Card_Index"
-    ]
+    ],
+    "type": "Shader",
+    "defaultValue": 0
   },
   {
     "size": 6,
     "name": "Player_6_Card_1",
     "objectNames": [
-      "Player_6/Card_1"
+      "Avatar/Player_6/Card_1"
     ],
     "shaderParameters": [
       "Card_Index"
-    ]
+    ],
+    "type": "Shader",
+    "defaultValue": 0
   },
   {
     "size": 6,
     "name": "Player_6_Card_2",
     "objectNames": [
-      "Player_6/Card_2"
+      "Avatar/Player_6/Card_2"
     ],
     "shaderParameters": [
       "Card_Index"
-    ]
+    ],
+    "type": "Shader",
+    "defaultValue": 0
   },
   {
     "size": 6,
     "name": "Player_7_Card_1",
     "objectNames": [
-      "Player_7/Card_1"
+      "Avatar/Player_7/Card_1"
     ],
     "shaderParameters": [
       "Card_Index"
-    ]
+    ],
+    "type": "Shader",
+    "defaultValue": 0
   },
   {
     "size": 6,
     "name": "Player_7_Card_2",
     "objectNames": [
-      "Player_7/Card_2"
+      "Avatar/Player_7/Card_2"
     ],
     "shaderParameters": [
       "Card_Index"
-    ]
+    ],
+    "type": "Shader",
+    "defaultValue": 0
   },
   {
     "size": 6,
     "name": "Player_8_Card_1",
     "objectNames": [
-      "Player_8/Card_1"
+      "Avatar/Player_8/Card_1"
     ],
     "shaderParameters": [
       "Card_Index"
-    ]
+    ],
+    "type": "Shader",
+    "defaultValue": 0
   },
   {
     "size": 6,
     "name": "Player_8_Card_2",
     "objectNames": [
-      "Player_8/Card_2"
+      "Avatar/Player_8/Card_2"
     ],
     "shaderParameters": [
       "Card_Index"
-    ]
+    ],
+    "type": "Shader",
+    "defaultValue": 0
   },
   {
     "size": 11,
     "name": "Player_1_Pool",
     "objectNames": [
-      "Player_1/Pool"
+      "Avatar/Player_1/Pool"
     ],
     "shaderParameters": [
       "PoolValue"
-    ]
+    ],
+    "type": "Shader",
+    "defaultValue": 0
   },
   {
     "size": 11,
     "name": "Player_2_Pool",
     "objectNames": [
-      "Player_2/Pool"
+      "Avatar/Player_2/Pool"
     ],
     "shaderParameters": [
       "PoolValue"
-    ]
+    ],
+    "type": "Shader",
+    "defaultValue": 0
   },
   {
     "size": 11,
     "name": "Player_3_Pool",
     "objectNames": [
-      "Player_3/Pool"
+      "Avatar/Player_3/Pool"
     ],
     "shaderParameters": [
       "PoolValue"
-    ]
+    ],
+    "type": "Shader",
+    "defaultValue": 0
   },
   {
     "size": 11,
     "name": "Player_4_Pool",
     "objectNames": [
-      "Player_4/Pool"
+      "Avatar/Player_4/Pool"
     ],
     "shaderParameters": [
       "PoolValue"
-    ]
+    ],
+    "type": "Shader",
+    "defaultValue": 0
   },
   {
     "size": 11,
     "name": "Player_5_Pool",
     "objectNames": [
-      "Player_5/Pool"
+      "Avatar/Player_5/Pool"
     ],
     "shaderParameters": [
       "PoolValue"
-    ]
+    ],
+    "type": "Shader",
+    "defaultValue": 0
   },
   {
     "size": 11,
     "name": "Player_6_Pool",
     "objectNames": [
-      "Player_6/Pool"
+      "Avatar/Player_6/Pool"
     ],
     "shaderParameters": [
       "PoolValue"
-    ]
+    ],
+    "type": "Shader",
+    "defaultValue": 0
   },
   {
     "size": 11,
     "name": "Player_7_Pool",
     "objectNames": [
-      "Player_7/Pool"
+      "Avatar/Player_7/Pool"
     ],
     "shaderParameters": [
       "PoolValue"
-    ]
+    ],
+    "type": "Shader",
+    "defaultValue": 0
   },
   {
     "size": 11,
     "name": "Player_8_Pool",
     "objectNames": [
-      "Player_8/Pool"
+      "Avatar/Player_8/Pool"
     ],
     "shaderParameters": [
       "PoolValue"
-    ]
+    ],
+    "type": "Shader",
+    "defaultValue": 0
   }
 ]

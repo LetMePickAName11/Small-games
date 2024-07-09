@@ -50,6 +50,9 @@ export class ConfigureConfigurationComponent implements OnDestroy {
         msbName: "",
         bitIndex: 0,
         id: Date.now() + '_' + Math.random() + Math.random() * Math.random(),
+        defaultValue: 0,
+        type: 'Shader',
+        isPartOfSplit: false,
         color: 'rgb(255, 255, 255)',
         width: (this.maxBits - this.bitsUsed) / this.maxBits * 200 + '%' // (256 - this.bitsUsed) / 256 * 100 * 2 + '%'
       }
@@ -86,6 +89,9 @@ export class ConfigureConfigurationComponent implements OnDestroy {
               lsbName: "",
               msbName: "",
               bitIndex: 0,
+              defaultValue: 0,
+              type: 'Shader',
+              isPartOfSplit: false,
               id: Date.now() + '_' + Math.random() + Math.random() * Math.random(),
               color: 'rgb(255, 255, 255)',
               width: (this.maxBits - this.bitsUsed) / this.maxBits * 200 + '%' // (256 - this.bitsUsed) / 256 * 100 * 2 + '%'

@@ -3,7 +3,7 @@ import { OSCVrChatGameLogic } from "../../models/osc_vrchat_game_logic";
 
 export class TexasHoldThem implements OSCVrChatGameLogic {
 
-  constructor(){
+  constructor() {
     this.dealTheFlop();
   }
 
@@ -16,7 +16,14 @@ export class TexasHoldThem implements OSCVrChatGameLogic {
       Community_Card_5: this.getCard(null, 4),
       Community_Pool: this.getPool(null),
       Bet_Value: this.getBetValue(),
-      Player_Turn: this.getPlayerTurn(),
+      Player_1_Turn: this.getPlayerTurn(1),
+      Player_2_Turn: this.getPlayerTurn(2),
+      Player_3_Turn: this.getPlayerTurn(3),
+      Player_4_Turn: this.getPlayerTurn(4),
+      Player_5_Turn: this.getPlayerTurn(5),
+      Player_6_Turn: this.getPlayerTurn(6),
+      Player_7_Turn: this.getPlayerTurn(7),
+      Player_8_Turn: this.getPlayerTurn(8),
       Blind: this.getBlind(),
       Player_1_Card_1: this.getCard(0, 0),
       Player_1_Card_2: this.getCard(0, 1),
@@ -47,8 +54,8 @@ export class TexasHoldThem implements OSCVrChatGameLogic {
   private getBlind(): number {
     return this._gameInfo.blindIndex;
   }
-  private getPlayerTurn(): number {
-    return this._gameInfo.playerTurnIndex;
+  private getPlayerTurn(playerIndex: number): number {
+    return this._gameInfo.playerTurnIndex === playerIndex ? 1 : 0;
   }
   private getBetValue(): number {
     return this._gameInfo.communityBetSize;
@@ -62,7 +69,7 @@ export class TexasHoldThem implements OSCVrChatGameLogic {
   }
   private getCard(index: number | null, cardIndex: number): number {
     let card: Card;
-    
+
     if (index === null) {
       card = this._gameInfo.communityCards[cardIndex]!;
     }
@@ -74,7 +81,7 @@ export class TexasHoldThem implements OSCVrChatGameLogic {
       return this._hiddenCardIndex;
     }
 
-    return this._cardIndexMap.get([card.rank, card.suit])!;
+    return this._cardIndexMap.get(`${card.rank}_${card.suit}`)!;
   }
 
   public handleInput(inputString: string): GameLogicResponse {
@@ -91,21 +98,11 @@ export class TexasHoldThem implements OSCVrChatGameLogic {
       // Iterate through players who are out, all out or folded
       return this.playerTurn(inputNumber);
     }
-    if (this._gameInfo.gameState === 'The Turn'){
-      return this.dealTheTurn();
-    }
-    if (this._gameInfo.gameState === 'The River'){
-      return this.dealTheRiver();
-    }
-    if (this._gameInfo.gameState === 'Reveal') {
-      return this.reveal();
-    }
 
     return { updateVrc: false, message: null };
   }
 
   public debugInfo(): string {
-    
     return `
 Game state: ${this._gameInfo.gameState}
 Blind: ${this._gameInfo.blindIndex}
@@ -123,60 +120,61 @@ Input paused: ${this._gameInfo.pauseInput}
 Player 1:
  ${`Index: ${this._playerInfo[0]!.index}`}
  ${`Pool: ${this._playerInfo[0]!.pool}`}
- Cards:
+ Cards: ${this.handRank(this._playerInfo[0]!.cards).type} | high: ${this.handRank(this._playerInfo[0]!.cards).highValue} | kicker: ${this.handRank(this._playerInfo[0]!.cards).kickerValue}
     ${this._playerInfo[0]!.cards[0]!.rank} of ${this._playerInfo[0]!.cards[0]!.suit} is ${this._playerInfo[0]!.cards[0]!.isFaceDown ? 'facedown' : 'faceup'}
     ${this._playerInfo[0]!.cards[1]!.rank} of ${this._playerInfo[0]!.cards[1]!.suit} is ${this._playerInfo[0]!.cards[1]!.isFaceDown ? 'facedown' : 'faceup'}
 
 Player 2:
  ${`Index: ${this._playerInfo[1]!.index}`}
  ${`Pool: ${this._playerInfo[1]!.pool}`}
- Cards:
+ Cards: ${this.handRank(this._playerInfo[1]!.cards).type} | high: ${this.handRank(this._playerInfo[1]!.cards).highValue} | kicker: ${this.handRank(this._playerInfo[1]!.cards).kickerValue}
     ${this._playerInfo[1]!.cards[0]!.rank} of ${this._playerInfo[1]!.cards[0]!.suit} is ${this._playerInfo[1]!.cards[0]!.isFaceDown ? 'facedown' : 'faceup'}
     ${this._playerInfo[1]!.cards[1]!.rank} of ${this._playerInfo[1]!.cards[1]!.suit} is ${this._playerInfo[1]!.cards[1]!.isFaceDown ? 'facedown' : 'faceup'}
 
 Player 3:
  ${`Index: ${this._playerInfo[2]!.index}`}
  ${`Pool: ${this._playerInfo[2]!.pool}`}
- Cards:
+ Cards: ${this.handRank(this._playerInfo[2]!.cards).type} | high: ${this.handRank(this._playerInfo[2]!.cards).highValue} | kicker: ${this.handRank(this._playerInfo[2]!.cards).kickerValue}
     ${this._playerInfo[2]!.cards[0]!.rank} of ${this._playerInfo[2]!.cards[0]!.suit} is ${this._playerInfo[2]!.cards[0]!.isFaceDown ? 'facedown' : 'faceup'}
     ${this._playerInfo[2]!.cards[1]!.rank} of ${this._playerInfo[2]!.cards[1]!.suit} is ${this._playerInfo[2]!.cards[1]!.isFaceDown ? 'facedown' : 'faceup'}
 
-Player 4:
+Player 4: 
  ${`Index: ${this._playerInfo[3]!.index}`}
  ${`Pool: ${this._playerInfo[3]!.pool}`}
- Cards:
+ Cards: ${this.handRank(this._playerInfo[3]!.cards).type} | high: ${this.handRank(this._playerInfo[3]!.cards).highValue} | kicker: ${this.handRank(this._playerInfo[3]!.cards).kickerValue}
     ${this._playerInfo[3]!.cards[0]!.rank} of ${this._playerInfo[3]!.cards[0]!.suit} is ${this._playerInfo[3]!.cards[0]!.isFaceDown ? 'facedown' : 'faceup'}
     ${this._playerInfo[3]!.cards[1]!.rank} of ${this._playerInfo[3]!.cards[1]!.suit} is ${this._playerInfo[3]!.cards[1]!.isFaceDown ? 'facedown' : 'faceup'}
 
-Player 5:
+Player 5: 
  ${`Index: ${this._playerInfo[4]!.index}`}
  ${`Pool: ${this._playerInfo[4]!.pool}`}
- Cards:
+ Cards: ${this.handRank(this._playerInfo[4]!.cards).type} | high: ${this.handRank(this._playerInfo[4]!.cards).highValue} | kicker: ${this.handRank(this._playerInfo[4]!.cards).kickerValue}
     ${this._playerInfo[4]!.cards[0]!.rank} of ${this._playerInfo[4]!.cards[0]!.suit} is ${this._playerInfo[4]!.cards[0]!.isFaceDown ? 'facedown' : 'faceup'}
     ${this._playerInfo[4]!.cards[1]!.rank} of ${this._playerInfo[4]!.cards[1]!.suit} is ${this._playerInfo[4]!.cards[1]!.isFaceDown ? 'facedown' : 'faceup'}
 
-Player 6:
+Player 6: 
  ${`Index: ${this._playerInfo[5]!.index}`}
  ${`Pool: ${this._playerInfo[5]!.pool}`}
- Cards:
+ Cards: ${this.handRank(this._playerInfo[5]!.cards).type} | high: ${this.handRank(this._playerInfo[5]!.cards).highValue} | kicker: ${this.handRank(this._playerInfo[5]!.cards).kickerValue}
     ${this._playerInfo[5]!.cards[0]!.rank} of ${this._playerInfo[5]!.cards[0]!.suit} is ${this._playerInfo[5]!.cards[0]!.isFaceDown ? 'facedown' : 'faceup'}
     ${this._playerInfo[5]!.cards[1]!.rank} of ${this._playerInfo[5]!.cards[1]!.suit} is ${this._playerInfo[5]!.cards[1]!.isFaceDown ? 'facedown' : 'faceup'}
 
-Player 7:
+Player 7: 
  ${`Index: ${this._playerInfo[6]!.index}`}
  ${`Pool: ${this._playerInfo[6]!.pool}`}
- Cards:
+ Cards: ${this.handRank(this._playerInfo[6]!.cards).type} | high: ${this.handRank(this._playerInfo[6]!.cards).highValue} | kicker: ${this.handRank(this._playerInfo[6]!.cards).kickerValue}
     ${this._playerInfo[6]!.cards[0]!.rank} of ${this._playerInfo[6]!.cards[0]!.suit} is ${this._playerInfo[6]!.cards[0]!.isFaceDown ? 'facedown' : 'faceup'}
     ${this._playerInfo[6]!.cards[1]!.rank} of ${this._playerInfo[6]!.cards[1]!.suit} is ${this._playerInfo[6]!.cards[1]!.isFaceDown ? 'facedown' : 'faceup'}
 
-Player 8:
+Player 8: 
  ${`Index: ${this._playerInfo[7]!.index}`}
  ${`Pool: ${this._playerInfo[7]!.pool}`}
- Cards:
+ Cards: ${this.handRank(this._playerInfo[7]!.cards).type} | high: ${this.handRank(this._playerInfo[7]!.cards).highValue} | kicker: ${this.handRank(this._playerInfo[7]!.cards).kickerValue}
     ${this._playerInfo[7]!.cards[0]!.rank} of ${this._playerInfo[7]!.cards[0]!.suit} is ${this._playerInfo[7]!.cards[0]!.isFaceDown ? 'facedown' : 'faceup'}
     ${this._playerInfo[7]!.cards[1]!.rank} of ${this._playerInfo[7]!.cards[1]!.suit} is ${this._playerInfo[7]!.cards[1]!.isFaceDown ? 'facedown' : 'faceup'}
     `;
   }
+
 
 
 
@@ -204,7 +202,9 @@ Player 8:
     this._playerInfo.forEach((p) => {
       p.bet = 0;
       p.cards = [this.dealCard(), this.dealCard()];
+      p.cards.forEach(c => c.isFaceDown = false)
     });
+
     // Mandatory blind bet
     this.bet(blindIndex, 5);
     // Wait for animations and then start
@@ -302,30 +302,31 @@ Player 8:
 
   private playerTurn(inputNumber: number): GameLogicResponse {
     const player = this._playerInfo[this._gameInfo.playerTurnIndex]!;
+    let gameLogicResponse: GameLogicResponse | null = null;
 
     if (player.gameState === 'Picking') {
       // Call
       if (inputNumber === 1) {
-        this.iteratePlayerIndex();
         this.bet(player.index, this._gameInfo.communityBetSize);
+        gameLogicResponse = this.iteratePlayerIndex();
       } // Raise
       else if (inputNumber === 2) {
         player.gameState = 'Raising';
       } // All in
       else if (inputNumber === 3) {
         this.bet(player.index, player.pool);
-        this.iteratePlayerIndex();
+        gameLogicResponse = this.iteratePlayerIndex();
         player.gameState = 'AllOut';
       } // Fold
       else if (inputNumber === 4) {
-        this.iteratePlayerIndex();
+        gameLogicResponse = this.iteratePlayerIndex();
         player.gameState = 'Out';
       }
     }
     else if (player.gameState === 'Raising') {
       // Increment amount
       if (inputNumber === 0) {
-        if(player.raiseInfo === null){
+        if (player.raiseInfo === null) {
           player.raiseInfo = 1;
         }
         else {
@@ -344,20 +345,24 @@ Player 8:
       } // Confirm
       else if (inputNumber === 3) {
         this.bet(player.index, player.bet);
-        this.iteratePlayerIndex();
+        gameLogicResponse = this.iteratePlayerIndex();
       }
     }
     else {
       throw Error('Something broke boss-man');
     }
 
-    return {
-      updateVrc: true,
-      message: null
+    if (gameLogicResponse === null) {
+      gameLogicResponse = {
+        updateVrc: true,
+        message: null
+      }
     }
+
+    return gameLogicResponse;
   }
 
-  private iteratePlayerIndex(): void {
+  private iteratePlayerIndex(): GameLogicResponse | null {
     // Fix so player index is iterated correctly
     const currentIndex: number = this._gameInfo.playerTurnIndex;
     this._gameInfo.playerTurnIndex = this._gameInfo.playerTurnIndex + 1 === 8 ? 0 : this._gameInfo.playerTurnIndex + 1;
@@ -365,14 +370,19 @@ Player 8:
     if (this._gameInfo.blindIndex === currentIndex) {
       if (this._gameInfo.communityCards[4]!.isFaceDown === false) {
         this._gameInfo.gameState = 'Reveal';
+        return this.reveal();
       }
       else if (this._gameInfo.communityCards[3]!.isFaceDown === false) {
         this._gameInfo.gameState = 'The River';
+        return this.dealTheRiver();
       }
       else {
         this._gameInfo.gameState = 'The Turn';
+        return this.dealTheTurn();
       }
     }
+
+    return null;
   }
 
   private revealCommunityCard(): void {
@@ -385,14 +395,13 @@ Player 8:
 
   private handRank(hand: Array<Card>): { type: number; highValue: number; kickerValue: number | null; } {
     const sorted: Array<Card> = [...hand, ...this._gameInfo.communityCards].sort((a: Card, b: Card) => b.value - a.value);
-  
     const kinds: { [key in string]: Array<Card> } = this.getKindsFromCards(sorted);
     const straight: Array<Card> = this.getStraightFromCards(sorted);
-    const flush: Array<Card> | undefined = Object.values(kinds).find((v: Array<Card>) => v.length >= 5);
+    const flush: Array<Card> = Object.values(kinds).find((v: Array<Card>) => v.length >= 5) ?? [];
     const fourOfAKind = Object.values(kinds).find((v) => v.length === 4);
     const ThreeOfAKind = Object.values(kinds).filter((v) => v.length === 3);
     const TwoOfAKind = Object.values(kinds).filter((v) => v.length === 2);
-  
+
     const getHighValue = (cards: Array<Card>): number => cards[0]?.value || 0;
     const getKickerValue = (cards: Array<Card>): number | null => {
       const handValues = hand.map(card => card.value);
@@ -403,9 +412,9 @@ Player 8:
       }
       return null;
     };
-  
+
     // Royal flush
-    if (straight && flush && getHighValue(straight) === 14) {
+    if (straight.length === 5 && flush.length >= 4 && straight.every((card: Card) => card.suit === flush[0]?.suit) && getHighValue(straight) === 14) {
       return {
         type: 9,
         highValue: getHighValue(straight),
@@ -413,7 +422,7 @@ Player 8:
       };
     }
     // Straight flush
-    if (straight && flush) {
+    if (straight.length === 5 && flush.length >= 4 && straight.every((card: Card) => card.suit === flush[0]?.suit)) {
       return {
         type: 8,
         highValue: getHighValue(straight),
@@ -437,7 +446,7 @@ Player 8:
       };
     }
     // Flush
-    if (flush) {
+    if (flush.length >= 5) {
       return {
         type: 5,
         highValue: getHighValue(flush),
@@ -445,7 +454,7 @@ Player 8:
       };
     }
     // Straight
-    if (straight) {
+    if (straight.length === 5) {
       return {
         type: 4,
         highValue: getHighValue(straight),
@@ -480,70 +489,35 @@ Player 8:
     return {
       type: 0,
       highValue: getHighValue(sorted),
-      kickerValue: getKickerValue(sorted)
+      kickerValue: getKickerValue(hand)
     };
   }
 
   private getKindsFromCards(sorted: Array<Card>): { [key in string]: Array<Card> } {
-    return Object.entries({
-      Ace: sorted.filter((card: Card) => card.rank === 'Ace'),
-      Two: sorted.filter((card: Card) => card.rank === 'Two'),
-      Three: sorted.filter((card: Card) => card.rank === 'Three'),
-      Four: sorted.filter((card: Card) => card.rank === 'Four'),
-      Five: sorted.filter((card: Card) => card.rank === 'Five'),
-      Six: sorted.filter((card: Card) => card.rank === 'Six'),
-      Seven: sorted.filter((card: Card) => card.rank === 'Seven'),
-      Eight: sorted.filter((card: Card) => card.rank === 'Eight'),
-      Nine: sorted.filter((card: Card) => card.rank === 'Nine'),
-      Ten: sorted.filter((card: Card) => card.rank === 'Ten'),
-      Jack: sorted.filter((card: Card) => card.rank === 'Jack'),
-      Queen: sorted.filter((card: Card) => card.rank === 'Queen'),
-      King: sorted.filter((card: Card) => card.rank === 'King'),
-    }).reduce((acc, cv) => {
-      if (cv[1].length === 0) {
-        return acc;
-      }
-
-      acc[cv[0]] = cv[1];
+    return sorted.reduce((acc, card) => {
+      if (!acc[card.rank]) {
+        acc[card.rank] = []
+      };
+      acc[card.rank]!.push(card);
       return acc;
     }, {} as { [key in string]: Array<Card> });
   }
 
   private getStraightFromCards(sorted: Array<Card>): Array<Card> {
     const uniqueSorted = Array.from(new Set(sorted.map(card => card.value))).sort((a, b) => b - a);
-    const straight: Array<Card> = [];
-
     for (let i = 0; i <= uniqueSorted.length - 5; i++) {
-      const first = uniqueSorted[i]!;
-      const second = uniqueSorted[i + 1]!;
-      const third = uniqueSorted[i + 2]!;
-      const fourth = uniqueSorted[i + 3]!;
-      const fifth = uniqueSorted[i + 4]!;
-
-      if (first + 1 === second && first + 2 === third && first + 3 === fourth && first + 4 === fifth) {
-        straight.push(
-          sorted.find(card => card.value === first)!,
-          sorted.find(card => card.value === second)!,
-          sorted.find(card => card.value === third)!,
-          sorted.find(card => card.value === fourth)!,
-          sorted.find(card => card.value === fifth)!
-        );
-        break;
+      if (uniqueSorted.slice(i, i + 5).every((value, idx, arr) => value === arr[0]! - idx)) {
+        return sorted.filter(card => uniqueSorted.slice(i, i + 5).includes(card.value));
       }
     }
 
     // Check for wheel straight (A-2-3-4-5)
-    if (!straight.length && uniqueSorted.includes(14) && uniqueSorted.includes(2) && uniqueSorted.includes(3) && uniqueSorted.includes(4) && uniqueSorted.includes(5)) {
-      straight.push(
-        sorted.find(card => card.value === 5)!,
-        sorted.find(card => card.value === 4)!,
-        sorted.find(card => card.value === 3)!,
-        sorted.find(card => card.value === 2)!,
-        sorted.find(card => card.value === 14)! // Ace
-      );
+    const wheel = [14, 5, 4, 3, 2];
+    if (wheel.every(value => uniqueSorted.includes(value))) {
+      return sorted.filter(card => wheel.includes(card.value));
     }
 
-    return straight;
+    return [];
   }
 
   private bet(playerIndex: number, amount: number) {
@@ -553,17 +527,16 @@ Player 8:
     this._gameInfo.communityPool += amount;
   }
 
-
   private generateDeck(): Array<Card> {
     const deck: Array<Card> = [];
     const random = this.seedRandom(Date.now() * 3.1231 * Math.random() + 2);
 
-    for (const [rank, suit] of this._cardIndexMap.keys()) {
+    for (const key of this._cardIndexMap.keys()) {
       deck.push({
-        rank: rank,
-        suit: suit,
+        rank: key.split('_')[0]! as CardRank,
+        suit: key.split('_')[1]! as CardSuit,
         isFaceDown: true,
-        value: this._cardRankValueMap.get(rank)!
+        value: this._cardRankValueMap.get(key.split('_')[0]! as CardRank)!
       });
     }
 
@@ -675,59 +648,59 @@ Player 8:
     gameState: 'The Flop'
   };
 
-  private readonly _cardIndexMap: Map<[rank: CardRank, suit: CardSuit], number> = new Map<[rank: CardRank, suit: CardSuit], number>([
-    [['Ace', 'Club'], 0],
-    [['Two', 'Club'], 1],
-    [['Three', 'Club'], 2],
-    [['Four', 'Club'], 3],
-    [['Five', 'Club'], 4],
-    [['Six', 'Club'], 5],
-    [['Seven', 'Club'], 6],
-    [['Eight', 'Club'], 7],
-    [['Nine', 'Club'], 8],
-    [['Ten', 'Club'], 9],
-    [['Jack', 'Club'], 10],
-    [['Queen', 'Club'], 11],
-    [['King', 'Club'], 12],
-    [['Ace', 'Diamond'], 13],
-    [['Two', 'Diamond'], 14],
-    [['Three', 'Diamond'], 15],
-    [['Four', 'Diamond'], 16],
-    [['Five', 'Diamond'], 17],
-    [['Six', 'Diamond'], 18],
-    [['Seven', 'Diamond'], 19],
-    [['Eight', 'Diamond'], 20],
-    [['Nine', 'Diamond'], 21],
-    [['Ten', 'Diamond'], 22],
-    [['Jack', 'Diamond'], 23],
-    [['Queen', 'Diamond'], 24],
-    [['King', 'Diamond'], 25],
-    [['Ace', 'Heart'], 26],
-    [['Two', 'Heart'], 27],
-    [['Three', 'Heart'], 28],
-    [['Four', 'Heart'], 29],
-    [['Five', 'Heart'], 30],
-    [['Six', 'Heart'], 31],
-    [['Seven', 'Heart'], 32],
-    [['Eight', 'Heart'], 33],
-    [['Nine', 'Heart'], 34],
-    [['Ten', 'Heart'], 35],
-    [['Jack', 'Heart'], 36],
-    [['Queen', 'Heart'], 37],
-    [['King', 'Heart'], 38],
-    [['Ace', 'spade'], 39],
-    [['Two', 'spade'], 40],
-    [['Three', 'spade'], 41],
-    [['Four', 'spade'], 42],
-    [['Five', 'spade'], 43],
-    [['Six', 'spade'], 44],
-    [['Seven', 'spade'], 45],
-    [['Eight', 'spade'], 46],
-    [['Nine', 'spade'], 47],
-    [['Ten', 'spade'], 48],
-    [['Jack', 'spade'], 49],
-    [['Queen', 'spade'], 50],
-    [['King', 'spade'], 51],
+  private readonly _cardIndexMap: Map<string, number> = new Map<string, number>([
+    ['Ace_Club', 0],
+    ['Two_Club', 1],
+    ['Three_Club', 2],
+    ['Four_Club', 3],
+    ['Five_Club', 4],
+    ['Six_Club', 5],
+    ['Seven_Club', 6],
+    ['Eight_Club', 7],
+    ['Nine_Club', 8],
+    ['Ten_Club', 9],
+    ['Jack_Club', 10],
+    ['Queen_Club', 11],
+    ['King_Club', 12],
+    ['Ace_Diamond', 13],
+    ['Two_Diamond', 14],
+    ['Three_Diamond', 15],
+    ['Four_Diamond', 16],
+    ['Five_Diamond', 17],
+    ['Six_Diamond', 18],
+    ['Seven_Diamond', 19],
+    ['Eight_Diamond', 20],
+    ['Nine_Diamond', 21],
+    ['Ten_Diamond', 22],
+    ['Jack_Diamond', 23],
+    ['Queen_Diamond', 24],
+    ['King_Diamond', 25],
+    ['Ace_Heart', 26],
+    ['Two_Heart', 27],
+    ['Three_Heart', 28],
+    ['Four_Heart', 29],
+    ['Five_Heart', 30],
+    ['Six_Heart', 31],
+    ['Seven_Heart', 32],
+    ['Eight_Heart', 33],
+    ['Nine_Heart', 34],
+    ['Ten_Heart', 35],
+    ['Jack_Heart', 36],
+    ['Queen_Heart', 37],
+    ['King_Heart', 38],
+    ['Ace_Spade', 39],
+    ['Two_Spade', 40],
+    ['Three_Spade', 41],
+    ['Four_Spade', 42],
+    ['Five_Spade', 43],
+    ['Six_Spade', 44],
+    ['Seven_Spade', 45],
+    ['Eight_Spade', 46],
+    ['Nine_Spade', 47],
+    ['Ten_Spade', 48],
+    ['Jack_Spade', 49],
+    ['Queen_Spade', 50],
+    ['King_Spade', 51],
   ]);
   private readonly _hiddenCardIndex: number = 52;
   private readonly _cardRankValueMap = new Map<CardRank, number>([
@@ -758,7 +731,7 @@ interface PlayerInfo {
 }
 
 type CardRank = 'Ace' | 'Two' | 'Three' | 'Four' | 'Five' | 'Six' | 'Seven' | 'Eight' | 'Nine' | 'Ten' | 'Jack' | 'Queen' | 'King';
-type CardSuit = 'Club' | 'Diamond' | 'Heart' | 'spade';
+type CardSuit = 'Club' | 'Diamond' | 'Heart' | 'Spade';
 
 interface Card {
   rank: CardRank;

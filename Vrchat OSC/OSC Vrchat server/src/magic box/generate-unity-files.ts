@@ -14,6 +14,10 @@ import { BlendTree } from '../models/unity_yaml/blendTree';
 import { AnimatorStateTransition } from '../models/unity_yaml/animatorStateTransition';
 import { UnityYamlTag, YamlDocument } from './yaml-parser';
 import { AnimatorStateMachine } from '../models/unity_yaml/animatorStateMachine';
+import { Color } from '../models/unity_yaml/color';
+import { MTexEnvs } from '../models/unity_yaml/mTexEnvs';
+import { Material } from '../models/unity_yaml/material';
+import { UnityShaderMetadata } from '../models/unity_yaml/unityShaderMetadata';
 
 export class GenerateUnityFiles {
   public generateFiles(): void {
@@ -28,8 +32,8 @@ export class GenerateUnityFiles {
 
 
 
-  private generateUniqueId(): number {
-    return Math.floor(Math.random() * (999999999 - 100000000 + 1)) + 100000000;
+  private generateUniqueId(): string {
+    return (Math.floor(Math.random() * (999999999 - 100000000 + 1)) + 100000000).toString();
   }
 
   private generateGuid(): string {
@@ -95,25 +99,51 @@ export class GenerateUnityFiles {
     // Sort configData by size in descending order
     const sortedConfigData = configData.sort((a, b) => b.size - a.size);
 
-    for (const bitAllocation of sortedConfigData) {
-      const range: { start: number, end: number } = {
-        start: startIndex,
-        end: startIndex + bitAllocation.size - 1
-      };
+    // Iterate through shader bits (these need to be chunked)
+    for (const bitAllocation of sortedConfigData.filter(cd => cd.type === 'Shader')) {
+      let remainingSize = bitAllocation.size;
+      let currentStartIndex = startIndex;
+      let index = 0;
 
-      const res: BitAllocation = {
-        ...bitAllocation,
-        range: range,
-        msbName: this.bitIndexToEightBitName[(range.start - range.start % 8) / 8]!,
-        lsbName: this.bitIndexToEightBitName[(range.start - range.start % 8) / 8 + 1]!,
-        bitIndex: range.start % 8,
-        shaderParameters: [`LSB${bitAllocation.shaderParameters}`, `MSB${bitAllocation.shaderParameters}`]
-      };
-      startIndex += bitAllocation.size;
-      bitAllocations.push(res);
+      while (remainingSize > 0) {
+        // Determine the size for the current chunk (maximum 8 bits)
+        const currentChunkSize = Math.min(remainingSize, 8 - (currentStartIndex % 8));
+
+        const range: { start: number, end: number } = {
+          start: currentStartIndex,
+          end: currentStartIndex + currentChunkSize - 1
+        };
+
+        const res: BitAllocation = {
+          ...bitAllocation,
+          size: currentChunkSize,
+          range: range,
+          msbName: this.bitIndexToEightBitName[(range.start - range.start % 8) / 8]!,
+          lsbName: this.bitIndexToEightBitName[(range.start - range.start % 8) / 8 + 1]!,
+          bitIndex: range.start % 8,
+          shaderParameters: [`LSB${bitAllocation.shaderParameters}_${index}`, `MSB${bitAllocation.shaderParameters}_${index}`],
+          isPartOfSplit: bitAllocation.size > 8 // Flag to indicate part of a split
+        };
+
+        bitAllocations.push(res);
+
+        // Update the indices and remaining size
+        remainingSize -= currentChunkSize;
+        currentStartIndex += currentChunkSize;
+
+        // Ensure cumulative total doesn't inadvertently overflow
+        startIndex = currentStartIndex;
+        index += 1;
+      }
     }
 
-    const allocatedBitsSize: number = bitAllocations.reduce((acc, val) => acc + val.size, 0);
+    if(bitAllocations[bitAllocations.length-1]!.bitIndex + bitAllocations[bitAllocations.length-1]!.size === 8){
+      const lsbName = bitAllocations[bitAllocations.length-1]!.lsbName;
+      const msbName = bitAllocations[bitAllocations.length-1]!.msbName;
+      bitAllocations.filter((bitAllocation: BitAllocation) => bitAllocation.lsbName === lsbName).forEach((bitAllocation: BitAllocation) => bitAllocation.lsbName = msbName);
+    }
+
+    let allocatedBitsSize: number = bitAllocations.reduce((acc, val) => acc + val.size, 0);
     const allocatedInputBitsSize: number = inputData.length; // Input data is array of 1-bits
     const overflowBits: number = allocatedBitsSize % 8;
 
@@ -141,6 +171,9 @@ export class GenerateUnityFiles {
             bitIndex: 0,
             objectNames: overflow.objectNames,
             shaderParameters: overflow.shaderParameters,
+            type: 'Shader',
+            defaultValue: overflow.defaultValue,
+            isPartOfSplit: false
           });
         }
       });
@@ -149,6 +182,28 @@ export class GenerateUnityFiles {
       bitAllocations.length = 0;
       bitAllocations.push(...nonOverflows);
     }
+
+    startIndex += overflowBits;
+
+    for (const bitAllocation of sortedConfigData.filter(cd => cd.type === 'Default')) {
+      const range: { start: number, end: number } = {
+        start: startIndex,
+        end: startIndex + bitAllocation.size - 1
+      };
+
+      const res: BitAllocation = {
+        ...bitAllocation,
+        range: range,
+        msbName: `Default_${bitAllocation.name}`,
+        lsbName: `Default_${bitAllocation.name}`,
+        bitIndex: 0,
+        shaderParameters: [],
+        isPartOfSplit: false
+      };
+      startIndex += bitAllocation.size;
+      bitAllocations.push(res);
+    }
+    allocatedBitsSize = bitAllocations.reduce((acc, val) => acc + val.size, 0);
 
     if (allocatedBitsSize + allocatedInputBitsSize > 256) {
       throw new Error(`Too many bits allocated (limit 256): ${allocatedBitsSize} + ${allocatedInputBitsSize}`);
@@ -163,13 +218,24 @@ export class GenerateUnityFiles {
 
     const chunks: Array<string> = [];
     const overflowingBits: Array<string> = [];
+    const defaultBits: Array<{ name: string, defaultValue: number }> = [];
 
     dataConfigurations.forEach((data: BitAllocation) => {
       if (data.lsbName.includes('Overflow')) {
-        if (!overflowingBits.includes(data.lsbName)) {
-          overflowingBits.push(data.lsbName);
+        if (overflowingBits.includes(data.lsbName)) {
+          throw Error(`Dublicate data.json value: ${data}`);
         }
 
+        overflowingBits.push(data.lsbName);
+        return;
+      }
+
+      if (data.lsbName.includes('Default')) {
+        if (defaultBits.some(db => db.name === data.lsbName)) {
+          throw Error(`Dublicate data.json value: ${data}`);
+        }
+
+        defaultBits.push({ name: data.lsbName, defaultValue: data.defaultValue });
         return;
       }
 
@@ -196,7 +262,7 @@ export class GenerateUnityFiles {
           m_Script: { fileID: -1506855854, guid: '67cc4cb7839cd3741b63733d5adf0442', type: 3 }, // hardcoded but probably needs to be dynamic
           m_Name: 'VRCExpressionParameters',
           m_EditorClassIdentifier: null,
-          parameters: chunks.map((chunk) => {
+          parameters: chunks.map((chunk: string) => {
             return {
               name: chunk,
               valueType: 0, // 0 == 8-bit integer
@@ -204,7 +270,7 @@ export class GenerateUnityFiles {
               defaultValue: 0,
               networkSynced: 1
             }
-          }).concat(overflowingBits.map((overflow) => {
+          }).concat(overflowingBits.map((overflow: string) => {
             return {
               name: overflow,
               valueType: 2, // 2 == boolean
@@ -212,7 +278,15 @@ export class GenerateUnityFiles {
               defaultValue: 0,
               networkSynced: 1
             }
-          }).concat(dataInputs.map((input) => {
+          })).concat(defaultBits.map((defaults: { name: string, defaultValue: number }) => {
+            return {
+              name: defaults.name,
+              valueType: 2, // 2 == boolean
+              saved: 0,
+              defaultValue: defaults.defaultValue,
+              networkSynced: 1
+            }
+          }).concat(dataInputs.map((input: string) => {
             return {
               name: `!${input}`,
               valueType: 2, // 2 == boolean
@@ -275,7 +349,7 @@ export class GenerateUnityFiles {
       };
     };
 
-    const generateGenericBinding = (pathId: number, attributeId: number): GenericBinding => {
+    const generateGenericBinding = (pathId: string, attributeId: string): GenericBinding => {
       return {
         serializedVersion: 2,
         path: pathId,
@@ -378,12 +452,12 @@ export class GenerateUnityFiles {
 
     const generateAnimationPairData = (suffix: string, allocations: Array<BitAllocation>, maxValue: number): [FloatCurve[], GenericBinding[], EditorCurve[]] => {
       const defaultValue: number = suffix === 'Start' ? 0 : maxValue;
-      const attributeId: number = this.generateUniqueId();
-      const pathId: number = this.generateUniqueId();
+      const attributeId: string = this.generateUniqueId();
+      const pathId: string = this.generateUniqueId();
 
       return [
         allocations.flatMap((allocation: BitAllocation): Array<FloatCurve> => {
-          return allocation.objectNames.map((path: string) => generateFloatCurve(defaultValue, `_${allocation.shaderParameters[0]}`, path));
+          return allocation.objectNames.map((path: string) => generateFloatCurve(defaultValue, `_${allocation.shaderParameters[0]}`, this.removeFirstOccurrence(path, '/')));
         }),
 
         allocations.flatMap((allocation: BitAllocation): Array<GenericBinding> => {
@@ -391,7 +465,7 @@ export class GenerateUnityFiles {
         }),
 
         allocations.flatMap((allocation: BitAllocation): Array<EditorCurve> => {
-          return allocation.objectNames.map((path: string) => generateEditorCurves(defaultValue, `_${allocation.shaderParameters[0]}`, path));
+          return allocation.objectNames.map((path: string) => generateEditorCurves(defaultValue, `_${allocation.shaderParameters[0]}`, this.removeFirstOccurrence(path, '/')));
         })
       ];
     }
@@ -482,7 +556,7 @@ export class GenerateUnityFiles {
       }
     }
 
-    const generateAnimatorLayer = (name: string, animatorStateMachineId: number): AnimationLayer => {
+    const generateAnimatorLayer = (name: string, animatorStateMachineId: string): AnimationLayer => {
       return {
         serializedVersion: 5,
         m_Name: name,
@@ -512,7 +586,7 @@ export class GenerateUnityFiles {
       };
     }
 
-    const generateAnimatorState = (animatorStateTransitionId: number, blendTreeId: number): AnimatorState => {
+    const generateAnimatorState = (animatorStateTransitionId: string, blendTreeId: string): AnimatorState => {
       return {
         AnimatorState: {
           serializedVersion: 6,
@@ -543,7 +617,7 @@ export class GenerateUnityFiles {
       };
     }
 
-    const generateAnimatorStateMachine = (name: string, animatorStateId: number): AnimatorStateMachine => {
+    const generateAnimatorStateMachine = (name: string, animatorStateId: string): AnimatorStateMachine => {
       return {
         AnimatorStateMachine: {
           serializedVersion: 6,
@@ -649,7 +723,7 @@ export class GenerateUnityFiles {
     const yamls: Array<YamlDocument> = [
       {
         tag: this.documentNameToIdentifier.get('AnimatorController')!,
-        anchor: 9100000,
+        anchor: '9100000',
         data: {
           AnimatorController: generateAnimatorController(animatorParameters, animatorLayers)
         }
@@ -658,10 +732,10 @@ export class GenerateUnityFiles {
 
     for (let i = 0; i < jsonData.name.length; i++) {
       const name: string = jsonData.name[i]!;
-      const animatorStateId: number = jsonData.animatorStateId[i]!;
-      const animatorStateTransitionId: number = jsonData.animatorStateTransitionId[i]!;
-      const animatorStateMachineId: number  = jsonData.animatorStateMachineId[i]!;
-      const blendTreeId: number = jsonData.blendTreeId[i]!;
+      const animatorStateId: string = jsonData.animatorStateId[i]!;
+      const animatorStateTransitionId: string = jsonData.animatorStateTransitionId[i]!;
+      const animatorStateMachineId: string = jsonData.animatorStateMachineId[i]!;
+      const blendTreeId: string = jsonData.blendTreeId[i]!;
       const minT: number = jsonData.minThreshold[i]!;
       const maxT: number = jsonData.maxThreshold[i]!;
       const startAnimationMetaName: string = `${this.outputExternalDirectory}Animations/${animationMetaNames.filter((v: string) => v === `${name}_Start.anim.meta`).find(v => v.includes('_Start'))}`;
@@ -672,7 +746,6 @@ export class GenerateUnityFiles {
       const motionEndGuid: string = FileService.findInFile(endAnimationMetaName, /guid: ([a-f0-9]+)/g).replace('guid: ', '');
       const motionStartFileId: string = FileService.findInFile(startAnimationName, /--- !u!74 &([0-9]*)/g).replace('--- !u!74 &', '');
       const motionEndFileId: string = FileService.findInFile(endAnimationName, /--- !u!74 &([0-9]*)/g).replace('--- !u!74 &', '');
-      console.log(motionStartFileId)
 
       yamls.push({
         tag: this.documentNameToIdentifier.get('AnimatorStateMachine')!,
@@ -716,68 +789,155 @@ export class GenerateUnityFiles {
     const data: Array<Array<string>> = FileService.getFileJson(this.outputInternalDirectory + 'data_game_object_shader_parameter_map.json');
     const data2: Array<BitAllocation> = FileService.getFileJson(this.outputInternalDirectory + 'data_mapped.json');
 
+    const generateMaterial = (name: string, shaderGuid: string, m_TexEnvs: Array<{ [key in string]: MTexEnvs }>, m_Ints: Array<{ [key in string]: number }>, m_Floats: Array<{ [key in string]: number }>, m_Colors: Array<{ [key in string]: Color }>): Material => {
+      return {
+        Material: {
+          serializedVersion: 8,
+          m_ObjectHideFlags: 0,
+          m_CorrespondingSourceObject: { fileID: 0 },
+          m_PrefabInstance: { fileID: 0 },
+          m_PrefabAsset: { fileID: 0 },
+          m_Name: name,
+          m_Shader: { fileID: 4800000, guid: shaderGuid, type: 3 },
+          m_Parent: { fileID: 0 },
+          m_ModifiedSerializedProperties: 0,
+          m_ValidKeywords: [],
+          m_InvalidKeywords: [],
+          m_LightmapFlags: 4,
+          m_EnableInstancingVariants: 0,
+          m_DoubleSidedGI: 0,
+          m_CustomRenderQueue: -1,
+          stringTagMap: {},
+          disabledShaderPasses: [],
+          m_LockedProperties: null,
+          m_SavedProperties: [{
+            serializedVersion: 3,
+            m_TexEnvs: m_TexEnvs,
+            m_Ints: m_Ints,
+            m_Floats: m_Floats,
+            m_Colors: m_Colors
+          }],
+          m_BuildTextureStacks: []
+        }
+      }
+    }
+
     for (const [index, [key, values]] of Object.entries(data).entries()) {
       const shaderProperties: Array<string> = [];
       const shaderVariables: Array<string> = [];
-      const matFloats: Array<string> = [];
+      const m_TexEnvs: Array<{ [key in string]: MTexEnvs }> = [
+        {
+          ['_MainTex']: {
+            m_Texture: { fileID: 0 },
+            m_Scale: { x: 1, y: 1 },
+            m_Offset: { x: 0, y: 0 }
+          }
+        }
+      ];
+      const m_Ints: Array<{ [key in string]: number }> = [];
+      const m_Floats: Array<{ [key in string]: number }> = [];
+      const m_Colors: Array<{ [key in string]: Color }> = [
+        {
+          _Color: {
+            r: 1,
+            g: 1,
+            b: 1,
+            a: 1
+          }
+        }
+      ];
       const propertiesLines: Array<string> = key.split(', ');
 
       for (let i = 0; i < propertiesLines.length; i++) {
         const prop: string = propertiesLines[i]!;
         shaderProperties.push(`_${prop} ("${prop}", Range(0,255)) = 0`);
         shaderVariables.push(`float _${prop};`);
-        matFloats.push(`- _${prop}: 0`);
+        m_Floats.push({ [`_${prop}`]: 0 });
 
         if (prop.includes('LSB')) {
           const text = prop.replace('LSB', '');
           shaderProperties.push(`_Index${text} ("Index${text}", Range(0,15)) = 0`);
           shaderVariables.push(`float _Index${text};`);
-          matFloats.push(`- _Index${text}: -1`);
+          m_Floats.push({ [`_Index${text}`]: -1 });
         }
       }
 
-      const shaderPropertiesString = shaderProperties.sort().join('\n        ');
-      const shaderVariablesString = shaderVariables.sort().join('\n        ');
+      const shaderPropertiesString: string = shaderProperties.sort().join('\n        ');
+      const shaderVariablesString: string = shaderVariables.sort().join('\n        ');
 
-      const shaderFilePath: string = this.outputExternalDirectory + `/Materials/shader_${index + 1}.shader`;
-      const shaderMetaFilePath: string = this.outputExternalDirectory + `/Materials/shader_${index + 1}.shader.meta`;
+      const shaderFilePath: string = this.outputExternalDirectory + `/Materials/Shaders/Shader_${index}.shader`;
+      const shaderMetaFilePath: string = this.outputExternalDirectory + `/Materials/Shaders/Shader_${index}.shader.meta`;
       const shaderGuid: string = this.generateGuid();
+      const shaderMetadata: UnityShaderMetadata = {
+        fileFormatVersion: 2,
+        guid: shaderGuid,
+        ShaderImporter: {
+          externalObjects: {},
+          defaultTextures: [{
+            _MainTex: { instanceID: 0 }
+          }],
+          nonModifiableTextures: [],
+          userData: null,
+          assetBundleName: null,
+          assetBundleVariant: null
+        }
+      };
       // TODO fix shader template functions
       FileService.copyFile(this.templateDirectory + 'shader_base.shader', shaderFilePath);
       FileService.replaceInFile(shaderFilePath, '__[REPLACEME_PROPERTIES]__', shaderPropertiesString);
       FileService.replaceInFile(shaderFilePath, '__[REPLACEME_VARIABLES]__', shaderVariablesString);
 
-      FileService.copyFile(this.templateDirectory + 'shader_base.shader.meta', shaderMetaFilePath);
-      FileService.replaceInFile(shaderMetaFilePath, '__[REPLACEME]__', shaderGuid);
+      FileService.createYamlDocument(shaderMetadata, null, shaderMetaFilePath);
 
       for (const matNam of values) {
-        const matName: string = matNam.replace('/', '_');
-        const matFilePath: string = this.outputExternalDirectory + `/Materials/${matName}.mat`;
-        const matFileMetaPath: string = this.outputExternalDirectory + `/Materials/${matName}.mat.meta`;
-        const matFloatsString: string = matFloats
-          .sort()
-          .map((matFloat: string) => {
-            if (!(matFloat.includes(': -1') && matFloat.includes('- _Index'))) {
-              return matFloat;
+        const matFloats: any = m_Floats
+          .map((matFloat: any) => {
+            for (const [key, value] of Object.entries(matFloat)) {
+              if (!(value === -1 && key.includes('_Index'))) {
+                continue;
+              }
+
+              const relevantData: Array<BitAllocation> = data2.filter((d: BitAllocation) => d.shaderParameters.some((e: string) => e.includes(key.replace('_Index', ''))))
+              const matchingAllocation: BitAllocation = relevantData.find((v) => v.objectNames.some(o => o === matNam))!;
+              return { [key]: matchingAllocation.bitIndex };
             }
+            return matFloat;
+          });
 
-            const shaderParameterNameWithoutPrefix: string = matFloat.replace(/- _Index|:.*/g, '');
-            const relevantData: Array<BitAllocation> = data2.filter((d: BitAllocation) => d.shaderParameters.some((e: string) => e.includes(shaderParameterNameWithoutPrefix)))
-            const matchingAllocation: BitAllocation = relevantData.find((v) => v.objectNames.some(o => o === matNam))!;
+        const yaml: Array<YamlDocument> = [
+          {
+            tag: this.documentNameToIdentifier.get('Material')!,
+            anchor: '2100000',
+            data: generateMaterial(matNam.split('/')!.pop()!, shaderGuid, m_TexEnvs, m_Ints, matFloats, m_Colors)
+          }
+        ];
+        const metadata: UnityMetadata = {
+          fileFormatVersion: 2,
+          guid: this.generateGuid(),
+          NativeFormatImporter: {
+            externalObjects: {},
+            mainObjectFileID: 2100000,
+            userData: null,
+            assetBundleName: '',
+            assetBundleVariant: null,
+          }
+        };
 
-            return matFloat.replace('-1', `${matchingAllocation.bitIndex}`);
-          })
-          .join('\n    ');
-
-        FileService.copyFile(this.templateDirectory + 'shader_material_base.mat', matFilePath);
-        FileService.replaceInFile(matFilePath, '__[REPLACEME_MATERIAL_NAME]__', matName);
-        FileService.replaceInFile(matFilePath, '__[SHADER_GUID]__', shaderGuid);
-        FileService.replaceInFile(matFilePath, '__[REPLACEME_FLOATS]__', matFloatsString);
-
-        FileService.copyFile(this.templateDirectory + 'shader_material_base.mat.meta', matFileMetaPath);
-        FileService.replaceInFile(matFileMetaPath, '__[REPLACEME]__', this.generateGuid());
+        FileService.createYamlDocuments(yaml, this.unityHeader, this.outputExternalDirectory + `/Materials/${matNam.replace('/', '_')}.mat`);
+        FileService.createYamlDocument(metadata, null, this.outputExternalDirectory + `/Materials/${matNam.replace('/', '_')}.mat.meta`);
       }
     }
+  }
+
+  private removeFirstOccurrence(str: string, toRemove: string): string {
+    let parts: Array<string> = str.split(toRemove);
+
+    if (parts.length > 1) {
+      parts.shift();
+      return parts.join(toRemove);
+    }
+
+    return str;
   }
 
   private readonly templateDirectory: string = './configurations/templates/';
@@ -788,6 +948,7 @@ export class GenerateUnityFiles {
 
   private readonly unityHeader: string = '%YAML 1.1\n%TAG !u! tag:unity3d.com,2011:';
   private readonly documentNameToIdentifier: Map<string, UnityYamlTag> = new Map<string, UnityYamlTag>([
+    ['Material', '--- !u!21',],
     ['AnimationClip', '--- !u!74',],
     ['AnimatorController', '--- !u!91',],
     ['MonoBehaviour', '--- !u!114',],
@@ -801,10 +962,10 @@ export class GenerateUnityFiles {
 
 interface AnimatorData {
   name: Array<string>;
-  animatorStateMachineId: Array<number>;
-  animatorStateId: Array<number>;
-  animatorStateTransitionId: Array<number>;
-  blendTreeId: Array<number>;
+  animatorStateMachineId: Array<string>;
+  animatorStateId: Array<string>;
+  animatorStateTransitionId: Array<string>;
+  blendTreeId: Array<string>;
   minThreshold: Array<number>;
   maxThreshold: Array<number>;
 }

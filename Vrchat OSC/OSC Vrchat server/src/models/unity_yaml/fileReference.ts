@@ -1,3 +1,3 @@
 export interface FileReference {
-  fileID: number;
+  fileID: number | string;
 }

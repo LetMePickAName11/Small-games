@@ -1,13 +1,14 @@
 export interface UnityShaderMetadata {
   fileFormatVersion: number;
   guid: string;
-  ShaderImporter: any;
-  externalObjects: any;
-  defaultTextures: Array<DefaultTextures>;
-  nonModifiableTextures: Array<any>;
-  userData: any;
-  assetBundleName: string; 
-  assetBundleVariant: any;
+  ShaderImporter: {
+    externalObjects: any;
+    defaultTextures: Array<DefaultTextures>;
+    nonModifiableTextures: Array<any>;
+    userData: any;
+    assetBundleName: string | null;
+    assetBundleVariant: any;
+  }
 }
 
 export interface DefaultTextures {

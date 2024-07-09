@@ -64,7 +64,10 @@ export class FileService {
     this.writeToFile(path, yamlString);
   }
 
-  public static parseYamlFile<T>(path: string): T {
-    throw Error(path);
+  public static parseYamlFile(path: string): Array<YamlDocument> {
+    const yamlString = this.getFile(path);
+    const yamlParser: YamlParser = new YamlParser(null);
+
+    return yamlParser.parseYamlString(yamlString);
   }
 }
