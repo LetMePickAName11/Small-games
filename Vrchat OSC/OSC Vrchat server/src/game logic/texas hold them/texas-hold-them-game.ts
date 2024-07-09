@@ -2,11 +2,6 @@ import { GameLogicResponse } from "../../models/game_logic_response";
 import { OSCVrChatGameLogic } from "../../models/osc_vrchat_game_logic";
 
 export class TexasHoldThem implements OSCVrChatGameLogic {
-
-  constructor() {
-    this.dealTheFlop();
-  }
-
   public getState(): { [key in string]: number } {
     return {
       Community_Card_1: this.getCard(null, 0),
@@ -61,8 +56,14 @@ export class TexasHoldThem implements OSCVrChatGameLogic {
     return this._gameInfo.communityBetSize;
   }
   private getPool(index: number | null): number {
+    if (!this._gameInfo.setup.complete) {
+      return 0;
+    }
     if (index === null) {
       return this._gameInfo.communityPool;
+    }
+    if (index > this._gameInfo.setup.playerCount - 1) {
+      return 0;
     }
 
     return this._playerInfo[index]!.pool;
@@ -70,8 +71,15 @@ export class TexasHoldThem implements OSCVrChatGameLogic {
   private getCard(index: number | null, cardIndex: number): number {
     let card: Card;
 
+    if (!this._gameInfo.setup.complete) {
+      return this._hiddenCardIndex;
+    }
+
     if (index === null) {
       card = this._gameInfo.communityCards[cardIndex]!;
+    }
+    else if (index > this._gameInfo.setup.playerCount - 1) {
+      return this._hiddenCardIndex;
     }
     else {
       card = this._playerInfo[index]?.cards[cardIndex]!;
@@ -91,11 +99,26 @@ export class TexasHoldThem implements OSCVrChatGameLogic {
       return { updateVrc: false, message: null };
     }
 
+    if (this._gameInfo.gameState === 'Setup') {
+      return this.setupGame(inputNumber);
+    }
     if (this._gameInfo.gameState === 'The Flop') {
       return this.dealTheFlop();
     }
     if (this._gameInfo.gameState === 'PlayerInput') {
       // Iterate through players who are out, all out or folded
+      for (let i = 0; i < this._gameInfo.setup.playerCount; i++) {
+        this._playerInfo.push(
+          {
+            index: i,
+            pool: 255,
+            bet: 0,
+            cards: [],
+            gameState: 'Picking',
+            raiseInfo: null,
+          }
+        );
+      }
       return this.playerTurn(inputNumber);
     }
 
@@ -110,73 +133,53 @@ Player turn: ${this._gameInfo.playerTurnIndex}
 Bet size: ${this._gameInfo.communityBetSize}
 Community pool: ${this._gameInfo.communityPool}
 Cards: 
-   ${`${this._gameInfo.communityCards[0]!.rank} of ${this._gameInfo.communityCards[0]!.suit} is ${this._gameInfo.communityCards[0]!.isFaceDown ? 'facedown' : 'faceup'}`}
-   ${`${this._gameInfo.communityCards[1]!.rank} of ${this._gameInfo.communityCards[1]!.suit} is ${this._gameInfo.communityCards[1]!.isFaceDown ? 'facedown' : 'faceup'}`}
-   ${`${this._gameInfo.communityCards[2]!.rank} of ${this._gameInfo.communityCards[2]!.suit} is ${this._gameInfo.communityCards[2]!.isFaceDown ? 'facedown' : 'faceup'}`}
-   ${`${this._gameInfo.communityCards[3]!.rank} of ${this._gameInfo.communityCards[3]!.suit} is ${this._gameInfo.communityCards[3]!.isFaceDown ? 'facedown' : 'faceup'}`}
-   ${`${this._gameInfo.communityCards[4]!.rank} of ${this._gameInfo.communityCards[4]!.suit} is ${this._gameInfo.communityCards[4]!.isFaceDown ? 'facedown' : 'faceup'}`}
+   ${`${this._gameInfo.communityCards[0]?.rank} of ${this._gameInfo.communityCards[0]?.suit} is ${this._gameInfo.communityCards[0]?.isFaceDown ? 'facedown' : 'faceup'}`}
+   ${`${this._gameInfo.communityCards[1]?.rank} of ${this._gameInfo.communityCards[1]?.suit} is ${this._gameInfo.communityCards[1]?.isFaceDown ? 'facedown' : 'faceup'}`}
+   ${`${this._gameInfo.communityCards[2]?.rank} of ${this._gameInfo.communityCards[2]?.suit} is ${this._gameInfo.communityCards[2]?.isFaceDown ? 'facedown' : 'faceup'}`}
+   ${`${this._gameInfo.communityCards[3]?.rank} of ${this._gameInfo.communityCards[3]?.suit} is ${this._gameInfo.communityCards[3]?.isFaceDown ? 'facedown' : 'faceup'}`}
+   ${`${this._gameInfo.communityCards[4]?.rank} of ${this._gameInfo.communityCards[4]?.suit} is ${this._gameInfo.communityCards[4]?.isFaceDown ? 'facedown' : 'faceup'}`}
 Input paused: ${this._gameInfo.pauseInput}
 
-Player 1:
- ${`Index: ${this._playerInfo[0]!.index}`}
- ${`Pool: ${this._playerInfo[0]!.pool}`}
- Cards: ${this.handRank(this._playerInfo[0]!.cards).type} | high: ${this.handRank(this._playerInfo[0]!.cards).highValue} | kicker: ${this.handRank(this._playerInfo[0]!.cards).kickerValue}
-    ${this._playerInfo[0]!.cards[0]!.rank} of ${this._playerInfo[0]!.cards[0]!.suit} is ${this._playerInfo[0]!.cards[0]!.isFaceDown ? 'facedown' : 'faceup'}
-    ${this._playerInfo[0]!.cards[1]!.rank} of ${this._playerInfo[0]!.cards[1]!.suit} is ${this._playerInfo[0]!.cards[1]!.isFaceDown ? 'facedown' : 'faceup'}
+${this._playerInfo.map(pi => this.getPlayerInfo(pi.index))}
+    `;
+  }
 
-Player 2:
- ${`Index: ${this._playerInfo[1]!.index}`}
- ${`Pool: ${this._playerInfo[1]!.pool}`}
- Cards: ${this.handRank(this._playerInfo[1]!.cards).type} | high: ${this.handRank(this._playerInfo[1]!.cards).highValue} | kicker: ${this.handRank(this._playerInfo[1]!.cards).kickerValue}
-    ${this._playerInfo[1]!.cards[0]!.rank} of ${this._playerInfo[1]!.cards[0]!.suit} is ${this._playerInfo[1]!.cards[0]!.isFaceDown ? 'facedown' : 'faceup'}
-    ${this._playerInfo[1]!.cards[1]!.rank} of ${this._playerInfo[1]!.cards[1]!.suit} is ${this._playerInfo[1]!.cards[1]!.isFaceDown ? 'facedown' : 'faceup'}
-
-Player 3:
- ${`Index: ${this._playerInfo[2]!.index}`}
- ${`Pool: ${this._playerInfo[2]!.pool}`}
- Cards: ${this.handRank(this._playerInfo[2]!.cards).type} | high: ${this.handRank(this._playerInfo[2]!.cards).highValue} | kicker: ${this.handRank(this._playerInfo[2]!.cards).kickerValue}
-    ${this._playerInfo[2]!.cards[0]!.rank} of ${this._playerInfo[2]!.cards[0]!.suit} is ${this._playerInfo[2]!.cards[0]!.isFaceDown ? 'facedown' : 'faceup'}
-    ${this._playerInfo[2]!.cards[1]!.rank} of ${this._playerInfo[2]!.cards[1]!.suit} is ${this._playerInfo[2]!.cards[1]!.isFaceDown ? 'facedown' : 'faceup'}
-
-Player 4: 
- ${`Index: ${this._playerInfo[3]!.index}`}
- ${`Pool: ${this._playerInfo[3]!.pool}`}
- Cards: ${this.handRank(this._playerInfo[3]!.cards).type} | high: ${this.handRank(this._playerInfo[3]!.cards).highValue} | kicker: ${this.handRank(this._playerInfo[3]!.cards).kickerValue}
-    ${this._playerInfo[3]!.cards[0]!.rank} of ${this._playerInfo[3]!.cards[0]!.suit} is ${this._playerInfo[3]!.cards[0]!.isFaceDown ? 'facedown' : 'faceup'}
-    ${this._playerInfo[3]!.cards[1]!.rank} of ${this._playerInfo[3]!.cards[1]!.suit} is ${this._playerInfo[3]!.cards[1]!.isFaceDown ? 'facedown' : 'faceup'}
-
-Player 5: 
- ${`Index: ${this._playerInfo[4]!.index}`}
- ${`Pool: ${this._playerInfo[4]!.pool}`}
- Cards: ${this.handRank(this._playerInfo[4]!.cards).type} | high: ${this.handRank(this._playerInfo[4]!.cards).highValue} | kicker: ${this.handRank(this._playerInfo[4]!.cards).kickerValue}
-    ${this._playerInfo[4]!.cards[0]!.rank} of ${this._playerInfo[4]!.cards[0]!.suit} is ${this._playerInfo[4]!.cards[0]!.isFaceDown ? 'facedown' : 'faceup'}
-    ${this._playerInfo[4]!.cards[1]!.rank} of ${this._playerInfo[4]!.cards[1]!.suit} is ${this._playerInfo[4]!.cards[1]!.isFaceDown ? 'facedown' : 'faceup'}
-
-Player 6: 
- ${`Index: ${this._playerInfo[5]!.index}`}
- ${`Pool: ${this._playerInfo[5]!.pool}`}
- Cards: ${this.handRank(this._playerInfo[5]!.cards).type} | high: ${this.handRank(this._playerInfo[5]!.cards).highValue} | kicker: ${this.handRank(this._playerInfo[5]!.cards).kickerValue}
-    ${this._playerInfo[5]!.cards[0]!.rank} of ${this._playerInfo[5]!.cards[0]!.suit} is ${this._playerInfo[5]!.cards[0]!.isFaceDown ? 'facedown' : 'faceup'}
-    ${this._playerInfo[5]!.cards[1]!.rank} of ${this._playerInfo[5]!.cards[1]!.suit} is ${this._playerInfo[5]!.cards[1]!.isFaceDown ? 'facedown' : 'faceup'}
-
-Player 7: 
- ${`Index: ${this._playerInfo[6]!.index}`}
- ${`Pool: ${this._playerInfo[6]!.pool}`}
- Cards: ${this.handRank(this._playerInfo[6]!.cards).type} | high: ${this.handRank(this._playerInfo[6]!.cards).highValue} | kicker: ${this.handRank(this._playerInfo[6]!.cards).kickerValue}
-    ${this._playerInfo[6]!.cards[0]!.rank} of ${this._playerInfo[6]!.cards[0]!.suit} is ${this._playerInfo[6]!.cards[0]!.isFaceDown ? 'facedown' : 'faceup'}
-    ${this._playerInfo[6]!.cards[1]!.rank} of ${this._playerInfo[6]!.cards[1]!.suit} is ${this._playerInfo[6]!.cards[1]!.isFaceDown ? 'facedown' : 'faceup'}
-
-Player 8: 
- ${`Index: ${this._playerInfo[7]!.index}`}
- ${`Pool: ${this._playerInfo[7]!.pool}`}
- Cards: ${this.handRank(this._playerInfo[7]!.cards).type} | high: ${this.handRank(this._playerInfo[7]!.cards).highValue} | kicker: ${this.handRank(this._playerInfo[7]!.cards).kickerValue}
-    ${this._playerInfo[7]!.cards[0]!.rank} of ${this._playerInfo[7]!.cards[0]!.suit} is ${this._playerInfo[7]!.cards[0]!.isFaceDown ? 'facedown' : 'faceup'}
-    ${this._playerInfo[7]!.cards[1]!.rank} of ${this._playerInfo[7]!.cards[1]!.suit} is ${this._playerInfo[7]!.cards[1]!.isFaceDown ? 'facedown' : 'faceup'}
+  private getPlayerInfo(playerIndex: number) {
+    const player = this._playerInfo[playerIndex]!;
+    const handRank = this.handRank(player.cards);
+    return `
+    Player ${playerIndex + 1}:
+    ${`Index: ${player.index}`}
+    ${`Pool: ${player.pool}`}
+    Cards: ${handRank.type} | high: ${handRank.highValue} | kicker: ${handRank.kickerValue}
+        ${player.cards[0]!.rank} of ${player.cards[0]!.suit} is ${player.cards[0]!.isFaceDown ? 'facedown' : 'faceup'}
+        ${player.cards[1]!.rank} of ${player.cards[1]!.suit} is ${player.cards[1]!.isFaceDown ? 'facedown' : 'faceup'}
     `;
   }
 
 
 
+  private setupGame(inputNumber: number): GameLogicResponse {
+    // Increase player count
+    if (inputNumber === 1) {
+      this._gameInfo.setup.playerCount = this._gameInfo.setup.playerCount + 1 > 8 ? 8 : this._gameInfo.setup.playerCount + 1;
+    } // Decrease player count
+    else if (inputNumber === 2) {
+      this._gameInfo.setup.playerCount = this._gameInfo.setup.playerCount - 1 < 2 ? 2 : this._gameInfo.setup.playerCount - 1;
+    } // Reset
+    else if (inputNumber === 3) {
+      this._gameInfo.setup.playerCount = 2;
+    } // Confirm
+    else if (inputNumber === 4) {
+      this._gameInfo.setup.complete = true;
+      return this.dealTheFlop();
+    }
+
+    return {
+      message: `Player count: ${this._gameInfo.setup.playerCount}`,
+      updateVrc: true
+    }
+  }
 
   private dealTheFlop(): GameLogicResponse {
     // Generate a deck
@@ -192,7 +195,8 @@ Player 8:
       playerTurnIndex: blindIndex + 1,
       deck: deck,
       pauseInput: true,
-      gameState: 'PlayerInput'
+      gameState: 'PlayerInput',
+      setup: this._gameInfo.setup
     };
     this._gameInfo.communityCards.push(this.dealCard(), this.dealCard(), this.dealCard(), this.dealCard(), this.dealCard());
     this._gameInfo.communityCards[0]!.isFaceDown = false;
@@ -365,7 +369,7 @@ Player 8:
   private iteratePlayerIndex(): GameLogicResponse | null {
     // Fix so player index is iterated correctly
     const currentIndex: number = this._gameInfo.playerTurnIndex;
-    this._gameInfo.playerTurnIndex = this._gameInfo.playerTurnIndex + 1 === 8 ? 0 : this._gameInfo.playerTurnIndex + 1;
+    this._gameInfo.playerTurnIndex = (this._gameInfo.playerTurnIndex + 1) % this._gameInfo.setup.playerCount;
 
     if (this._gameInfo.blindIndex === currentIndex) {
       if (this._gameInfo.communityCards[4]!.isFaceDown === false) {
@@ -571,72 +575,7 @@ Player 8:
 
 
 
-  private _playerInfo: Array<PlayerInfo> = [
-    {
-      index: 0,
-      pool: 255,
-      bet: 0,
-      cards: [],
-      gameState: 'Picking',
-      raiseInfo: null,
-    },
-    {
-      index: 1,
-      pool: 255,
-      bet: 0,
-      cards: [],
-      gameState: 'Picking',
-      raiseInfo: null,
-    },
-    {
-      index: 2,
-      pool: 255,
-      bet: 0,
-      cards: [],
-      gameState: 'Picking',
-      raiseInfo: null,
-    },
-    {
-      index: 3,
-      pool: 255,
-      bet: 0,
-      cards: [],
-      gameState: 'Picking',
-      raiseInfo: null,
-    },
-    {
-      index: 4,
-      pool: 255,
-      bet: 0,
-      cards: [],
-      gameState: 'Picking',
-      raiseInfo: null,
-    },
-    {
-      index: 5,
-      pool: 255,
-      bet: 0,
-      cards: [],
-      gameState: 'Picking',
-      raiseInfo: null,
-    },
-    {
-      index: 6,
-      pool: 255,
-      bet: 0,
-      cards: [],
-      gameState: 'Picking',
-      raiseInfo: null,
-    },
-    {
-      index: 7,
-      pool: 255,
-      bet: 0,
-      cards: [],
-      gameState: 'Picking',
-      raiseInfo: null,
-    }
-  ];
+  private _playerInfo: Array<PlayerInfo> = [];
   private _gameInfo: gameInfo = {
     communityPool: -1,
     communityBetSize: -1,
@@ -645,7 +584,11 @@ Player 8:
     playerTurnIndex: 0,
     deck: [],
     pauseInput: true,
-    gameState: 'The Flop'
+    gameState: 'Setup',
+    setup: {
+      playerCount: 2,
+      complete: false
+    }
   };
 
   private readonly _cardIndexMap: Map<string, number> = new Map<string, number>([
@@ -741,6 +684,10 @@ interface Card {
 }
 
 interface gameInfo {
+  setup: {
+    playerCount: number;
+    complete: boolean;
+  };
   communityPool: number;
   communityBetSize: number;
   communityCards: Array<Card>;
@@ -748,5 +695,5 @@ interface gameInfo {
   playerTurnIndex: number;
   deck: Array<Card>;
   pauseInput: boolean;
-  gameState: 'The Turn' | 'The River' | 'The Flop' | 'PlayerInput' | 'Reveal';
+  gameState: 'The Turn' | 'The River' | 'The Flop' | 'PlayerInput' | 'Reveal' | 'Setup';
 }
