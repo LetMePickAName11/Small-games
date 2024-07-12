@@ -42,9 +42,11 @@ export class YamlParser {
 
   public parseYamlString(yamlString: string): Array<YamlDocument> {
     const result: Array<YamlDocument> = [];
+    const fileEnding: string = yamlString.split('\r\n').length > yamlString.split('\n').length ? '\r\n' : '\n';
+
     // Remove yaml file header info
     while (yamlString[0] === '%') {
-      yamlString = yamlString.split('\r\n').slice(1).join('\r\n');
+      yamlString = yamlString.split(fileEnding).slice(1).join(fileEnding);
     }
 
     const documentInfo = yamlString.split(/(--- !u![0-9]+ &[0-9]+)(?: stripped){0,1}/).map(ys => ys.trim()).filter(ys => ys !== '');
@@ -52,7 +54,7 @@ export class YamlParser {
     for (let i = 0; i < documentInfo.length - 1; i += 2) {
       const tag: UnityYamlTag = documentInfo[i]!.split('&')[0]?.trimEnd() as UnityYamlTag;
       const anchorId: string = documentInfo[i]!.split('&')[1]!;
-      const documentData: Array<string> = documentInfo[i + 1]!.split('\r\n');
+      const documentData: Array<string> = documentInfo[i + 1]!.split(fileEnding);
 
       const objectBuilder: Record<string, any> = {};
       let skipLine: boolean = false;
@@ -275,7 +277,7 @@ export class YamlParser {
       }
     }
     else if (token.type === 'empty') {
-      yamlLines.push(`${preFix}${token.key}:`);
+      yamlLines.push(`${preFix}${token.key}: `);
     }
     else if (token.type === 'emptyArray') {
       yamlLines.push(`${preFix}${token.key}: []`);
@@ -318,8 +320,30 @@ interface YamlLineToken {
   isArrayElement: boolean;
 }
 
-export interface YamlDocument { tag: UnityYamlTag, anchor: string, data: object | Array<object> }
-export type UnityYamlTag = '--- !u!1' | '--- !u!21' | '--- !u!23' | '--- !u!74' | '--- !u!91' | '--- !u!114' | '--- !u!206' | '--- !u!1001' | '--- !u!1101' | '--- !u!1102' | '--- !u!1107';
+export interface YamlDocument { tag: UnityYamlTag, anchor: string, data: Record<string, any> | Array<Record<string, any>>; }
+export type UnityYamlTag = '--- !u!1' |
+  '--- !u!4' |
+  '--- !u!20' |
+  '--- !u!21' |
+  '--- !u!23' |
+  '--- !u!29' |
+  '--- !u!23' |
+  '--- !u!33' |
+  '--- !u!74' |
+  '--- !u!81' |
+  '--- !u!91' |
+  '--- !u!95' |
+  '--- !u!104' |
+  '--- !u!108' |
+  '--- !u!114' |
+  '--- !u!157' |
+  '--- !u!196' |
+  '--- !u!206' |
+  '--- !u!1001' |
+  '--- !u!1101' |
+  '--- !u!1102' |
+  '--- !u!1107' |
+  '--- !u!1660057539';
 
 export interface GameObject {
   GameObject: {

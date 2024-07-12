@@ -18,31 +18,24 @@ import { Color } from '../models/unity_yaml/color';
 import { MTexEnvs } from '../models/unity_yaml/mTexEnvs';
 import { Material } from '../models/unity_yaml/material';
 import { UnityShaderMetadata } from '../models/unity_yaml/unityShaderMetadata';
+import { FileReference } from '../models/unity_yaml/fileReference';
 
 export class GenerateUnityFiles {
   public generateFiles(): void {
+    const sceneYamlDocuments: Array<YamlDocument> = FileService.parseYamlFile(this.configData.parentFolderPath + this.configData.sceneName);
+
     this.clearDirectories();
     this.generateDataMapped();
     this.generateGameObjectMap();
-    this.generateVrcExpressionParamters();
+    this.generateVrcExpressionParamters(sceneYamlDocuments);
     this.generateAnimations();
-    this.generateAnimatorController();
-    this.generateShadersAndMaterials();
+    this.generateAnimatorController(sceneYamlDocuments);
+    this.generateShadersAndMaterials(sceneYamlDocuments);
+
+    FileService.createYamlDocuments(sceneYamlDocuments, this.unityHeader, this.outputExternalDirectory + '/' + this.configData.sceneName);
   }
 
 
-
-  private generateUniqueId(): string {
-    return (Math.floor(Math.random() * (999999999 - 100000000 + 1)) + 100000000).toString();
-  }
-
-  private generateGuid(): string {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (character: string) => {
-      const randomNumber: number = (Math.random() * 16) | 0;
-      const randomValue: number = character === 'x' ? randomNumber : (randomNumber & 0x3) | 0x8;
-      return randomValue.toString(16);
-    }).replaceAll('-', '');
-  }
 
   private clearDirectories(): void {
     FileService.clearDirectory(this.outputInternalDirectory.slice(0, -1));
@@ -94,7 +87,6 @@ export class GenerateUnityFiles {
     let startIndex: number = 0;
     const bitAllocations: Array<BitAllocation> = [];
     const configData: Array<BitAllocation> = FileService.getFileJson(this.userInputDirectory + 'data.json');
-    const inputData: Array<string> = FileService.getFileJson(this.userInputDirectory + 'input.json');
 
     // Sort configData by size in descending order
     const sortedConfigData = configData.sort((a, b) => b.size - a.size);
@@ -137,14 +129,14 @@ export class GenerateUnityFiles {
       }
     }
 
-    if(bitAllocations[bitAllocations.length-1]!.bitIndex + bitAllocations[bitAllocations.length-1]!.size === 8){
-      const lsbName = bitAllocations[bitAllocations.length-1]!.lsbName;
-      const msbName = bitAllocations[bitAllocations.length-1]!.msbName;
+    if (bitAllocations[bitAllocations.length - 1]!.bitIndex + bitAllocations[bitAllocations.length - 1]!.size === 8) {
+      const lsbName = bitAllocations[bitAllocations.length - 1]!.lsbName;
+      const msbName = bitAllocations[bitAllocations.length - 1]!.msbName;
       bitAllocations.filter((bitAllocation: BitAllocation) => bitAllocation.lsbName === lsbName).forEach((bitAllocation: BitAllocation) => bitAllocation.lsbName = msbName);
     }
 
     let allocatedBitsSize: number = bitAllocations.reduce((acc, val) => acc + val.size, 0);
-    const allocatedInputBitsSize: number = inputData.length; // Input data is array of 1-bits
+    const allocatedInputBitsSize: number = this.inputData.length; // Input data is array of 1-bits
     const overflowBits: number = allocatedBitsSize % 8;
 
     if (overflowBits !== 0) {
@@ -212,9 +204,8 @@ export class GenerateUnityFiles {
     FileService.writeToFile(this.outputInternalDirectory + 'data_mapped.json', bitAllocations);
   }
 
-  private generateVrcExpressionParamters(): void {
+  private generateVrcExpressionParamters(sceneYamlDocuments: Array<YamlDocument>): void {
     const dataConfigurations: Array<BitAllocation> = FileService.getFileJson(this.outputInternalDirectory + 'data_mapped.json');
-    const dataInputs: Array<string> = FileService.getFileJson(this.userInputDirectory + 'input.json');
 
     const chunks: Array<string> = [];
     const overflowingBits: Array<string> = [];
@@ -286,7 +277,7 @@ export class GenerateUnityFiles {
               defaultValue: defaults.defaultValue,
               networkSynced: 1
             }
-          }).concat(dataInputs.map((input: string) => {
+          }).concat(this.inputData.map((input: string) => {
             return {
               name: `!${input}`,
               valueType: 2, // 2 == boolean
@@ -311,6 +302,7 @@ export class GenerateUnityFiles {
       }
     };
 
+    this.updateSceneObject(sceneYamlDocuments, 'MonoBehaviour', ['expressionsMenu', 'expressionParameters'], 'expressionParameters', { fileID: yamlDocument[0]!.anchor, guid: yamlMetadata.guid, type: 2 });
     FileService.createYamlDocuments(yamlDocument, this.unityHeader, this.outputExternalDirectory + 'Vrchat/VRCExpressionParameters.asset');
     FileService.createYamlDocument(yamlMetadata, null, this.outputExternalDirectory + 'Vrchat/VRCExpressionParameters.asset.meta');
   }
@@ -520,7 +512,7 @@ export class GenerateUnityFiles {
     }
   }
 
-  private generateAnimatorController(): void {
+  private generateAnimatorController(sceneYamlDocuments: Array<YamlDocument>): void {
     const mapJsonConfig = () => {
       const data: Array<BitAllocation> = FileService.getFileJson(this.outputInternalDirectory + 'data_mapped.json');
       const uniqueNames: Set<string> = new Set();
@@ -781,13 +773,28 @@ export class GenerateUnityFiles {
       }
     }
 
+    this.updateSceneObject(sceneYamlDocuments, 'Animator', ['m_Controller'], 'm_Controller', { fileID: yamls[0]!.anchor, guid: metadata.guid, type: 2 });
+    const updateValue = this.getObjectInYamlDocument(sceneYamlDocuments, 'MonoBehaviour', ['expressionsMenu', 'baseAnimationLayers'], 'baseAnimationLayers').map((v: any) => {
+      if (v.type === 5) {
+        v.animatorController = {
+          fileID: yamls[0]!.anchor,
+          guid: metadata.guid,
+          type: 2
+        };
+      }
+
+      return v;
+    });    
+    this.updateSceneObject(sceneYamlDocuments, 'MonoBehaviour', ['expressionsMenu', 'baseAnimationLayers'], 'baseAnimationLayers', updateValue);
+
     FileService.createYamlDocuments(yamls, this.unityHeader, this.outputExternalDirectory + 'Animations/FX.controller');
     FileService.createYamlDocument(metadata, null, this.outputExternalDirectory + 'Animations/FX.controller.meta');
   }
 
-  private generateShadersAndMaterials(): void {
+  private generateShadersAndMaterials(sceneYamlDocuments: Array<YamlDocument>): void {
     const data: Array<Array<string>> = FileService.getFileJson(this.outputInternalDirectory + 'data_game_object_shader_parameter_map.json');
     const data2: Array<BitAllocation> = FileService.getFileJson(this.outputInternalDirectory + 'data_mapped.json');
+    const sceneNode: SceneNode = this.createParentChildObject(sceneYamlDocuments);
 
     const generateMaterial = (name: string, shaderGuid: string, m_TexEnvs: Array<{ [key in string]: MTexEnvs }>, m_Ints: Array<{ [key in string]: number }>, m_Floats: Array<{ [key in string]: number }>, m_Colors: Array<{ [key in string]: Color }>): Material => {
       return {
@@ -923,11 +930,73 @@ export class GenerateUnityFiles {
           }
         };
 
+        const node = this.findNodeByPath(sceneNode, `/${matNam}`);
+        if (node === undefined) {
+          throw Error(`Missing game node in scene ${matNam}`);
+        }
+
+        (node.meshRenderer?.data as {MeshRenderer: any}).MeshRenderer.m_Materials = [
+          {fileID: yaml[0]?.anchor, guid: metadata.guid, type: 2}
+        ];
         FileService.createYamlDocuments(yaml, this.unityHeader, this.outputExternalDirectory + `/Materials/${matNam.replace('/', '_')}.mat`);
         FileService.createYamlDocument(metadata, null, this.outputExternalDirectory + `/Materials/${matNam.replace('/', '_')}.mat.meta`);
       }
     }
   }
+
+
+  // Utilities
+  private generateUniqueId(): string {
+    return (Math.floor(Math.random() * (999999999 - 100000000 + 1)) + 100000000).toString();
+  }
+
+  private generateGuid(): string {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (character: string) => {
+      const randomNumber: number = (Math.random() * 16) | 0;
+      const randomValue: number = character === 'x' ? randomNumber : (randomNumber & 0x3) | 0x8;
+      return randomValue.toString(16);
+    }).replaceAll('-', '');
+  }
+
+  private createParentChildObject(yamlDocuments: Array<YamlDocument>): SceneNode {
+    const sceneRoots = yamlDocuments.find((yamlDocument: YamlDocument) => yamlDocument.tag === this.documentNameToIdentifier.get('SceneRoots'))!;
+
+    let res: SceneNode = {
+      path: '',
+      parent: undefined,
+      gameObject: sceneRoots,
+      transform: sceneRoots,
+      meshRenderer: sceneRoots,
+      children: this.recursivelyGetBuildA(yamlDocuments, (sceneRoots.data as { SceneRoots: any }).SceneRoots.m_Roots, '')
+    };
+
+    return res;
+  }
+
+  private recursivelyGetBuildA(yamlDocuments: Array<YamlDocument>, childrenReferences: Array<FileReference>, path: string): Array<SceneNode> {
+    return childrenReferences.map((fileReference: FileReference) => yamlDocuments.find(yamlDocument => yamlDocument.anchor === fileReference.fileID)!)
+            .filter((yamlDocument: YamlDocument) => yamlDocument.tag === this.documentNameToIdentifier.get('Transform'))
+            .map((transform: YamlDocument): SceneNode => {
+              const transformData: any = (transform.data as { Transform: any }).Transform;
+              const gameObject: YamlDocument = yamlDocuments.find((yamlDocument: YamlDocument) => yamlDocument.anchor === transformData.m_GameObject.fileID)!;
+              const gameObjectData: any = (gameObject.data as { GameObject: any }).GameObject;
+
+              const parent: YamlDocument | undefined = yamlDocuments.find((yamlDocument: YamlDocument) => yamlDocument.anchor === transformData.m_Father.fileID);
+              const fullPath: string = `${path}/${gameObjectData.m_Name}`;
+              const meshRenderer: YamlDocument | undefined = yamlDocuments
+                .filter((yamlDocument: YamlDocument) => yamlDocument.tag === this.documentNameToIdentifier.get('MeshRenderer'))
+                .find((yamlDocument: YamlDocument) => (yamlDocument.data as { MeshRenderer: any }).MeshRenderer.m_GameObject.fileID === gameObject.anchor)!;
+
+              return {
+                path: fullPath,
+                gameObject: gameObject,
+                transform: transform,
+                meshRenderer: meshRenderer,
+                parent: parent,
+                children: this.recursivelyGetBuildA(yamlDocuments, transformData.m_Children, fullPath)
+              };
+            });
+  }     
 
   private removeFirstOccurrence(str: string, toRemove: string): string {
     let parts: Array<string> = str.split(toRemove);
@@ -940,6 +1009,94 @@ export class GenerateUnityFiles {
     return str;
   }
 
+  private getYamlDocuments(sceneObject: Array<YamlDocument>, tag: string, identifierKeys: Array<string> = []): Array<YamlDocument> {
+    const gameObjects: Array<YamlDocument> = sceneObject.filter((so: YamlDocument) => {
+      if (so.tag !== this.documentNameToIdentifier.get(tag)) {
+        return false;
+      }
+
+      if (identifierKeys.length === 0) {
+        return true;
+      }
+
+      const gameObject: any = (so.data as Record<string, any>)[tag];
+      const gameObjectKeys = Object.keys(gameObject);
+
+      return identifierKeys.every((param) => gameObjectKeys.includes(param));
+    });
+
+    if (gameObjects.length === 0) {
+      throw Error(`Invalid ${tag} no matches found`);
+    }
+
+    return gameObjects;
+  }
+
+  private getObjectInYamlDocument(sceneObject: Array<YamlDocument>, tag: string, identifierKeys: Array<string> = [], parameterKey: string){
+    const gameObjects: Array<YamlDocument> =  this.getYamlDocuments(sceneObject, tag, identifierKeys);
+
+    if(gameObjects.length !== 1){
+      throw Error(`Invalid ${tag} with identifiers ${identifierKeys}. Too many matches found ${gameObjects.length}`);
+    }
+
+    const parentKey: string = this.findKeyByValue(this.documentNameToIdentifier, gameObjects[0]!.tag);
+    const parentObject = this.getValue(gameObjects[0]!, parentKey);
+
+    return parentObject[parameterKey];
+  }
+
+  private updateSceneObject(sceneObject: Array<YamlDocument>, tag: string, identifierKeys: Array<string>, parameterKey: string, parameterValue: any): void {
+    const gameObjects: Array<YamlDocument> = sceneObject.filter((so: YamlDocument) => {
+      if (so.tag !== this.documentNameToIdentifier.get(tag)) {
+        return false;
+      }
+
+      const gameObject: any = (so.data as Record<string, any>)[tag];
+      const gameObjectKeys = Object.keys(gameObject);
+
+      return identifierKeys.every((param) => gameObjectKeys.includes(param));
+    });
+
+    if (gameObjects.length !== 1) {
+      throw Error(`Invalid ${tag}: ${gameObjects.length} | ${gameObjects}`);
+    }
+
+    (gameObjects[0]!.data as Record<string, any>)[tag][parameterKey] = parameterValue;
+  }
+
+  private findKeyByValue(map: Map<any, any>, value: any): string {
+    for (let [key, val] of map.entries()) {
+      if (val === value) {
+        return key;
+      }
+    }
+    
+    throw Error(`Value: ${value} is not in map: ${map}`);
+  }
+
+  private getValue(document: YamlDocument, key: string): any {
+    if (Array.isArray(document.data)) {
+      return document.data.map(item => item[key]);
+    }
+
+    return document.data[key];
+  }
+
+  private findNodeByPath(root: SceneNode, targetPath: string): SceneNode | undefined {
+    if (root.path === targetPath) {
+      return root;
+    }
+
+    for (const child of root.children) {
+      const result = this.findNodeByPath(child, targetPath);
+      if (result) {
+        return result;
+      }
+    }
+
+    return undefined;
+  }
+
   private readonly templateDirectory: string = './configurations/templates/';
   private readonly userInputDirectory: string = './configurations/user_defined_data/';
   private readonly outputInternalDirectory: string = './configurations/auto_generated_files_internal/';
@@ -948,15 +1105,32 @@ export class GenerateUnityFiles {
 
   private readonly unityHeader: string = '%YAML 1.1\n%TAG !u! tag:unity3d.com,2011:';
   private readonly documentNameToIdentifier: Map<string, UnityYamlTag> = new Map<string, UnityYamlTag>([
-    ['Material', '--- !u!21',],
-    ['AnimationClip', '--- !u!74',],
-    ['AnimatorController', '--- !u!91',],
-    ['MonoBehaviour', '--- !u!114',],
-    ['BlendTree', '--- !u!206',],
-    ['AnimatorStateTransition', '--- !u!1101',],
-    ['AnimatorState', '--- !u!1102',],
-    ['AnimatorStateMachine', '--- !u!1107',],
+    ['GameObject', '--- !u!1'],
+    ['Transform', '--- !u!4'],
+    ['Camera', '--- !u!20'],
+    ['Material', '--- !u!21'],
+    ['MeshRenderer', '--- !u!23'],
+    ['MeshFilter', '--- !u!33'],
+    ['OcclusionCullingSettings', '--- !u!29'],
+    ['AnimationClip', '--- !u!74'],
+    ['AudioListener', '--- !u!81'],
+    ['AnimatorController', '--- !u!91'],
+    ['Animator', '--- !u!95'],
+    ['RenderSettings', '--- !u!104'],
+    ['Light', '--- !u!108'],
+    ['MonoBehaviour', '--- !u!114'],
+    ['LightmapSettings', '--- !u!157'],
+    ['NavMeshSettings', '--- !u!196'],
+    ['BlendTree', '--- !u!206'],
+    ['PrefabInstance', '--- !u!1001'],
+    ['AnimatorStateTransition', '--- !u!1101'],
+    ['AnimatorState', '--- !u!1102'],
+    ['AnimatorStateMachine', '--- !u!1107'],
+    ['SceneRoots', '--- !u!1660057539'],
   ]);
+
+  private readonly inputData: Array<string> = FileService.getFileJson(this.userInputDirectory + 'input.json');
+  private readonly configData: ConfigData = FileService.getFileJson(this.userInputDirectory + 'config.json');
 }
 
 
@@ -969,3 +1143,17 @@ interface AnimatorData {
   minThreshold: Array<number>;
   maxThreshold: Array<number>;
 }
+
+interface ConfigData {
+  sceneName: string;
+  parentFolderPath: string;
+}
+
+interface SceneNode {
+  path: string;
+  gameObject: YamlDocument; 
+  transform: YamlDocument;
+  meshRenderer: YamlDocument | undefined;
+  children: Array<SceneNode>;
+  parent: YamlDocument | undefined;
+};
