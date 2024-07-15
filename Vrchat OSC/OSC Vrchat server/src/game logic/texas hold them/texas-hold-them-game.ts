@@ -98,7 +98,6 @@ export class TexasHoldThem implements OSCVrChatGameLogic {
     if (this._gameInfo.pauseInput) {
       return { updateVrc: false, message: null };
     }
-
     if (this._gameInfo.gameState === 'Setup') {
       return this.setupGame(inputNumber);
     }
@@ -106,19 +105,6 @@ export class TexasHoldThem implements OSCVrChatGameLogic {
       return this.dealTheFlop();
     }
     if (this._gameInfo.gameState === 'PlayerInput') {
-      // Iterate through players who are out, all out or folded
-      for (let i = 0; i < this._gameInfo.setup.playerCount; i++) {
-        this._playerInfo.push(
-          {
-            index: i,
-            pool: 255,
-            bet: 0,
-            cards: [],
-            gameState: 'Picking',
-            raiseInfo: null,
-          }
-        );
-      }
       return this.playerTurn(inputNumber);
     }
 
@@ -140,18 +126,18 @@ Cards:
    ${`${this._gameInfo.communityCards[4]?.rank} of ${this._gameInfo.communityCards[4]?.suit} is ${this._gameInfo.communityCards[4]?.isFaceDown ? 'facedown' : 'faceup'}`}
 Input paused: ${this._gameInfo.pauseInput}
 
-${this._playerInfo.map(pi => this.getPlayerInfo(pi.index))}
+${this._playerInfo.map(pi => this.getPlayerDebugInfo(pi.index))}
     `;
   }
 
-  private getPlayerInfo(playerIndex: number) {
+  private getPlayerDebugInfo(playerIndex: number) {
     const player = this._playerInfo[playerIndex]!;
     const handRank = this.handRank(player.cards);
     return `
     Player ${playerIndex + 1}:
     ${`Index: ${player.index}`}
     ${`Pool: ${player.pool}`}
-    Cards: ${handRank.type} | high: ${handRank.highValue} | kicker: ${handRank.kickerValue}
+    Cards: ${handRank.type} | high: ${handRank.highValue} | kicker: ${handRank.lowValue}
         ${player.cards[0]!.rank} of ${player.cards[0]!.suit} is ${player.cards[0]!.isFaceDown ? 'facedown' : 'faceup'}
         ${player.cards[1]!.rank} of ${player.cards[1]!.suit} is ${player.cards[1]!.isFaceDown ? 'facedown' : 'faceup'}
     `;
@@ -162,16 +148,28 @@ ${this._playerInfo.map(pi => this.getPlayerInfo(pi.index))}
   private setupGame(inputNumber: number): GameLogicResponse {
     // Increase player count
     if (inputNumber === 1) {
-      this._gameInfo.setup.playerCount = this._gameInfo.setup.playerCount + 1 > 8 ? 8 : this._gameInfo.setup.playerCount + 1;
+      this._gameInfo.setup.playerCount = Math.min(this._gameInfo.setup.playerCount + 1, 8);
     } // Decrease player count
     else if (inputNumber === 2) {
-      this._gameInfo.setup.playerCount = this._gameInfo.setup.playerCount - 1 < 2 ? 2 : this._gameInfo.setup.playerCount - 1;
+      this._gameInfo.setup.playerCount = Math.max(this._gameInfo.setup.playerCount - 1, 2);
     } // Reset
     else if (inputNumber === 3) {
       this._gameInfo.setup.playerCount = 2;
     } // Confirm
     else if (inputNumber === 4) {
       this._gameInfo.setup.complete = true;
+      for (let i = 0; i < this._gameInfo.setup.playerCount; i++) {
+        this._playerInfo.push(
+          {
+            index: i,
+            pool: 255,
+            bet: 0,
+            cards: [],
+            gameState: 'Picking',
+            raiseInfo: null,
+          }
+        );
+      }
       return this.dealTheFlop();
     }
 
@@ -185,7 +183,7 @@ ${this._playerInfo.map(pi => this.getPlayerInfo(pi.index))}
     // Generate a deck
     const deck: Array<Card> = this.generateDeck();
     // Update who is the blind
-    const blindIndex: number = this._gameInfo.blindIndex === 7 ? 0 : this._gameInfo.blindIndex + 1;
+    const blindIndex: number = this._gameInfo.blindIndex === this._playerInfo.length ? 0 : this._gameInfo.blindIndex + 1;
     // Reset game info
     this._gameInfo = {
       communityPool: 0,
@@ -206,7 +204,8 @@ ${this._playerInfo.map(pi => this.getPlayerInfo(pi.index))}
     this._playerInfo.forEach((p) => {
       p.bet = 0;
       p.cards = [this.dealCard(), this.dealCard()];
-      p.cards.forEach(c => c.isFaceDown = false)
+      p.cards.forEach(c => c.isFaceDown = false);
+      p.gameState = 'Picking';
     });
 
     // Mandatory blind bet
@@ -243,37 +242,67 @@ ${this._playerInfo.map(pi => this.getPlayerInfo(pi.index))}
   }
 
   private reveal(): GameLogicResponse {
-    this.revealCommunityCard();
-    this.revealPlayerCards();
-
-    const winningPlayers = this._playerInfo.reduce((acc, cv: PlayerInfo): { players: Array<PlayerInfo>, type: number, highValue: number, kickerValue: number | null } => {
+    const winningPlayers = this._playerInfo.reduce((acc, cv: PlayerInfo): { players: Array<PlayerInfo>, type: number, highValue: number; lowValue: number | null; kicker: number | null; } => {
       const handRank = this.handRank(cv.cards);
+
+      if (acc.type > handRank.type) {
+        return acc;
+      }
 
       if (acc.type < handRank.type) {
         acc.players = [cv];
         acc.highValue = handRank.highValue;
-        acc.kickerValue = handRank.kickerValue;
+        acc.lowValue = handRank.lowValue;
+        acc.kicker = handRank.kicker;
         acc.type = handRank.type;
+        return acc;
       }
-      else if (acc.type === handRank.type) {
-        if (acc.highValue < handRank.highValue) {
-          acc.players = [cv];
-          acc.highValue = handRank.highValue;
-          acc.kickerValue = handRank.kickerValue;
-        }
-        else if (acc.highValue === handRank.highValue) {
-          if (acc.kickerValue === null && handRank.kickerValue === null) {
-            acc.players.push(cv);
-          }
-          else if (handRank.kickerValue !== null && (acc.kickerValue === null || acc.kickerValue < handRank.kickerValue)) {
-            acc.players = [cv];
-            acc.kickerValue = handRank.kickerValue;
-          }
-        }
+
+      if(acc.highValue > handRank.highValue){
+        return acc;
+      }
+
+      if(acc.highValue < handRank.highValue){
+        acc.players = [cv];
+        acc.highValue = handRank.highValue;
+        acc.lowValue = handRank.lowValue;
+        acc.kicker = handRank.kicker;
+        acc.type = handRank.type;
+        return acc;
+      }
+
+      if((acc.lowValue ?? -1) > (handRank.lowValue ?? -1)){
+        return acc;
+      }
+      
+      if((acc.lowValue ?? -1) < (handRank.lowValue ?? -1)){
+        acc.players = [cv];
+        acc.highValue = handRank.highValue;
+        acc.lowValue = handRank.lowValue;
+        acc.kicker = handRank.kicker;
+        acc.type = handRank.type;
+        return acc;
+      }
+
+      if((acc.kicker ?? -1) > (handRank.kicker ?? -1)){
+        return acc;
+      }
+
+      if((acc.kicker ?? -1) < (handRank.kicker ?? -1)){
+        acc.players = [cv];
+        acc.highValue = handRank.highValue;
+        acc.lowValue = handRank.lowValue;
+        acc.kicker = handRank.kicker;
+        acc.type = handRank.type;
+        return acc;
+      }
+
+      if (acc.type === handRank.type && acc.highValue === handRank.highValue && acc.lowValue === handRank.lowValue && acc.kicker === handRank.kicker) {
+        acc.players.push(cv);
       }
 
       return acc;
-    }, { players: [], type: 0, highValue: 0, kickerValue: null } as { players: Array<PlayerInfo>, type: number, highValue: number, kickerValue: number | null });
+    }, { players: [], type: 0, highValue: 0, lowValue: null, kicker: null } as { players: Array<PlayerInfo>, type: number, highValue: number; lowValue: number | null; kicker: number | null; });
     let winningText: string = '';
 
     if (winningPlayers.players.length > 1) {
@@ -294,9 +323,19 @@ ${this._playerInfo.map(pi => this.getPlayerInfo(pi.index))}
       winningText = `Player '${winningPlayer.index}' won ${this._gameInfo.communityPool}$`;
     }
 
-    this._gameInfo.pauseInput = true;
     this._gameInfo.gameState = 'The Flop';
     this._gameInfo.communityPool = 0;
+
+    // Remove players that lost all their pool
+    this._playerInfo = this._playerInfo.filter((p) => {
+      const out: boolean = p.pool === 0;
+
+      if (out) {
+        winningText = `${winningText}\nPlayer ${p.index} is out of the game.`;
+      }
+
+      return out === false;
+    });
 
     return {
       message: winningText,
@@ -312,6 +351,7 @@ ${this._playerInfo.map(pi => this.getPlayerInfo(pi.index))}
       // Call
       if (inputNumber === 1) {
         this.bet(player.index, this._gameInfo.communityBetSize);
+        player.gameState = 'Call';
         gameLogicResponse = this.iteratePlayerIndex();
       } // Raise
       else if (inputNumber === 2) {
@@ -319,12 +359,12 @@ ${this._playerInfo.map(pi => this.getPlayerInfo(pi.index))}
       } // All in
       else if (inputNumber === 3) {
         this.bet(player.index, player.pool);
-        gameLogicResponse = this.iteratePlayerIndex();
         player.gameState = 'AllOut';
+        gameLogicResponse = this.iteratePlayerIndex();
       } // Fold
       else if (inputNumber === 4) {
-        gameLogicResponse = this.iteratePlayerIndex();
         player.gameState = 'Out';
+        gameLogicResponse = this.iteratePlayerIndex();
       }
     }
     else if (player.gameState === 'Raising') {
@@ -367,133 +407,132 @@ ${this._playerInfo.map(pi => this.getPlayerInfo(pi.index))}
   }
 
   private iteratePlayerIndex(): GameLogicResponse | null {
-    // Fix so player index is iterated correctly
-    const currentIndex: number = this._gameInfo.playerTurnIndex;
-    this._gameInfo.playerTurnIndex = (this._gameInfo.playerTurnIndex + 1) % this._gameInfo.setup.playerCount;
+    const goToNextStage: boolean = this._gameInfo.blindIndex === this._gameInfo.playerTurnIndex;
 
-    if (this._gameInfo.blindIndex === currentIndex) {
+    if (goToNextStage) {
+      this._gameInfo.playerTurnIndex = this._gameInfo.blindIndex;
+      this._playerInfo.forEach((player) => {
+        player.gameState = 'Picking';
+      });
+
       if (this._gameInfo.communityCards[4]!.isFaceDown === false) {
-        this._gameInfo.gameState = 'Reveal';
         return this.reveal();
       }
       else if (this._gameInfo.communityCards[3]!.isFaceDown === false) {
-        this._gameInfo.gameState = 'The River';
         return this.dealTheRiver();
       }
       else {
-        this._gameInfo.gameState = 'The Turn';
         return this.dealTheTurn();
       }
+    }
+
+    while (this._playerInfo[this._gameInfo.playerTurnIndex]!.gameState !== 'Picking' || goToNextStage) {
+      this._gameInfo.playerTurnIndex = (this._gameInfo.playerTurnIndex + 1) % this._gameInfo.setup.playerCount;
     }
 
     return null;
   }
 
-  private revealCommunityCard(): void {
-    this._gameInfo.deck.forEach((card: Card) => card.isFaceDown = false);
-  }
-
-  private revealPlayerCards(): void {
-    this._playerInfo.forEach((playerInfo: PlayerInfo) => playerInfo.cards.forEach((card: Card) => card.isFaceDown = false));
-  }
-
-  private handRank(hand: Array<Card>): { type: number; highValue: number; kickerValue: number | null; } {
-    const sorted: Array<Card> = [...hand, ...this._gameInfo.communityCards].sort((a: Card, b: Card) => b.value - a.value);
+  private handRank(hand: Array<Card>): { type: number; highValue: number; lowValue: number | null; kicker: number | null } {
+    // Lowest to highest
+    const sorted: Array<Card> = [...hand, ...this._gameInfo.communityCards].sort((a: Card, b: Card) => a.value - b.value);
     const kinds: { [key in string]: Array<Card> } = this.getKindsFromCards(sorted);
     const straight: Array<Card> = this.getStraightFromCards(sorted);
-    const flush: Array<Card> = Object.values(kinds).find((v: Array<Card>) => v.length >= 5) ?? [];
-    const fourOfAKind = Object.values(kinds).find((v) => v.length === 4);
-    const ThreeOfAKind = Object.values(kinds).filter((v) => v.length === 3);
-    const TwoOfAKind = Object.values(kinds).filter((v) => v.length === 2);
+    const flush: Array<Card> = this.getFlushFromCards(sorted);
+    const fourOfAKind: Array<Card> = Object.values(kinds).find((v) => v.length === 4) ?? [];
+    const ThreeOfAKind: Array<Array<Card>> = Object.values(kinds).filter((v) => v.length === 3);
+    const TwoOfAKind: Array<Array<Card>> = Object.values(kinds).filter((v) => v.length === 2);
 
-    const getHighValue = (cards: Array<Card>): number => cards[0]?.value || 0;
-    const getKickerValue = (cards: Array<Card>): number | null => {
-      const handValues = hand.map(card => card.value);
-      for (const card of cards) {
-        if (!handValues.includes(card.value)) {
-          return card.value;
-        }
-      }
-      return null;
-    };
 
     // Royal flush
-    if (straight.length === 5 && flush.length >= 4 && straight.every((card: Card) => card.suit === flush[0]?.suit) && getHighValue(straight) === 14) {
+    if (straight.length >= 5 && flush.length >= 5 && straight.every((card: Card) => card.suit === flush[0]!.suit) && straight[straight.length - 1]!.value === 14) {
       return {
         type: 9,
-        highValue: getHighValue(straight),
-        kickerValue: null
+        highValue: 14,
+        lowValue: null,
+        kicker: null
       };
     }
     // Straight flush
-    if (straight.length === 5 && flush.length >= 4 && straight.every((card: Card) => card.suit === flush[0]?.suit)) {
+    if (straight.length >= 5 && flush.length >= 5 && straight.every((card: Card) => card.suit === flush[0]!.suit)) {
       return {
         type: 8,
-        highValue: getHighValue(straight),
-        kickerValue: null
+        highValue: straight[straight.length - 1]!.value,
+        lowValue: null,
+        kicker: null
       };
     }
     // Four of a kind
-    if (fourOfAKind !== undefined) {
+    if (fourOfAKind.length !== 0) {
       return {
         type: 7,
-        highValue: getHighValue(fourOfAKind),
-        kickerValue: getKickerValue(sorted.filter(card => card.value !== getHighValue(fourOfAKind)))
+        highValue: fourOfAKind[fourOfAKind.length - 1]!.value,
+        lowValue: null,
+        kicker: sorted.find(card => card.value !== fourOfAKind[0]!.value)!.value
       };
     }
     // Full house
     if (ThreeOfAKind.length !== 0 && TwoOfAKind.length !== 0) {
       return {
         type: 6,
-        highValue: getHighValue(ThreeOfAKind[0]!),
-        kickerValue: getHighValue(TwoOfAKind[0]!)
+        highValue: ThreeOfAKind[0]![0]!.value,
+        lowValue: TwoOfAKind.map((cards: Array<Card>) => cards[0]!.value).reduce((a, b) => Math.max(a, b), 0),
+        kicker: null
       };
     }
     // Flush
     if (flush.length >= 5) {
       return {
         type: 5,
-        highValue: getHighValue(flush),
-        kickerValue: null
+        highValue: flush[flush.length - 1]!.value,
+        lowValue: null,
+        kicker: null
       };
     }
     // Straight
     if (straight.length === 5) {
       return {
         type: 4,
-        highValue: getHighValue(straight),
-        kickerValue: null
+        highValue: straight[straight.length - 1]!.value,
+        lowValue: null,
+        kicker: null
       };
     }
     // Three of a kind
     if (ThreeOfAKind.length !== 0) {
       return {
         type: 3,
-        highValue: getHighValue(ThreeOfAKind[0]!),
-        kickerValue: getKickerValue(sorted.filter(card => card.value !== getHighValue(ThreeOfAKind[0]!)))
+        highValue: ThreeOfAKind[0]![0]!.value,
+        lowValue: null,
+        kicker: sorted.filter((card: Card) => card.value !== ThreeOfAKind[0]![0]!.value).reduce((acc: number, card: Card) => Math.max(acc, card.value), 0)                
       };
     }
     // Two pair
     if (TwoOfAKind.length > 1) {
+      const highPair = TwoOfAKind.map((cards: Array<Card>) => cards[0]!.value).reduce((acc: number, cardValue: number) => Math.max(acc, cardValue), 0);
+      const lowPair = TwoOfAKind.map((cards: Array<Card>) => cards[0]!.value).filter((value: number) => value !== highPair).reduce((acc: number, cardValue: number) => Math.max(acc, cardValue), 0);
       return {
-        type: 2,
-        highValue: getHighValue(TwoOfAKind[0]!),
-        kickerValue: getHighValue(TwoOfAKind[1]!)
+          type: 2,
+          highValue: highPair,
+          lowValue: lowPair,
+          kicker: sorted.filter(card => card.value !== highPair && card.value !== lowPair).reduce((acc: number, card: Card) => Math.max(acc, card.value), 0)
       };
     }
     // Pair
     if (TwoOfAKind.length > 0) {
       return {
         type: 1,
-        highValue: getHighValue(TwoOfAKind[0]!),
-        kickerValue: getKickerValue(sorted.filter(card => card.value !== getHighValue(TwoOfAKind[0]!)))
+        highValue: TwoOfAKind[0]![0]!.value,
+        lowValue: null,
+        kicker: sorted.filter(card => card.value !== TwoOfAKind[0]![0]!.value).reduce((acc: number, card: Card) => Math.max(acc, card.value), 0)
       };
     }
     // High card
     return {
       type: 0,
-      highValue: getHighValue(sorted),
-      kickerValue: getKickerValue(hand)
+      highValue: sorted[sorted.length - 1]!.value,
+      lowValue: sorted[sorted.length - 2]!.value,
+      kicker: sorted[sorted.length - 3]!.value
     };
   }
 
@@ -511,14 +550,39 @@ ${this._playerInfo.map(pi => this.getPlayerInfo(pi.index))}
     const uniqueSorted = Array.from(new Set(sorted.map(card => card.value))).sort((a, b) => b - a);
     for (let i = 0; i <= uniqueSorted.length - 5; i++) {
       if (uniqueSorted.slice(i, i + 5).every((value, idx, arr) => value === arr[0]! - idx)) {
-        return sorted.filter(card => uniqueSorted.slice(i, i + 5).includes(card.value));
+        return sorted.filter(card => uniqueSorted.slice(i, i + 5).includes(card.value))
+          .sort((a, b) => a.value - b.value);  // Reverse to low -> high
       }
     }
 
     // Check for wheel straight (A-2-3-4-5)
     const wheel = [14, 5, 4, 3, 2];
     if (wheel.every(value => uniqueSorted.includes(value))) {
-      return sorted.filter(card => wheel.includes(card.value));
+      return sorted.filter(card => wheel.includes(card.value))
+        .sort((a, b) => a.value - b.value);  // Reverse to low -> high
+    }
+
+    return [];
+  }
+
+  private getFlushFromCards(sorted: Array<Card>): Array<Card> {
+    const suitCount: { [key: string]: Card[] } = {};
+
+    for (const card of sorted) {
+      if (!card.isFaceDown) {
+        if (!suitCount[card.suit]) {
+          suitCount[card.suit] = [];
+        }
+        suitCount[card.suit]!.push(card);
+      }
+    }
+
+    for (const suit in suitCount) {
+      if (suitCount[suit]!.length >= 5) {
+        return suitCount[suit]!
+          .sort((a, b) => a.value - b.value) // Sort to low -> high
+          .slice(0, 5); // return the first 5 cards of the flush suit
+      }
     }
 
     return [];
@@ -583,7 +647,7 @@ ${this._playerInfo.map(pi => this.getPlayerInfo(pi.index))}
     blindIndex: -1,
     playerTurnIndex: 0,
     deck: [],
-    pauseInput: true,
+    pauseInput: false,
     gameState: 'Setup',
     setup: {
       playerCount: 2,
@@ -669,7 +733,7 @@ interface PlayerInfo {
   pool: number;
   bet: number;
   cards: Array<Card>;
-  gameState: 'Raising' | 'Out' | 'AllOut' | 'Picking';
+  gameState: 'Raising' | 'Out' | 'AllOut' | 'Picking' | 'Call';
   raiseInfo: any;
 }
 
@@ -695,5 +759,5 @@ interface gameInfo {
   playerTurnIndex: number;
   deck: Array<Card>;
   pauseInput: boolean;
-  gameState: 'The Turn' | 'The River' | 'The Flop' | 'PlayerInput' | 'Reveal' | 'Setup';
+  gameState: 'The Flop' | 'PlayerInput' | 'Setup';
 }

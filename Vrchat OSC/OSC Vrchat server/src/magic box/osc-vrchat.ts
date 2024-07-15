@@ -62,12 +62,12 @@ export class OSCVrChat {
     return new Promise(resolve => setTimeout(resolve, 251));
   }
 
-  private positionToBits(val: number, size: number): number {
-    return val & (Math.pow(2, size) - 1);
+  private positionToBits(val: number, size: number, shift: number = 0): number {
+    return (val >> shift) & (Math.pow(2, size) - 1);
   }
 
   private replaceAt(string: string, index: number, replacement: string): string {
-    return string.substr(0, index) + replacement + string.substr(index + replacement.length);
+    return string.substring(0, index) + replacement + string.substring(index + replacement.length);
   }
 
   private piecePositionsToEightBitChunks(gameState: { [key in string]: number }): Array<{ name: EightBitChunkNames, value: number }> {
@@ -138,12 +138,12 @@ export class OSCVrChat {
       this.sendUdpMessage(`${byte.name}`, [{ type: 'i', value: byte.value }]);
     });
 
-    this.getAllocatedBits('overflow').forEach((bitAllocation: BitAllocation) => {
-      this.sendUdpMessage(`${bitAllocation.lsbName}`, [{ type: 'i', value: gameState[bitAllocation.name] }]);
+    this.getAllocatedBits('overflow').forEach((_bitAllocation: BitAllocation) => {
+      //this.sendUdpMessage(`${bitAllocation.lsbName}`, [{ type: 'i', value: gameState[bitAllocation.name] }]);
     });
 
-    this.getAllocatedBits('defaults').forEach((bitAllocation: BitAllocation) => {
-      this.sendUdpMessage(`${bitAllocation.lsbName}`, [{ type: 'i', value: gameState[bitAllocation.name] }]);
+    this.getAllocatedBits('defaults').forEach((_bitAllocation: BitAllocation) => {
+      //this.sendUdpMessage(`${bitAllocation.lsbName}`, [{ type: 'i', value: gameState[bitAllocation.name] }]);
     });
 
     this.getgamestate();
@@ -222,13 +222,13 @@ export class OSCVrChat {
 
   private getgamestate(): void {
     const gameState: { [key in string]: number } = this.gameLogic.getState();
-    const bitChunks: { [key in string]: number  } = this.piecePositionsToEightBitChunks(gameState)
-    .reduce((obj: { [key in string]: number }, item: { name: EightBitChunkNames; value: number; }) => {
-      obj[item.name] = item.value;
-      return obj;
-    }, {} as { [key in string]: number });
-    
-    this.connectedSocket?.emit(WebsocketName.server_send_game_state, {...gameState,  ...bitChunks});
+    const bitChunks: { [key in string]: number } = this.piecePositionsToEightBitChunks(gameState)
+      .reduce((obj: { [key in string]: number }, item: { name: EightBitChunkNames; value: number; }) => {
+        obj[item.name] = item.value;
+        return obj;
+      }, {} as { [key in string]: number });
+
+    this.connectedSocket?.emit(WebsocketName.server_send_game_state, { ...bitChunks, ...gameState });
   }
 
   private getdebuginfo(): void {

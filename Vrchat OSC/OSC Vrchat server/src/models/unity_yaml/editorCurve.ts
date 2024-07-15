@@ -4,7 +4,7 @@ export interface EditorCurve {
   serializedVersion: number;
   curve: {
     serializedVersion: number;
-    m_Curve: {
+    m_Curve: Array<{
       serializedVersion: number;
       time: number;
       value: number;
@@ -14,7 +14,7 @@ export interface EditorCurve {
       weightedMode: number;
       inWeight: number;
       outWeight: number;
-    },
+    }>,
     m_PreInfinity: number;
     m_PostInfinity: number;
     m_RotationOrder: number;

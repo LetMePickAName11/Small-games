@@ -42,6 +42,98 @@ export class GenerateUnityFiles {
     FileService.clearDirectory(this.outputExternalDirectory.slice(0, -1));
   }
 
+
+  private generateDataMapped(): void {
+    let startIndex: number = 0;
+    const bitAllocations: Array<BitAllocation> = [];
+    const userDefinedData: Array<BitAllocation> = FileService.getFileJson(this.userInputDirectory + 'data.json');
+
+    // Sort configData by size in descending order
+    const sorteduserDefinedData = userDefinedData.sort((a, b) => b.size - a.size);
+
+    // Iterate through shader bits (these need to be chunked)
+    for (const bitAllocation of sorteduserDefinedData.filter(cd => cd.type === 'Shader')) {
+      const range: { start: number, end: number } = {
+        start: startIndex,
+        end: startIndex + bitAllocation.size - 1
+      };
+
+      const startChunk: number = Math.floor(range.start / 8);
+      const endChunk: number = Math.floor(range.end / 8);
+      const bitChunks: Array<string> = Array.from({ length: endChunk - startChunk + 1 }, (_, i: number) => this.bitIndexToEightBitName[startChunk + i]!);
+
+      const res: BitAllocation = {
+        ...bitAllocation,
+        range: range,
+        bitStartIndex: range.start % 8,
+        bitChunks: bitChunks,
+        shaderParameters: bitChunks.map((_bitChunk: string, index: number) => `${bitAllocation.shaderParameters}_${index}`)
+      };
+
+      startIndex += bitAllocation.size;
+      bitAllocations.push(res);
+    }
+
+    let allocatedBitsSize: number = bitAllocations.reduce((acc, val) => acc + val.size, 0);
+    const allocatedInputBitsSize: number = this.inputData.length; // Input data is array of 1-bits
+    const overflowBits: number = allocatedBitsSize % 8;
+    startIndex += overflowBits;
+
+    if (overflowBits !== 0) {
+      const minrange: number = allocatedBitsSize - overflowBits;
+      const overflows: Array<BitAllocation> = bitAllocations.filter(b => b.range.start >= minrange);
+
+      // Filter out the overflow bit allocations from the original array
+      const nonOverflows: Array<BitAllocation> = bitAllocations.filter(b => b.range.start < minrange);
+      const lastChunkBeforeOverflow: string = nonOverflows[nonOverflows.length - 1]!.bitChunks.slice(-1)[0]!;
+      // 
+      nonOverflows
+        .filter((bitAllocation: BitAllocation) => bitAllocation!.bitChunks.slice(-1)[0]! === lastChunkBeforeOverflow)
+        .forEach((bitAllocation: BitAllocation) => bitAllocation.bitChunks.pop());
+
+      // Handle the overflow allocations
+      overflows.forEach((overflow, index) => {
+        for (let i = 0; i < overflow.size; i++) {
+          nonOverflows.push({
+            ...overflow,
+            range: { start: overflow.range.start + i, end: overflow.range.start + i },
+            size: 1,
+            bitChunks: [`Overflow_${index}_${i}`],
+            bitStartIndex: 0,
+          });
+        }
+      });
+
+      // Clear the bitAllocations array
+      bitAllocations.length = 0;
+      // Update the bitAllocations with the new list
+      bitAllocations.push(...nonOverflows);
+    }
+
+    for (const bitAllocation of sorteduserDefinedData.filter(cd => cd.type === 'Default')) {
+      const range: { start: number, end: number } = {
+        start: startIndex,
+        end: startIndex + bitAllocation.size - 1
+      };
+
+      const res: BitAllocation = {
+        ...bitAllocation,
+        range: range,
+        bitChunks: [`Default_${bitAllocation.name}`],
+        bitStartIndex: 0,
+      };
+      startIndex += bitAllocation.size;
+      bitAllocations.push(res);
+    }
+    allocatedBitsSize = bitAllocations.reduce((acc, val) => acc + val.size, 0);
+
+    if (allocatedBitsSize + allocatedInputBitsSize > 256) {
+      throw new Error(`Too many bits allocated (limit 256): ${allocatedBitsSize} + ${allocatedInputBitsSize}`);
+    }
+
+    FileService.writeToFile(this.outputInternalDirectory + 'data_mapped.json', bitAllocations);
+  }
+
   private generateGameObjectMap(): void {
     const gameObjectToShaders: Record<string, Set<Set<string>>> = {};
     const shaderToGameObjectMap: Record<string, string[]> = {};
@@ -83,159 +175,37 @@ export class GenerateUnityFiles {
     FileService.writeToFile(this.outputInternalDirectory + 'data_game_object_shader_parameter_map.json', finalMap);
   }
 
-  private generateDataMapped(): void {
-    let startIndex: number = 0;
-    const bitAllocations: Array<BitAllocation> = [];
-    const configData: Array<BitAllocation> = FileService.getFileJson(this.userInputDirectory + 'data.json');
-
-    // Sort configData by size in descending order
-    const sortedConfigData = configData.sort((a, b) => b.size - a.size);
-
-    // Iterate through shader bits (these need to be chunked)
-    for (const bitAllocation of sortedConfigData.filter(cd => cd.type === 'Shader')) {
-      let remainingSize = bitAllocation.size;
-      let currentStartIndex = startIndex;
-      let index = 0;
-
-      while (remainingSize > 0) {
-        // Determine the size for the current chunk (maximum 8 bits)
-        const currentChunkSize = Math.min(remainingSize, 8 - (currentStartIndex % 8));
-
-        const range: { start: number, end: number } = {
-          start: currentStartIndex,
-          end: currentStartIndex + currentChunkSize - 1
-        };
-
-        const res: BitAllocation = {
-          ...bitAllocation,
-          size: currentChunkSize,
-          range: range,
-          msbName: this.bitIndexToEightBitName[(range.start - range.start % 8) / 8]!,
-          lsbName: this.bitIndexToEightBitName[(range.start - range.start % 8) / 8 + 1]!,
-          bitIndex: range.start % 8,
-          shaderParameters: [`LSB${bitAllocation.shaderParameters}_${index}`, `MSB${bitAllocation.shaderParameters}_${index}`],
-          isPartOfSplit: bitAllocation.size > 8 // Flag to indicate part of a split
-        };
-
-        bitAllocations.push(res);
-
-        // Update the indices and remaining size
-        remainingSize -= currentChunkSize;
-        currentStartIndex += currentChunkSize;
-
-        // Ensure cumulative total doesn't inadvertently overflow
-        startIndex = currentStartIndex;
-        index += 1;
-      }
-    }
-
-    if (bitAllocations[bitAllocations.length - 1]!.bitIndex + bitAllocations[bitAllocations.length - 1]!.size === 8) {
-      const lsbName = bitAllocations[bitAllocations.length - 1]!.lsbName;
-      const msbName = bitAllocations[bitAllocations.length - 1]!.msbName;
-      bitAllocations.filter((bitAllocation: BitAllocation) => bitAllocation.lsbName === lsbName).forEach((bitAllocation: BitAllocation) => bitAllocation.lsbName = msbName);
-    }
-
-    let allocatedBitsSize: number = bitAllocations.reduce((acc, val) => acc + val.size, 0);
-    const allocatedInputBitsSize: number = this.inputData.length; // Input data is array of 1-bits
-    const overflowBits: number = allocatedBitsSize % 8;
-
-    if (overflowBits !== 0) {
-      const minrange: number = allocatedBitsSize - overflowBits;
-      const overflows: Array<BitAllocation> = bitAllocations.filter(b => b.range.start >= minrange);
-
-      // Filter out the overflow bit allocations from the original array
-      const nonOverflows: Array<BitAllocation> = bitAllocations.filter(b => b.range.start < minrange);
-      const lastChunkBeforeOverflow: string = nonOverflows[nonOverflows.length - 1]!.lsbName;
-
-      nonOverflows
-        .filter((bitAllocation: BitAllocation) => bitAllocation.lsbName === lastChunkBeforeOverflow)
-        .forEach((bitAllocation: BitAllocation) => bitAllocation.lsbName = bitAllocation.msbName);
-
-      // Handle the overflow allocations
-      overflows.forEach((overflow, index) => {
-        for (let i = 0; i < overflow.size; i++) {
-          nonOverflows.push({
-            range: { start: overflow.range.start + i, end: overflow.range.start + i },
-            size: 1,
-            name: overflow.name,
-            lsbName: `Overflow_${index}_${i}`,
-            msbName: `Overflow_${index}_${i}`,
-            bitIndex: 0,
-            objectNames: overflow.objectNames,
-            shaderParameters: overflow.shaderParameters,
-            type: 'Shader',
-            defaultValue: overflow.defaultValue,
-            isPartOfSplit: false
-          });
-        }
-      });
-
-      // Update the bitAllocations with the new list
-      bitAllocations.length = 0;
-      bitAllocations.push(...nonOverflows);
-    }
-
-    startIndex += overflowBits;
-
-    for (const bitAllocation of sortedConfigData.filter(cd => cd.type === 'Default')) {
-      const range: { start: number, end: number } = {
-        start: startIndex,
-        end: startIndex + bitAllocation.size - 1
-      };
-
-      const res: BitAllocation = {
-        ...bitAllocation,
-        range: range,
-        msbName: `Default_${bitAllocation.name}`,
-        lsbName: `Default_${bitAllocation.name}`,
-        bitIndex: 0,
-        shaderParameters: [],
-        isPartOfSplit: false
-      };
-      startIndex += bitAllocation.size;
-      bitAllocations.push(res);
-    }
-    allocatedBitsSize = bitAllocations.reduce((acc, val) => acc + val.size, 0);
-
-    if (allocatedBitsSize + allocatedInputBitsSize > 256) {
-      throw new Error(`Too many bits allocated (limit 256): ${allocatedBitsSize} + ${allocatedInputBitsSize}`);
-    }
-
-    FileService.writeToFile(this.outputInternalDirectory + 'data_mapped.json', bitAllocations);
-  }
-
   private generateVrcExpressionParamters(sceneYamlDocuments: Array<YamlDocument>): void {
-    const dataConfigurations: Array<BitAllocation> = FileService.getFileJson(this.outputInternalDirectory + 'data_mapped.json');
+    const dataMapped: Array<BitAllocation> = FileService.getFileJson(this.outputInternalDirectory + 'data_mapped.json');
 
     const chunks: Array<string> = [];
     const overflowingBits: Array<string> = [];
     const defaultBits: Array<{ name: string, defaultValue: number }> = [];
 
-    dataConfigurations.forEach((data: BitAllocation) => {
-      if (data.lsbName.includes('Overflow')) {
-        if (overflowingBits.includes(data.lsbName)) {
-          throw Error(`Dublicate data.json value: ${data}`);
+    dataMapped.forEach((data: BitAllocation) => {
+      data.bitChunks.forEach((bitChunkName: string) => {
+        if (bitChunkName.includes('Overflow')) {
+          if (overflowingBits.includes(bitChunkName)) {
+            throw Error(`Dublicate data.json value: ${data}`);
+          }
+
+          overflowingBits.push(bitChunkName);
+          return;
         }
 
-        overflowingBits.push(data.lsbName);
-        return;
-      }
+        if (bitChunkName.includes('Default')) {
+          if (defaultBits.some(db => db.name === bitChunkName)) {
+            throw Error(`Dublicate data.json value: ${data}`);
+          }
 
-      if (data.lsbName.includes('Default')) {
-        if (defaultBits.some(db => db.name === data.lsbName)) {
-          throw Error(`Dublicate data.json value: ${data}`);
+          defaultBits.push({ name: bitChunkName, defaultValue: data.defaultValue });
+          return;
         }
 
-        defaultBits.push({ name: data.lsbName, defaultValue: data.defaultValue });
-        return;
-      }
-
-      if (!chunks.includes(data.lsbName)) {
-        chunks.push(data.lsbName);
-      }
-      if (!chunks.includes(data.msbName)) {
-        chunks.push(data.msbName);
-      }
+        if (!chunks.includes(bitChunkName)) {
+          chunks.push(bitChunkName);
+        }
+      });
     });
 
     const yamlDocument: Array<YamlDocument> = [{
@@ -309,7 +279,7 @@ export class GenerateUnityFiles {
 
   private generateAnimations(): void {
     const data: Array<BitAllocation> = FileService.getFileJson(this.outputInternalDirectory + 'data_mapped.json');
-    const uniqueStartNames: Array<string> = [...new Set(data.flatMap(allocation => [allocation.lsbName, allocation.msbName]))];
+    const uniqueStartNames: Array<string> = [...new Set(data.flatMap(allocation => allocation.bitChunks))];
 
     const generateFloatCurve = (value: number, attribute: string, path: string): FloatCurve => {
       return {
@@ -360,17 +330,19 @@ export class GenerateUnityFiles {
         serializedVersion: 2,
         curve: {
           serializedVersion: 2,
-          m_Curve: {
-            serializedVersion: 3,
-            time: 0,
-            value: value,
-            inSlope: 0,
-            outSlope: 0,
-            tangentMode: 136,
-            weightedMode: 0,
-            inWeight: 0.33333334,
-            outWeight: 0.33333334,
-          },
+          m_Curve: [
+            {
+              serializedVersion: 3,
+              time: 0,
+              value: value,
+              inSlope: 0,
+              outSlope: 0,
+              tangentMode: 0,
+              weightedMode: 0,
+              inWeight: 0.33333334,
+              outWeight: 0.33333334,
+            }
+          ],
           m_PreInfinity: 2,
           m_PostInfinity: 2,
           m_RotationOrder: 4,
@@ -464,30 +436,31 @@ export class GenerateUnityFiles {
 
 
     for (const name of uniqueStartNames) {
+      const maxValue: number = name.includes('Overflow') ? 1 : 255;
+      const bitAllocations: Array<BitAllocation> = data.filter((bitAllocation: BitAllocation) => bitAllocation.bitChunks.includes(name));
+      const uniqueValues = [...new Set(bitAllocations.flatMap(b => b.bitChunks))];
+
       ['Start', 'End'].forEach((suffix: string) => {
-        const maxValue: number = name.includes('Overflow') ? 1 : 255;
+        const floatCurves: Array<FloatCurve> = [];
+        const genericBindings: Array<GenericBinding> = [];
+        const editorCurves: Array<EditorCurve> = [];
 
-        const [newFloatCurves, newGenericBindings, newEditorCurves] = generateAnimationPairData(suffix, data.filter((bitAllocation: BitAllocation) => bitAllocation.lsbName === name).map((bitAllocation: BitAllocation) => {
-          return {
-            ...bitAllocation,
-            shaderParameters: [
-              bitAllocation.shaderParameters[0]!
-            ]
-          }
-        }), maxValue);
-
-        const [newFloatCurves2, newGenericBindings2, newEditorCurves2] = generateAnimationPairData(suffix, data.filter((bitAllocation: BitAllocation) => bitAllocation.msbName === name).map((bitAllocation: BitAllocation) => {
-          return {
-            ...bitAllocation,
-            shaderParameters: [
-              bitAllocation.shaderParameters[1]!
-            ]
-          }
-        }), maxValue);
-
-        const floatCurves: Array<FloatCurve> = [...newFloatCurves, ...newFloatCurves2];
-        const genericBindings: Array<GenericBinding> = [...newGenericBindings, ...newGenericBindings2];
-        const editorCurves: Array<EditorCurve> = [...newEditorCurves, ...newEditorCurves2];
+        uniqueValues.forEach((_v, i) => {
+          const d = bitAllocations.map((bitAllocation: BitAllocation) => {
+            return {
+              ...bitAllocation,
+              shaderParameters: [
+                bitAllocation.shaderParameters[i]!
+              ]
+            }
+          }).filter((bitAllocation: BitAllocation) => {
+            return bitAllocation.shaderParameters[0] !== undefined;
+          });
+          const [newFloatCurves, newGenericBindings, newEditorCurves] = generateAnimationPairData(suffix, d, maxValue);
+          floatCurves.push(...newFloatCurves);
+          genericBindings.push(...newGenericBindings);
+          editorCurves.push(...newEditorCurves);
+        });
 
         const animation: Array<YamlDocument> = [{
           tag: this.documentNameToIdentifier.get('AnimationClip')!,
@@ -518,8 +491,7 @@ export class GenerateUnityFiles {
       const uniqueNames: Set<string> = new Set();
 
       for (const item of data) {
-        uniqueNames.add(item.lsbName);
-        uniqueNames.add(item.msbName);
+        item.bitChunks.forEach((bitchunkName: string) => uniqueNames.add(bitchunkName));
       }
 
       const uniqueNameList: Array<string> = Array.from(uniqueNames).sort();
@@ -784,7 +756,7 @@ export class GenerateUnityFiles {
       }
 
       return v;
-    });    
+    });
     this.updateSceneObject(sceneYamlDocuments, 'MonoBehaviour', ['expressionsMenu', 'baseAnimationLayers'], 'baseAnimationLayers', updateValue);
 
     FileService.createYamlDocuments(yamls, this.unityHeader, this.outputExternalDirectory + 'Animations/FX.controller');
@@ -792,8 +764,8 @@ export class GenerateUnityFiles {
   }
 
   private generateShadersAndMaterials(sceneYamlDocuments: Array<YamlDocument>): void {
-    const data: Array<Array<string>> = FileService.getFileJson(this.outputInternalDirectory + 'data_game_object_shader_parameter_map.json');
-    const data2: Array<BitAllocation> = FileService.getFileJson(this.outputInternalDirectory + 'data_mapped.json');
+    const dataShaderParamterMap: Array<Array<string>> = FileService.getFileJson(this.outputInternalDirectory + 'data_game_object_shader_parameter_map.json');
+    const dataMapped: Array<BitAllocation> = FileService.getFileJson(this.outputInternalDirectory + 'data_mapped.json');
     const sceneNode: SceneNode = this.createParentChildObject(sceneYamlDocuments);
 
     const generateMaterial = (name: string, shaderGuid: string, m_TexEnvs: Array<{ [key in string]: MTexEnvs }>, m_Ints: Array<{ [key in string]: number }>, m_Floats: Array<{ [key in string]: number }>, m_Colors: Array<{ [key in string]: Color }>): Material => {
@@ -817,19 +789,19 @@ export class GenerateUnityFiles {
           stringTagMap: {},
           disabledShaderPasses: [],
           m_LockedProperties: null,
-          m_SavedProperties: [{
+          m_SavedProperties: {
             serializedVersion: 3,
             m_TexEnvs: m_TexEnvs,
             m_Ints: m_Ints,
             m_Floats: m_Floats,
             m_Colors: m_Colors
-          }],
+          },
           m_BuildTextureStacks: []
         }
       }
     }
 
-    for (const [index, [key, values]] of Object.entries(data).entries()) {
+    for (const [index, [key, values]] of Object.entries(dataShaderParamterMap).entries()) {
       const shaderProperties: Array<string> = [];
       const shaderVariables: Array<string> = [];
       const m_TexEnvs: Array<{ [key in string]: MTexEnvs }> = [
@@ -853,21 +825,27 @@ export class GenerateUnityFiles {
           }
         }
       ];
-      const propertiesLines: Array<string> = key.split(', ');
 
-      for (let i = 0; i < propertiesLines.length; i++) {
-        const prop: string = propertiesLines[i]!;
+      key.split(', ').forEach((prop: string) => {
         shaderProperties.push(`_${prop} ("${prop}", Range(0,255)) = 0`);
-        shaderVariables.push(`float _${prop};`);
         m_Floats.push({ [`_${prop}`]: 0 });
+        shaderVariables.push(`float _${prop};`);
 
-        if (prop.includes('LSB')) {
-          const text = prop.replace('LSB', '');
-          shaderProperties.push(`_Index${text} ("Index${text}", Range(0,15)) = 0`);
-          shaderVariables.push(`float _Index${text};`);
-          m_Floats.push({ [`_Index${text}`]: -1 });
+        const k = prop.replaceAll('_', '').slice(0, -1);
+        const kk = `_${k}StartIndex ("${k}StartIndex", Range(0,15)) = 0`;
+
+        if (shaderProperties.includes(kk)) {
+          return;
         }
-      }
+
+        shaderProperties.push(kk);
+        m_Floats.push({ [`_${k}StartIndex`]: -1 });
+        shaderVariables.push(`float _${k}StartIndex;`);
+
+        shaderProperties.push(`_${k}BitsSize ("${k}BitsSize", Range(0,15)) = 0`);
+        m_Floats.push({ [`_${k}BitsSize`]: -1 });
+        shaderVariables.push(`float _${k}BitsSize;`);
+      });
 
       const shaderPropertiesString: string = shaderProperties.sort().join('\n        ');
       const shaderVariablesString: string = shaderVariables.sort().join('\n        ');
@@ -900,13 +878,21 @@ export class GenerateUnityFiles {
         const matFloats: any = m_Floats
           .map((matFloat: any) => {
             for (const [key, value] of Object.entries(matFloat)) {
-              if (!(value === -1 && key.includes('_Index'))) {
+              if (value !== -1) {
                 continue;
               }
 
-              const relevantData: Array<BitAllocation> = data2.filter((d: BitAllocation) => d.shaderParameters.some((e: string) => e.includes(key.replace('_Index', ''))))
-              const matchingAllocation: BitAllocation = relevantData.find((v) => v.objectNames.some(o => o === matNam))!;
-              return { [key]: matchingAllocation.bitIndex };
+              if (key.includes('StartIndex')) {
+                const relevantData: Array<BitAllocation> = dataMapped.filter((bitAllocation: BitAllocation) => bitAllocation.shaderParameters.some((e: string) => e.replaceAll('_', '').includes(key.replace('StartIndex', '').replaceAll('_', ''))))
+                const matchingAllocation: BitAllocation = relevantData.find((v) => v.objectNames.some(o => o === matNam))!;
+                return { [key]: matchingAllocation.bitStartIndex };
+              }
+
+              if (key.includes('BitsSize')) {
+                const relevantData: Array<BitAllocation> = dataMapped.filter((bitAllocation: BitAllocation) => bitAllocation.shaderParameters.some((e: string) => e.replaceAll('_', '').includes(key.replace('BitsSize', '').replaceAll('_', ''))))
+                const matchingAllocation: BitAllocation = relevantData.find((v) => v.objectNames.some(o => o === matNam))!;
+                return { [key]: matchingAllocation.size };
+              }
             }
             return matFloat;
           });
@@ -935,8 +921,8 @@ export class GenerateUnityFiles {
           throw Error(`Missing game node in scene ${matNam}`);
         }
 
-        (node.meshRenderer?.data as {MeshRenderer: any}).MeshRenderer.m_Materials = [
-          {fileID: yaml[0]?.anchor, guid: metadata.guid, type: 2}
+        (node.meshRenderer?.data as { MeshRenderer: any }).MeshRenderer.m_Materials = [
+          { fileID: yaml[0]?.anchor, guid: metadata.guid, type: 2 }
         ];
         FileService.createYamlDocuments(yaml, this.unityHeader, this.outputExternalDirectory + `/Materials/${matNam.replace('/', '_')}.mat`);
         FileService.createYamlDocument(metadata, null, this.outputExternalDirectory + `/Materials/${matNam.replace('/', '_')}.mat.meta`);
@@ -975,28 +961,28 @@ export class GenerateUnityFiles {
 
   private recursivelyGetBuildA(yamlDocuments: Array<YamlDocument>, childrenReferences: Array<FileReference>, path: string): Array<SceneNode> {
     return childrenReferences.map((fileReference: FileReference) => yamlDocuments.find(yamlDocument => yamlDocument.anchor === fileReference.fileID)!)
-            .filter((yamlDocument: YamlDocument) => yamlDocument.tag === this.documentNameToIdentifier.get('Transform'))
-            .map((transform: YamlDocument): SceneNode => {
-              const transformData: any = (transform.data as { Transform: any }).Transform;
-              const gameObject: YamlDocument = yamlDocuments.find((yamlDocument: YamlDocument) => yamlDocument.anchor === transformData.m_GameObject.fileID)!;
-              const gameObjectData: any = (gameObject.data as { GameObject: any }).GameObject;
+      .filter((yamlDocument: YamlDocument) => yamlDocument.tag === this.documentNameToIdentifier.get('Transform'))
+      .map((transform: YamlDocument): SceneNode => {
+        const transformData: any = (transform.data as { Transform: any }).Transform;
+        const gameObject: YamlDocument = yamlDocuments.find((yamlDocument: YamlDocument) => yamlDocument.anchor === transformData.m_GameObject.fileID)!;
+        const gameObjectData: any = (gameObject.data as { GameObject: any }).GameObject;
 
-              const parent: YamlDocument | undefined = yamlDocuments.find((yamlDocument: YamlDocument) => yamlDocument.anchor === transformData.m_Father.fileID);
-              const fullPath: string = `${path}/${gameObjectData.m_Name}`;
-              const meshRenderer: YamlDocument | undefined = yamlDocuments
-                .filter((yamlDocument: YamlDocument) => yamlDocument.tag === this.documentNameToIdentifier.get('MeshRenderer'))
-                .find((yamlDocument: YamlDocument) => (yamlDocument.data as { MeshRenderer: any }).MeshRenderer.m_GameObject.fileID === gameObject.anchor)!;
+        const parent: YamlDocument | undefined = yamlDocuments.find((yamlDocument: YamlDocument) => yamlDocument.anchor === transformData.m_Father.fileID);
+        const fullPath: string = `${path}/${gameObjectData.m_Name}`;
+        const meshRenderer: YamlDocument | undefined = yamlDocuments
+          .filter((yamlDocument: YamlDocument) => yamlDocument.tag === this.documentNameToIdentifier.get('MeshRenderer'))
+          .find((yamlDocument: YamlDocument) => (yamlDocument.data as { MeshRenderer: any }).MeshRenderer.m_GameObject.fileID === gameObject.anchor)!;
 
-              return {
-                path: fullPath,
-                gameObject: gameObject,
-                transform: transform,
-                meshRenderer: meshRenderer,
-                parent: parent,
-                children: this.recursivelyGetBuildA(yamlDocuments, transformData.m_Children, fullPath)
-              };
-            });
-  }     
+        return {
+          path: fullPath,
+          gameObject: gameObject,
+          transform: transform,
+          meshRenderer: meshRenderer,
+          parent: parent,
+          children: this.recursivelyGetBuildA(yamlDocuments, transformData.m_Children, fullPath)
+        };
+      });
+  }
 
   private removeFirstOccurrence(str: string, toRemove: string): string {
     let parts: Array<string> = str.split(toRemove);
@@ -1032,10 +1018,10 @@ export class GenerateUnityFiles {
     return gameObjects;
   }
 
-  private getObjectInYamlDocument(sceneObject: Array<YamlDocument>, tag: string, identifierKeys: Array<string> = [], parameterKey: string){
-    const gameObjects: Array<YamlDocument> =  this.getYamlDocuments(sceneObject, tag, identifierKeys);
+  private getObjectInYamlDocument(sceneObject: Array<YamlDocument>, tag: string, identifierKeys: Array<string> = [], parameterKey: string) {
+    const gameObjects: Array<YamlDocument> = this.getYamlDocuments(sceneObject, tag, identifierKeys);
 
-    if(gameObjects.length !== 1){
+    if (gameObjects.length !== 1) {
       throw Error(`Invalid ${tag} with identifiers ${identifierKeys}. Too many matches found ${gameObjects.length}`);
     }
 
@@ -1070,7 +1056,7 @@ export class GenerateUnityFiles {
         return key;
       }
     }
-    
+
     throw Error(`Value: ${value} is not in map: ${map}`);
   }
 
@@ -1151,7 +1137,7 @@ interface ConfigData {
 
 interface SceneNode {
   path: string;
-  gameObject: YamlDocument; 
+  gameObject: YamlDocument;
   transform: YamlDocument;
   meshRenderer: YamlDocument | undefined;
   children: Array<SceneNode>;

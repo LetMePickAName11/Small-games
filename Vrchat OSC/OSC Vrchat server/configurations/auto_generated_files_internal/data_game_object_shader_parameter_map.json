@@ -1,5 +1,5 @@
 {
-  "LSBPoolValue_0, LSBPoolValue_1, MSBPoolValue_0, MSBPoolValue_1": [
+  "PoolValue_0, PoolValue_1": [
     "Avatar/Community/Pool",
     "Avatar/Player_2/Pool",
     "Avatar/Player_3/Pool",
@@ -8,7 +8,7 @@
     "Avatar/Player_7/Pool",
     "Avatar/Player_8/Pool"
   ],
-  "LSBBetValue_0, LSBBetValue_1, LSBInfo_Plane_0, MSBBetValue_0, MSBBetValue_1, MSBInfo_Plane_0": [
+  "BetValue_0, BetValue_1, Info_Plane_0": [
     "Avatar/Player_1/Info_Plane",
     "Avatar/Player_2/Info_Plane",
     "Avatar/Player_3/Info_Plane",
@@ -18,11 +18,11 @@
     "Avatar/Player_7/Info_Plane",
     "Avatar/Player_8/Info_Plane"
   ],
-  "LSBPoolValue_0, LSBPoolValue_1, LSBPoolValue_2, MSBPoolValue_0, MSBPoolValue_1, MSBPoolValue_2": [
+  "PoolValue_0, PoolValue_1, PoolValue_2": [
     "Avatar/Player_1/Pool",
     "Avatar/Player_4/Pool"
   ],
-  "LSBCard_Index_0, LSBCard_Index_1, MSBCard_Index_0, MSBCard_Index_1": [
+  "Card_Index_0, Card_Index_1": [
     "Avatar/Community/Card_1",
     "Avatar/Community/Card_2",
     "Avatar/Community/Card_5",
@@ -35,7 +35,7 @@
     "Avatar/Player_7/Card_1",
     "Avatar/Player_8/Card_2"
   ],
-  "LSBCard_Index_0, MSBCard_Index_0": [
+  "Card_Index_0": [
     "Avatar/Community/Card_3",
     "Avatar/Community/Card_4",
     "Avatar/Player_1/Card_2",

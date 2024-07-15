@@ -1,48 +1,28 @@
 [
   {
-    "size": 8,
+    "size": 11,
     "name": "Community_Pool",
     "objectNames": [
       "Avatar/Community/Pool"
     ],
     "shaderParameters": [
-      "LSBPoolValue_0",
-      "MSBPoolValue_0"
+      "PoolValue_0",
+      "PoolValue_1"
     ],
     "type": "Shader",
     "defaultValue": 0,
     "range": {
       "start": 0,
-      "end": 7
-    },
-    "msbName": "BitChunk0",
-    "lsbName": "BitChunk1",
-    "bitIndex": 0,
-    "isPartOfSplit": true
-  },
-  {
-    "size": 3,
-    "name": "Community_Pool",
-    "objectNames": [
-      "Avatar/Community/Pool"
-    ],
-    "shaderParameters": [
-      "LSBPoolValue_1",
-      "MSBPoolValue_1"
-    ],
-    "type": "Shader",
-    "defaultValue": 0,
-    "range": {
-      "start": 8,
       "end": 10
     },
-    "msbName": "BitChunk1",
-    "lsbName": "BitChunk2",
-    "bitIndex": 0,
-    "isPartOfSplit": true
+    "bitStartIndex": 0,
+    "bitChunks": [
+      "BitChunk0",
+      "BitChunk1"
+    ]
   },
   {
-    "size": 5,
+    "size": 11,
     "name": "Bet_Value",
     "objectNames": [
       "Avatar/Player_1/Info_Plane",
@@ -55,509 +35,244 @@
       "Avatar/Player_8/Info_Plane"
     ],
     "shaderParameters": [
-      "LSBBetValue_0",
-      "MSBBetValue_0"
+      "BetValue_0",
+      "BetValue_1"
     ],
     "type": "Shader",
     "defaultValue": 0,
     "range": {
       "start": 11,
-      "end": 15
-    },
-    "msbName": "BitChunk1",
-    "lsbName": "BitChunk2",
-    "bitIndex": 3,
-    "isPartOfSplit": true
-  },
-  {
-    "size": 6,
-    "name": "Bet_Value",
-    "objectNames": [
-      "Avatar/Player_1/Info_Plane",
-      "Avatar/Player_2/Info_Plane",
-      "Avatar/Player_3/Info_Plane",
-      "Avatar/Player_4/Info_Plane",
-      "Avatar/Player_5/Info_Plane",
-      "Avatar/Player_6/Info_Plane",
-      "Avatar/Player_7/Info_Plane",
-      "Avatar/Player_8/Info_Plane"
-    ],
-    "shaderParameters": [
-      "LSBBetValue_1",
-      "MSBBetValue_1"
-    ],
-    "type": "Shader",
-    "defaultValue": 0,
-    "range": {
-      "start": 16,
       "end": 21
     },
-    "msbName": "BitChunk2",
-    "lsbName": "BitChunk3",
-    "bitIndex": 0,
-    "isPartOfSplit": true
+    "bitStartIndex": 3,
+    "bitChunks": [
+      "BitChunk1",
+      "BitChunk2"
+    ]
   },
   {
-    "size": 2,
+    "size": 11,
     "name": "Player_1_Pool",
     "objectNames": [
       "Avatar/Player_1/Pool"
     ],
     "shaderParameters": [
-      "LSBPoolValue_0",
-      "MSBPoolValue_0"
+      "PoolValue_0",
+      "PoolValue_1",
+      "PoolValue_2"
     ],
     "type": "Shader",
     "defaultValue": 0,
     "range": {
       "start": 22,
-      "end": 23
-    },
-    "msbName": "BitChunk2",
-    "lsbName": "BitChunk3",
-    "bitIndex": 6,
-    "isPartOfSplit": true
-  },
-  {
-    "size": 8,
-    "name": "Player_1_Pool",
-    "objectNames": [
-      "Avatar/Player_1/Pool"
-    ],
-    "shaderParameters": [
-      "LSBPoolValue_1",
-      "MSBPoolValue_1"
-    ],
-    "type": "Shader",
-    "defaultValue": 0,
-    "range": {
-      "start": 24,
-      "end": 31
-    },
-    "msbName": "BitChunk3",
-    "lsbName": "BitChunk4",
-    "bitIndex": 0,
-    "isPartOfSplit": true
-  },
-  {
-    "size": 1,
-    "name": "Player_1_Pool",
-    "objectNames": [
-      "Avatar/Player_1/Pool"
-    ],
-    "shaderParameters": [
-      "LSBPoolValue_2",
-      "MSBPoolValue_2"
-    ],
-    "type": "Shader",
-    "defaultValue": 0,
-    "range": {
-      "start": 32,
       "end": 32
     },
-    "msbName": "BitChunk4",
-    "lsbName": "BitChunk5",
-    "bitIndex": 0,
-    "isPartOfSplit": true
+    "bitStartIndex": 6,
+    "bitChunks": [
+      "BitChunk2",
+      "BitChunk3",
+      "BitChunk4"
+    ]
   },
   {
-    "size": 7,
+    "size": 11,
     "name": "Player_2_Pool",
     "objectNames": [
       "Avatar/Player_2/Pool"
     ],
     "shaderParameters": [
-      "LSBPoolValue_0",
-      "MSBPoolValue_0"
+      "PoolValue_0",
+      "PoolValue_1"
     ],
     "type": "Shader",
     "defaultValue": 0,
     "range": {
       "start": 33,
-      "end": 39
-    },
-    "msbName": "BitChunk4",
-    "lsbName": "BitChunk5",
-    "bitIndex": 1,
-    "isPartOfSplit": true
-  },
-  {
-    "size": 4,
-    "name": "Player_2_Pool",
-    "objectNames": [
-      "Avatar/Player_2/Pool"
-    ],
-    "shaderParameters": [
-      "LSBPoolValue_1",
-      "MSBPoolValue_1"
-    ],
-    "type": "Shader",
-    "defaultValue": 0,
-    "range": {
-      "start": 40,
       "end": 43
     },
-    "msbName": "BitChunk5",
-    "lsbName": "BitChunk6",
-    "bitIndex": 0,
-    "isPartOfSplit": true
+    "bitStartIndex": 1,
+    "bitChunks": [
+      "BitChunk4",
+      "BitChunk5"
+    ]
   },
   {
-    "size": 4,
+    "size": 11,
     "name": "Player_3_Pool",
     "objectNames": [
       "Avatar/Player_3/Pool"
     ],
     "shaderParameters": [
-      "LSBPoolValue_0",
-      "MSBPoolValue_0"
+      "PoolValue_0",
+      "PoolValue_1"
     ],
     "type": "Shader",
     "defaultValue": 0,
     "range": {
       "start": 44,
-      "end": 47
-    },
-    "msbName": "BitChunk5",
-    "lsbName": "BitChunk6",
-    "bitIndex": 4,
-    "isPartOfSplit": true
-  },
-  {
-    "size": 7,
-    "name": "Player_3_Pool",
-    "objectNames": [
-      "Avatar/Player_3/Pool"
-    ],
-    "shaderParameters": [
-      "LSBPoolValue_1",
-      "MSBPoolValue_1"
-    ],
-    "type": "Shader",
-    "defaultValue": 0,
-    "range": {
-      "start": 48,
       "end": 54
     },
-    "msbName": "BitChunk6",
-    "lsbName": "BitChunk7",
-    "bitIndex": 0,
-    "isPartOfSplit": true
+    "bitStartIndex": 4,
+    "bitChunks": [
+      "BitChunk5",
+      "BitChunk6"
+    ]
   },
   {
-    "size": 1,
+    "size": 11,
     "name": "Player_4_Pool",
     "objectNames": [
       "Avatar/Player_4/Pool"
     ],
     "shaderParameters": [
-      "LSBPoolValue_0",
-      "MSBPoolValue_0"
+      "PoolValue_0",
+      "PoolValue_1",
+      "PoolValue_2"
     ],
     "type": "Shader",
     "defaultValue": 0,
     "range": {
       "start": 55,
-      "end": 55
-    },
-    "msbName": "BitChunk6",
-    "lsbName": "BitChunk7",
-    "bitIndex": 7,
-    "isPartOfSplit": true
-  },
-  {
-    "size": 8,
-    "name": "Player_4_Pool",
-    "objectNames": [
-      "Avatar/Player_4/Pool"
-    ],
-    "shaderParameters": [
-      "LSBPoolValue_1",
-      "MSBPoolValue_1"
-    ],
-    "type": "Shader",
-    "defaultValue": 0,
-    "range": {
-      "start": 56,
-      "end": 63
-    },
-    "msbName": "BitChunk7",
-    "lsbName": "BitChunk8",
-    "bitIndex": 0,
-    "isPartOfSplit": true
-  },
-  {
-    "size": 2,
-    "name": "Player_4_Pool",
-    "objectNames": [
-      "Avatar/Player_4/Pool"
-    ],
-    "shaderParameters": [
-      "LSBPoolValue_2",
-      "MSBPoolValue_2"
-    ],
-    "type": "Shader",
-    "defaultValue": 0,
-    "range": {
-      "start": 64,
       "end": 65
     },
-    "msbName": "BitChunk8",
-    "lsbName": "BitChunk9",
-    "bitIndex": 0,
-    "isPartOfSplit": true
+    "bitStartIndex": 7,
+    "bitChunks": [
+      "BitChunk6",
+      "BitChunk7",
+      "BitChunk8"
+    ]
   },
   {
-    "size": 6,
+    "size": 11,
     "name": "Player_5_Pool",
     "objectNames": [
       "Avatar/Player_5/Pool"
     ],
     "shaderParameters": [
-      "LSBPoolValue_0",
-      "MSBPoolValue_0"
+      "PoolValue_0",
+      "PoolValue_1"
     ],
     "type": "Shader",
     "defaultValue": 0,
     "range": {
       "start": 66,
-      "end": 71
-    },
-    "msbName": "BitChunk8",
-    "lsbName": "BitChunk9",
-    "bitIndex": 2,
-    "isPartOfSplit": true
-  },
-  {
-    "size": 5,
-    "name": "Player_5_Pool",
-    "objectNames": [
-      "Avatar/Player_5/Pool"
-    ],
-    "shaderParameters": [
-      "LSBPoolValue_1",
-      "MSBPoolValue_1"
-    ],
-    "type": "Shader",
-    "defaultValue": 0,
-    "range": {
-      "start": 72,
       "end": 76
     },
-    "msbName": "BitChunk9",
-    "lsbName": "BitChunk10",
-    "bitIndex": 0,
-    "isPartOfSplit": true
+    "bitStartIndex": 2,
+    "bitChunks": [
+      "BitChunk8",
+      "BitChunk9"
+    ]
   },
   {
-    "size": 3,
+    "size": 11,
     "name": "Player_6_Pool",
     "objectNames": [
       "Avatar/Player_6/Pool"
     ],
     "shaderParameters": [
-      "LSBPoolValue_0",
-      "MSBPoolValue_0"
+      "PoolValue_0",
+      "PoolValue_1"
     ],
     "type": "Shader",
     "defaultValue": 0,
     "range": {
       "start": 77,
-      "end": 79
-    },
-    "msbName": "BitChunk9",
-    "lsbName": "BitChunk10",
-    "bitIndex": 5,
-    "isPartOfSplit": true
-  },
-  {
-    "size": 8,
-    "name": "Player_6_Pool",
-    "objectNames": [
-      "Avatar/Player_6/Pool"
-    ],
-    "shaderParameters": [
-      "LSBPoolValue_1",
-      "MSBPoolValue_1"
-    ],
-    "type": "Shader",
-    "defaultValue": 0,
-    "range": {
-      "start": 80,
       "end": 87
     },
-    "msbName": "BitChunk10",
-    "lsbName": "BitChunk11",
-    "bitIndex": 0,
-    "isPartOfSplit": true
+    "bitStartIndex": 5,
+    "bitChunks": [
+      "BitChunk9",
+      "BitChunk10"
+    ]
   },
   {
-    "size": 8,
+    "size": 11,
     "name": "Player_7_Pool",
     "objectNames": [
       "Avatar/Player_7/Pool"
     ],
     "shaderParameters": [
-      "LSBPoolValue_0",
-      "MSBPoolValue_0"
+      "PoolValue_0",
+      "PoolValue_1"
     ],
     "type": "Shader",
     "defaultValue": 0,
     "range": {
       "start": 88,
-      "end": 95
-    },
-    "msbName": "BitChunk11",
-    "lsbName": "BitChunk12",
-    "bitIndex": 0,
-    "isPartOfSplit": true
-  },
-  {
-    "size": 3,
-    "name": "Player_7_Pool",
-    "objectNames": [
-      "Avatar/Player_7/Pool"
-    ],
-    "shaderParameters": [
-      "LSBPoolValue_1",
-      "MSBPoolValue_1"
-    ],
-    "type": "Shader",
-    "defaultValue": 0,
-    "range": {
-      "start": 96,
       "end": 98
     },
-    "msbName": "BitChunk12",
-    "lsbName": "BitChunk13",
-    "bitIndex": 0,
-    "isPartOfSplit": true
+    "bitStartIndex": 0,
+    "bitChunks": [
+      "BitChunk11",
+      "BitChunk12"
+    ]
   },
   {
-    "size": 5,
+    "size": 11,
     "name": "Player_8_Pool",
     "objectNames": [
       "Avatar/Player_8/Pool"
     ],
     "shaderParameters": [
-      "LSBPoolValue_0",
-      "MSBPoolValue_0"
+      "PoolValue_0",
+      "PoolValue_1"
     ],
     "type": "Shader",
     "defaultValue": 0,
     "range": {
       "start": 99,
-      "end": 103
+      "end": 109
     },
-    "msbName": "BitChunk12",
-    "lsbName": "BitChunk13",
-    "bitIndex": 3,
-    "isPartOfSplit": true
+    "bitStartIndex": 3,
+    "bitChunks": [
+      "BitChunk12",
+      "BitChunk13"
+    ]
   },
   {
     "size": 6,
-    "name": "Player_8_Pool",
-    "objectNames": [
-      "Avatar/Player_8/Pool"
-    ],
-    "shaderParameters": [
-      "LSBPoolValue_1",
-      "MSBPoolValue_1"
-    ],
-    "type": "Shader",
-    "defaultValue": 0,
-    "range": {
-      "start": 104,
-      "end": 109
-    },
-    "msbName": "BitChunk13",
-    "lsbName": "BitChunk14",
-    "bitIndex": 0,
-    "isPartOfSplit": true
-  },
-  {
-    "size": 2,
     "name": "Community_Card_1",
     "objectNames": [
       "Avatar/Community/Card_1"
     ],
     "shaderParameters": [
-      "LSBCard_Index_0",
-      "MSBCard_Index_0"
+      "Card_Index_0",
+      "Card_Index_1"
     ],
     "type": "Shader",
     "defaultValue": 0,
     "range": {
       "start": 110,
-      "end": 111
-    },
-    "msbName": "BitChunk13",
-    "lsbName": "BitChunk14",
-    "bitIndex": 6,
-    "isPartOfSplit": false
-  },
-  {
-    "size": 4,
-    "name": "Community_Card_1",
-    "objectNames": [
-      "Avatar/Community/Card_1"
-    ],
-    "shaderParameters": [
-      "LSBCard_Index_1",
-      "MSBCard_Index_1"
-    ],
-    "type": "Shader",
-    "defaultValue": 0,
-    "range": {
-      "start": 112,
       "end": 115
     },
-    "msbName": "BitChunk14",
-    "lsbName": "BitChunk15",
-    "bitIndex": 0,
-    "isPartOfSplit": false
+    "bitStartIndex": 6,
+    "bitChunks": [
+      "BitChunk13",
+      "BitChunk14"
+    ]
   },
   {
-    "size": 4,
+    "size": 6,
     "name": "Community_Card_2",
     "objectNames": [
       "Avatar/Community/Card_2"
     ],
     "shaderParameters": [
-      "LSBCard_Index_0",
-      "MSBCard_Index_0"
+      "Card_Index_0",
+      "Card_Index_1"
     ],
     "type": "Shader",
     "defaultValue": 0,
     "range": {
       "start": 116,
-      "end": 119
-    },
-    "msbName": "BitChunk14",
-    "lsbName": "BitChunk15",
-    "bitIndex": 4,
-    "isPartOfSplit": false
-  },
-  {
-    "size": 2,
-    "name": "Community_Card_2",
-    "objectNames": [
-      "Avatar/Community/Card_2"
-    ],
-    "shaderParameters": [
-      "LSBCard_Index_1",
-      "MSBCard_Index_1"
-    ],
-    "type": "Shader",
-    "defaultValue": 0,
-    "range": {
-      "start": 120,
       "end": 121
     },
-    "msbName": "BitChunk15",
-    "lsbName": "BitChunk16",
-    "bitIndex": 0,
-    "isPartOfSplit": false
+    "bitStartIndex": 4,
+    "bitChunks": [
+      "BitChunk14",
+      "BitChunk15"
+    ]
   },
   {
     "size": 6,
@@ -566,8 +281,7 @@
       "Avatar/Community/Card_3"
     ],
     "shaderParameters": [
-      "LSBCard_Index_0",
-      "MSBCard_Index_0"
+      "Card_Index_0"
     ],
     "type": "Shader",
     "defaultValue": 0,
@@ -575,10 +289,10 @@
       "start": 122,
       "end": 127
     },
-    "msbName": "BitChunk15",
-    "lsbName": "BitChunk16",
-    "bitIndex": 2,
-    "isPartOfSplit": false
+    "bitStartIndex": 2,
+    "bitChunks": [
+      "BitChunk15"
+    ]
   },
   {
     "size": 6,
@@ -587,8 +301,7 @@
       "Avatar/Community/Card_4"
     ],
     "shaderParameters": [
-      "LSBCard_Index_0",
-      "MSBCard_Index_0"
+      "Card_Index_0"
     ],
     "type": "Shader",
     "defaultValue": 0,
@@ -596,94 +309,54 @@
       "start": 128,
       "end": 133
     },
-    "msbName": "BitChunk16",
-    "lsbName": "BitChunk17",
-    "bitIndex": 0,
-    "isPartOfSplit": false
+    "bitStartIndex": 0,
+    "bitChunks": [
+      "BitChunk16"
+    ]
   },
   {
-    "size": 2,
+    "size": 6,
     "name": "Community_Card_5",
     "objectNames": [
       "Avatar/Community/Card_5"
     ],
     "shaderParameters": [
-      "LSBCard_Index_0",
-      "MSBCard_Index_0"
+      "Card_Index_0",
+      "Card_Index_1"
     ],
     "type": "Shader",
     "defaultValue": 0,
     "range": {
       "start": 134,
-      "end": 135
-    },
-    "msbName": "BitChunk16",
-    "lsbName": "BitChunk17",
-    "bitIndex": 6,
-    "isPartOfSplit": false
-  },
-  {
-    "size": 4,
-    "name": "Community_Card_5",
-    "objectNames": [
-      "Avatar/Community/Card_5"
-    ],
-    "shaderParameters": [
-      "LSBCard_Index_1",
-      "MSBCard_Index_1"
-    ],
-    "type": "Shader",
-    "defaultValue": 0,
-    "range": {
-      "start": 136,
       "end": 139
     },
-    "msbName": "BitChunk17",
-    "lsbName": "BitChunk18",
-    "bitIndex": 0,
-    "isPartOfSplit": false
+    "bitStartIndex": 6,
+    "bitChunks": [
+      "BitChunk16",
+      "BitChunk17"
+    ]
   },
   {
-    "size": 4,
+    "size": 6,
     "name": "Player_1_Card_1",
     "objectNames": [
       "Avatar/Player_1/Card_1"
     ],
     "shaderParameters": [
-      "LSBCard_Index_0",
-      "MSBCard_Index_0"
+      "Card_Index_0",
+      "Card_Index_1"
     ],
     "type": "Shader",
     "defaultValue": 0,
     "range": {
       "start": 140,
-      "end": 143
-    },
-    "msbName": "BitChunk17",
-    "lsbName": "BitChunk18",
-    "bitIndex": 4,
-    "isPartOfSplit": false
-  },
-  {
-    "size": 2,
-    "name": "Player_1_Card_1",
-    "objectNames": [
-      "Avatar/Player_1/Card_1"
-    ],
-    "shaderParameters": [
-      "LSBCard_Index_1",
-      "MSBCard_Index_1"
-    ],
-    "type": "Shader",
-    "defaultValue": 0,
-    "range": {
-      "start": 144,
       "end": 145
     },
-    "msbName": "BitChunk18",
-    "lsbName": "BitChunk19",
-    "bitIndex": 0,
-    "isPartOfSplit": false
+    "bitStartIndex": 4,
+    "bitChunks": [
+      "BitChunk17",
+      "BitChunk18"
+    ]
   },
   {
     "size": 6,
@@ -692,8 +365,7 @@
       "Avatar/Player_1/Card_2"
     ],
     "shaderParameters": [
-      "LSBCard_Index_0",
-      "MSBCard_Index_0"
+      "Card_Index_0"
     ],
     "type": "Shader",
     "defaultValue": 0,
@@ -701,10 +373,10 @@
       "start": 146,
       "end": 151
     },
-    "msbName": "BitChunk18",
-    "lsbName": "BitChunk19",
-    "bitIndex": 2,
-    "isPartOfSplit": false
+    "bitStartIndex": 2,
+    "bitChunks": [
+      "BitChunk18"
+    ]
   },
   {
     "size": 6,
@@ -713,8 +385,7 @@
       "Avatar/Player_2/Card_1"
     ],
     "shaderParameters": [
-      "LSBCard_Index_0",
-      "MSBCard_Index_0"
+      "Card_Index_0"
     ],
     "type": "Shader",
     "defaultValue": 0,
@@ -722,94 +393,54 @@
       "start": 152,
       "end": 157
     },
-    "msbName": "BitChunk19",
-    "lsbName": "BitChunk20",
-    "bitIndex": 0,
-    "isPartOfSplit": false
+    "bitStartIndex": 0,
+    "bitChunks": [
+      "BitChunk19"
+    ]
   },
   {
-    "size": 2,
+    "size": 6,
     "name": "Player_2_Card_2",
     "objectNames": [
       "Avatar/Player_2/Card_2"
     ],
     "shaderParameters": [
-      "LSBCard_Index_0",
-      "MSBCard_Index_0"
+      "Card_Index_0",
+      "Card_Index_1"
     ],
     "type": "Shader",
     "defaultValue": 0,
     "range": {
       "start": 158,
-      "end": 159
-    },
-    "msbName": "BitChunk19",
-    "lsbName": "BitChunk20",
-    "bitIndex": 6,
-    "isPartOfSplit": false
-  },
-  {
-    "size": 4,
-    "name": "Player_2_Card_2",
-    "objectNames": [
-      "Avatar/Player_2/Card_2"
-    ],
-    "shaderParameters": [
-      "LSBCard_Index_1",
-      "MSBCard_Index_1"
-    ],
-    "type": "Shader",
-    "defaultValue": 0,
-    "range": {
-      "start": 160,
       "end": 163
     },
-    "msbName": "BitChunk20",
-    "lsbName": "BitChunk21",
-    "bitIndex": 0,
-    "isPartOfSplit": false
+    "bitStartIndex": 6,
+    "bitChunks": [
+      "BitChunk19",
+      "BitChunk20"
+    ]
   },
   {
-    "size": 4,
+    "size": 6,
     "name": "Player_1_Card_1",
     "objectNames": [
       "Avatar/Player_3/Card_1"
     ],
     "shaderParameters": [
-      "LSBCard_Index_0",
-      "MSBCard_Index_0"
+      "Card_Index_0",
+      "Card_Index_1"
     ],
     "type": "Shader",
     "defaultValue": 0,
     "range": {
       "start": 164,
-      "end": 167
-    },
-    "msbName": "BitChunk20",
-    "lsbName": "BitChunk21",
-    "bitIndex": 4,
-    "isPartOfSplit": false
-  },
-  {
-    "size": 2,
-    "name": "Player_1_Card_1",
-    "objectNames": [
-      "Avatar/Player_3/Card_1"
-    ],
-    "shaderParameters": [
-      "LSBCard_Index_1",
-      "MSBCard_Index_1"
-    ],
-    "type": "Shader",
-    "defaultValue": 0,
-    "range": {
-      "start": 168,
       "end": 169
     },
-    "msbName": "BitChunk21",
-    "lsbName": "BitChunk22",
-    "bitIndex": 0,
-    "isPartOfSplit": false
+    "bitStartIndex": 4,
+    "bitChunks": [
+      "BitChunk20",
+      "BitChunk21"
+    ]
   },
   {
     "size": 6,
@@ -818,8 +449,7 @@
       "Avatar/Player_3/Card_2"
     ],
     "shaderParameters": [
-      "LSBCard_Index_0",
-      "MSBCard_Index_0"
+      "Card_Index_0"
     ],
     "type": "Shader",
     "defaultValue": 0,
@@ -827,10 +457,10 @@
       "start": 170,
       "end": 175
     },
-    "msbName": "BitChunk21",
-    "lsbName": "BitChunk22",
-    "bitIndex": 2,
-    "isPartOfSplit": false
+    "bitStartIndex": 2,
+    "bitChunks": [
+      "BitChunk21"
+    ]
   },
   {
     "size": 6,
@@ -839,8 +469,7 @@
       "Avatar/Player_4/Card_1"
     ],
     "shaderParameters": [
-      "LSBCard_Index_0",
-      "MSBCard_Index_0"
+      "Card_Index_0"
     ],
     "type": "Shader",
     "defaultValue": 0,
@@ -848,94 +477,54 @@
       "start": 176,
       "end": 181
     },
-    "msbName": "BitChunk22",
-    "lsbName": "BitChunk23",
-    "bitIndex": 0,
-    "isPartOfSplit": false
+    "bitStartIndex": 0,
+    "bitChunks": [
+      "BitChunk22"
+    ]
   },
   {
-    "size": 2,
+    "size": 6,
     "name": "Player_4_Card_2",
     "objectNames": [
       "Avatar/Player_4/Card_2"
     ],
     "shaderParameters": [
-      "LSBCard_Index_0",
-      "MSBCard_Index_0"
+      "Card_Index_0",
+      "Card_Index_1"
     ],
     "type": "Shader",
     "defaultValue": 0,
     "range": {
       "start": 182,
-      "end": 183
-    },
-    "msbName": "BitChunk22",
-    "lsbName": "BitChunk23",
-    "bitIndex": 6,
-    "isPartOfSplit": false
-  },
-  {
-    "size": 4,
-    "name": "Player_4_Card_2",
-    "objectNames": [
-      "Avatar/Player_4/Card_2"
-    ],
-    "shaderParameters": [
-      "LSBCard_Index_1",
-      "MSBCard_Index_1"
-    ],
-    "type": "Shader",
-    "defaultValue": 0,
-    "range": {
-      "start": 184,
       "end": 187
     },
-    "msbName": "BitChunk23",
-    "lsbName": "BitChunk24",
-    "bitIndex": 0,
-    "isPartOfSplit": false
+    "bitStartIndex": 6,
+    "bitChunks": [
+      "BitChunk22",
+      "BitChunk23"
+    ]
   },
   {
-    "size": 4,
+    "size": 6,
     "name": "Player_5_Card_1",
     "objectNames": [
       "Avatar/Player_5/Card_1"
     ],
     "shaderParameters": [
-      "LSBCard_Index_0",
-      "MSBCard_Index_0"
+      "Card_Index_0",
+      "Card_Index_1"
     ],
     "type": "Shader",
     "defaultValue": 0,
     "range": {
       "start": 188,
-      "end": 191
-    },
-    "msbName": "BitChunk23",
-    "lsbName": "BitChunk24",
-    "bitIndex": 4,
-    "isPartOfSplit": false
-  },
-  {
-    "size": 2,
-    "name": "Player_5_Card_1",
-    "objectNames": [
-      "Avatar/Player_5/Card_1"
-    ],
-    "shaderParameters": [
-      "LSBCard_Index_1",
-      "MSBCard_Index_1"
-    ],
-    "type": "Shader",
-    "defaultValue": 0,
-    "range": {
-      "start": 192,
       "end": 193
     },
-    "msbName": "BitChunk24",
-    "lsbName": "BitChunk25",
-    "bitIndex": 0,
-    "isPartOfSplit": false
+    "bitStartIndex": 4,
+    "bitChunks": [
+      "BitChunk23",
+      "BitChunk24"
+    ]
   },
   {
     "size": 6,
@@ -944,8 +533,7 @@
       "Avatar/Player_5/Card_2"
     ],
     "shaderParameters": [
-      "LSBCard_Index_0",
-      "MSBCard_Index_0"
+      "Card_Index_0"
     ],
     "type": "Shader",
     "defaultValue": 0,
@@ -953,10 +541,10 @@
       "start": 194,
       "end": 199
     },
-    "msbName": "BitChunk24",
-    "lsbName": "BitChunk25",
-    "bitIndex": 2,
-    "isPartOfSplit": false
+    "bitStartIndex": 2,
+    "bitChunks": [
+      "BitChunk24"
+    ]
   },
   {
     "size": 6,
@@ -965,8 +553,7 @@
       "Avatar/Player_6/Card_1"
     ],
     "shaderParameters": [
-      "LSBCard_Index_0",
-      "MSBCard_Index_0"
+      "Card_Index_0"
     ],
     "type": "Shader",
     "defaultValue": 0,
@@ -974,94 +561,54 @@
       "start": 200,
       "end": 205
     },
-    "msbName": "BitChunk25",
-    "lsbName": "BitChunk26",
-    "bitIndex": 0,
-    "isPartOfSplit": false
+    "bitStartIndex": 0,
+    "bitChunks": [
+      "BitChunk25"
+    ]
   },
   {
-    "size": 2,
+    "size": 6,
     "name": "Player_6_Card_2",
     "objectNames": [
       "Avatar/Player_6/Card_2"
     ],
     "shaderParameters": [
-      "LSBCard_Index_0",
-      "MSBCard_Index_0"
+      "Card_Index_0",
+      "Card_Index_1"
     ],
     "type": "Shader",
     "defaultValue": 0,
     "range": {
       "start": 206,
-      "end": 207
-    },
-    "msbName": "BitChunk25",
-    "lsbName": "BitChunk26",
-    "bitIndex": 6,
-    "isPartOfSplit": false
-  },
-  {
-    "size": 4,
-    "name": "Player_6_Card_2",
-    "objectNames": [
-      "Avatar/Player_6/Card_2"
-    ],
-    "shaderParameters": [
-      "LSBCard_Index_1",
-      "MSBCard_Index_1"
-    ],
-    "type": "Shader",
-    "defaultValue": 0,
-    "range": {
-      "start": 208,
       "end": 211
     },
-    "msbName": "BitChunk26",
-    "lsbName": "BitChunk27",
-    "bitIndex": 0,
-    "isPartOfSplit": false
+    "bitStartIndex": 6,
+    "bitChunks": [
+      "BitChunk25",
+      "BitChunk26"
+    ]
   },
   {
-    "size": 4,
+    "size": 6,
     "name": "Player_7_Card_1",
     "objectNames": [
       "Avatar/Player_7/Card_1"
     ],
     "shaderParameters": [
-      "LSBCard_Index_0",
-      "MSBCard_Index_0"
+      "Card_Index_0",
+      "Card_Index_1"
     ],
     "type": "Shader",
     "defaultValue": 0,
     "range": {
       "start": 212,
-      "end": 215
-    },
-    "msbName": "BitChunk26",
-    "lsbName": "BitChunk27",
-    "bitIndex": 4,
-    "isPartOfSplit": false
-  },
-  {
-    "size": 2,
-    "name": "Player_7_Card_1",
-    "objectNames": [
-      "Avatar/Player_7/Card_1"
-    ],
-    "shaderParameters": [
-      "LSBCard_Index_1",
-      "MSBCard_Index_1"
-    ],
-    "type": "Shader",
-    "defaultValue": 0,
-    "range": {
-      "start": 216,
       "end": 217
     },
-    "msbName": "BitChunk27",
-    "lsbName": "BitChunk28",
-    "bitIndex": 0,
-    "isPartOfSplit": false
+    "bitStartIndex": 4,
+    "bitChunks": [
+      "BitChunk26",
+      "BitChunk27"
+    ]
   },
   {
     "size": 6,
@@ -1070,8 +617,7 @@
       "Avatar/Player_7/Card_2"
     ],
     "shaderParameters": [
-      "LSBCard_Index_0",
-      "MSBCard_Index_0"
+      "Card_Index_0"
     ],
     "type": "Shader",
     "defaultValue": 0,
@@ -1079,10 +625,10 @@
       "start": 218,
       "end": 223
     },
-    "msbName": "BitChunk27",
-    "lsbName": "BitChunk28",
-    "bitIndex": 2,
-    "isPartOfSplit": false
+    "bitStartIndex": 2,
+    "bitChunks": [
+      "BitChunk27"
+    ]
   },
   {
     "size": 6,
@@ -1091,8 +637,7 @@
       "Avatar/Player_8/Card_1"
     ],
     "shaderParameters": [
-      "LSBCard_Index_0",
-      "MSBCard_Index_0"
+      "Card_Index_0"
     ],
     "type": "Shader",
     "defaultValue": 0,
@@ -1100,52 +645,32 @@
       "start": 224,
       "end": 229
     },
-    "msbName": "BitChunk28",
-    "lsbName": "BitChunk29",
-    "bitIndex": 0,
-    "isPartOfSplit": false
+    "bitStartIndex": 0,
+    "bitChunks": [
+      "BitChunk28"
+    ]
   },
   {
-    "size": 2,
+    "size": 6,
     "name": "Player_8_Card_2",
     "objectNames": [
       "Avatar/Player_8/Card_2"
     ],
     "shaderParameters": [
-      "LSBCard_Index_0",
-      "MSBCard_Index_0"
+      "Card_Index_0",
+      "Card_Index_1"
     ],
     "type": "Shader",
     "defaultValue": 0,
     "range": {
       "start": 230,
-      "end": 231
-    },
-    "msbName": "BitChunk28",
-    "lsbName": "BitChunk29",
-    "bitIndex": 6,
-    "isPartOfSplit": false
-  },
-  {
-    "size": 4,
-    "name": "Player_8_Card_2",
-    "objectNames": [
-      "Avatar/Player_8/Card_2"
-    ],
-    "shaderParameters": [
-      "LSBCard_Index_1",
-      "MSBCard_Index_1"
-    ],
-    "type": "Shader",
-    "defaultValue": 0,
-    "range": {
-      "start": 232,
       "end": 235
     },
-    "msbName": "BitChunk29",
-    "lsbName": "BitChunk29",
-    "bitIndex": 0,
-    "isPartOfSplit": false
+    "bitStartIndex": 6,
+    "bitChunks": [
+      "BitChunk28",
+      "BitChunk29"
+    ]
   },
   {
     "size": 4,
@@ -1161,8 +686,7 @@
       "Avatar/Player_8/Info_Plane"
     ],
     "shaderParameters": [
-      "LSBInfo_Plane_0",
-      "MSBInfo_Plane_0"
+      "Info_Plane_0"
     ],
     "type": "Shader",
     "defaultValue": 0,
@@ -1170,10 +694,10 @@
       "start": 236,
       "end": 239
     },
-    "msbName": "BitChunk29",
-    "lsbName": "BitChunk29",
-    "bitIndex": 4,
-    "isPartOfSplit": false
+    "bitStartIndex": 4,
+    "bitChunks": [
+      "BitChunk29"
+    ]
   },
   {
     "size": 1,
@@ -1186,10 +710,10 @@
       "start": 240,
       "end": 240
     },
-    "msbName": "Default_Player_1_Turn",
-    "lsbName": "Default_Player_1_Turn",
-    "bitIndex": 0,
-    "isPartOfSplit": false
+    "bitChunks": [
+      "Default_Player_1_Turn"
+    ],
+    "bitStartIndex": 0
   },
   {
     "size": 1,
@@ -1202,10 +726,10 @@
       "start": 241,
       "end": 241
     },
-    "msbName": "Default_Player_2_Turn",
-    "lsbName": "Default_Player_2_Turn",
-    "bitIndex": 0,
-    "isPartOfSplit": false
+    "bitChunks": [
+      "Default_Player_2_Turn"
+    ],
+    "bitStartIndex": 0
   },
   {
     "size": 1,
@@ -1218,10 +742,10 @@
       "start": 242,
       "end": 242
     },
-    "msbName": "Default_Player_3_Turn",
-    "lsbName": "Default_Player_3_Turn",
-    "bitIndex": 0,
-    "isPartOfSplit": false
+    "bitChunks": [
+      "Default_Player_3_Turn"
+    ],
+    "bitStartIndex": 0
   },
   {
     "size": 1,
@@ -1234,10 +758,10 @@
       "start": 243,
       "end": 243
     },
-    "msbName": "Default_Player_4_Turn",
-    "lsbName": "Default_Player_4_Turn",
-    "bitIndex": 0,
-    "isPartOfSplit": false
+    "bitChunks": [
+      "Default_Player_4_Turn"
+    ],
+    "bitStartIndex": 0
   },
   {
     "size": 1,
@@ -1250,10 +774,10 @@
       "start": 244,
       "end": 244
     },
-    "msbName": "Default_Player_5_Turn",
-    "lsbName": "Default_Player_5_Turn",
-    "bitIndex": 0,
-    "isPartOfSplit": false
+    "bitChunks": [
+      "Default_Player_5_Turn"
+    ],
+    "bitStartIndex": 0
   },
   {
     "size": 1,
@@ -1266,10 +790,10 @@
       "start": 245,
       "end": 245
     },
-    "msbName": "Default_Player_6_Turn",
-    "lsbName": "Default_Player_6_Turn",
-    "bitIndex": 0,
-    "isPartOfSplit": false
+    "bitChunks": [
+      "Default_Player_6_Turn"
+    ],
+    "bitStartIndex": 0
   },
   {
     "size": 1,
@@ -1282,10 +806,10 @@
       "start": 246,
       "end": 246
     },
-    "msbName": "Default_Player_7_Turn",
-    "lsbName": "Default_Player_7_Turn",
-    "bitIndex": 0,
-    "isPartOfSplit": false
+    "bitChunks": [
+      "Default_Player_7_Turn"
+    ],
+    "bitStartIndex": 0
   },
   {
     "size": 1,
@@ -1298,9 +822,9 @@
       "start": 247,
       "end": 247
     },
-    "msbName": "Default_Player_8_Turn",
-    "lsbName": "Default_Player_8_Turn",
-    "bitIndex": 0,
-    "isPartOfSplit": false
+    "bitChunks": [
+      "Default_Player_8_Turn"
+    ],
+    "bitStartIndex": 0
   }
 ]

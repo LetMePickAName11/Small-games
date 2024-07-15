@@ -83,6 +83,11 @@ export class DebugComponent implements OnInit, OnDestroy {
     return value.id;
   }
 
+  // Ensure that it does not sort by javascript standards
+  public customSortBitchunk = (_a: any, _b: any): number => {
+    return 0;
+  }
+
 
   private getWebsocketData(): void {
     this.inputConfigurations = this.websocketService.$inputConfigurations.value;

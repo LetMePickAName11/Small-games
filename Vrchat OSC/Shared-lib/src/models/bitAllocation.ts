@@ -3,14 +3,12 @@ export interface BitAllocation {
     start: number;
     end: number;
   };
+  name: string;
   size: number;
-  name: string; // paramater name
-  lsbName: string;
-  msbName: string;
-  bitIndex: number;
-  objectNames: Array<string>; // Unity object name which properties will be updated via generated animations
-  shaderParameters: Array<string>; // Shader paramter names. Will be split into MSB and LSB
+  bitStartIndex: number;
+  bitChunks: Array<string>;
+  objectNames: Array<string>;
+  shaderParameters: Array<string>;
   type: 'Shader' | 'Default';
   defaultValue: number;
-  isPartOfSplit: boolean;
 }

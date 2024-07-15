@@ -7,7 +7,7 @@
 {{debugInfo.value}}
     </pre>
     <div style="margin: auto; width: fit-content; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem 1rem;">
-      <div *ngFor="let gs of gameState.value | keyvalue" style="display: grid; grid-template-columns: 1fr auto;">
+      <div *ngFor="let gs of gameState.value | keyvalue:customSortBitchunk" style="display: grid; grid-template-columns: 1fr auto;">
         <div>
           {{gs.key}}
         </div>

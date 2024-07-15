@@ -22,7 +22,7 @@ export interface Material {
     stringTagMap: any;
     disabledShaderPasses: Array<any>;
     m_LockedProperties: any;
-    m_SavedProperties: Array<MSavedProperty>;
+    m_SavedProperties: MSavedProperty;
     m_BuildTextureStacks: Array<any>;
   }
 }
