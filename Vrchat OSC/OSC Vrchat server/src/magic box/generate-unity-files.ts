@@ -279,7 +279,7 @@ export class GenerateUnityFiles {
 
   private generateAnimations(): void {
     const data: Array<BitAllocation> = FileService.getFileJson(this.outputInternalDirectory + 'data_mapped.json');
-    const uniqueStartNames: Array<string> = [...new Set(data.flatMap(allocation => allocation.bitChunks))];
+    const uniqueNames: Array<string> = [...new Set(data.flatMap(allocation => allocation.bitChunks))];
 
     const generateFloatCurve = (value: number, attribute: string, path: string): FloatCurve => {
       return {
@@ -293,7 +293,7 @@ export class GenerateUnityFiles {
               value: value,
               inSlope: 0,
               outSlope: 0,
-              tangentMode: 136,
+              tangentMode: 0,
               weightedMode: 0,
               inWeight: 0.33333334,
               outWeight: 0.33333334,
@@ -434,33 +434,25 @@ export class GenerateUnityFiles {
       ];
     }
 
-
-    for (const name of uniqueStartNames) {
+    for (const name of uniqueNames) {
       const maxValue: number = name.includes('Overflow') ? 1 : 255;
-      const bitAllocations: Array<BitAllocation> = data.filter((bitAllocation: BitAllocation) => bitAllocation.bitChunks.includes(name));
-      const uniqueValues = [...new Set(bitAllocations.flatMap(b => b.bitChunks))];
+      const bitAllocations: Array<BitAllocation> = data.filter((bitAllocation: BitAllocation) => bitAllocation.bitChunks.includes(name))
+        .map((bitAllocation: BitAllocation) => {
+          const pairShaderParamterIndex: number = bitAllocation.bitChunks.findIndex((v) => v === name);
+          if (pairShaderParamterIndex === -1) {
+            throw Error('Something broke :c');
+          }
+
+          return {
+            ...bitAllocation,
+            shaderParameters: [
+              bitAllocation.shaderParameters[pairShaderParamterIndex]!
+            ]
+          };
+        });
 
       ['Start', 'End'].forEach((suffix: string) => {
-        const floatCurves: Array<FloatCurve> = [];
-        const genericBindings: Array<GenericBinding> = [];
-        const editorCurves: Array<EditorCurve> = [];
-
-        uniqueValues.forEach((_v, i) => {
-          const d = bitAllocations.map((bitAllocation: BitAllocation) => {
-            return {
-              ...bitAllocation,
-              shaderParameters: [
-                bitAllocation.shaderParameters[i]!
-              ]
-            }
-          }).filter((bitAllocation: BitAllocation) => {
-            return bitAllocation.shaderParameters[0] !== undefined;
-          });
-          const [newFloatCurves, newGenericBindings, newEditorCurves] = generateAnimationPairData(suffix, d, maxValue);
-          floatCurves.push(...newFloatCurves);
-          genericBindings.push(...newGenericBindings);
-          editorCurves.push(...newEditorCurves);
-        });
+        const [floatCurves, genericBindings, editorCurves] = generateAnimationPairData(suffix, bitAllocations, maxValue);
 
         const animation: Array<YamlDocument> = [{
           tag: this.documentNameToIdentifier.get('AnimationClip')!,

@@ -62,8 +62,8 @@ export class OSCVrChat {
     return new Promise(resolve => setTimeout(resolve, 251));
   }
 
-  private positionToBits(val: number, size: number, shift: number = 0): number {
-    return (val >> shift) & (Math.pow(2, size) - 1);
+  private positionToBits(val: number, size: number): number {
+    return val & (Math.pow(2, size) - 1);
   }
 
   private replaceAt(string: string, index: number, replacement: string): string {
@@ -76,7 +76,9 @@ export class OSCVrChat {
     let currentIndex: number = 0;
 
     for (const bitAllocation of chunkedBits) {
-      const positionBits: string = this.positionToBits(gameState[bitAllocation.name]!, bitAllocation.size).toString(2).padStart(bitAllocation.size, '0');
+      const positionBits: string = this.positionToBits(gameState[bitAllocation.name]!, bitAllocation.size)
+        .toString(2)
+        .padStart(bitAllocation.size, '0');
       positionBitsString = this.replaceAt(positionBitsString, currentIndex, positionBits);
       currentIndex += bitAllocation.size;
     }
@@ -138,12 +140,12 @@ export class OSCVrChat {
       this.sendUdpMessage(`${byte.name}`, [{ type: 'i', value: byte.value }]);
     });
 
-    this.getAllocatedBits('overflow').forEach((_bitAllocation: BitAllocation) => {
-      //this.sendUdpMessage(`${bitAllocation.lsbName}`, [{ type: 'i', value: gameState[bitAllocation.name] }]);
+    this.getAllocatedBits('overflow').forEach((bitAllocation: BitAllocation) => {
+      this.sendUdpMessage(`${bitAllocation.bitChunks[0]}`, [{ type: 'i', value: gameState[bitAllocation.name] }]);
     });
 
-    this.getAllocatedBits('defaults').forEach((_bitAllocation: BitAllocation) => {
-      //this.sendUdpMessage(`${bitAllocation.lsbName}`, [{ type: 'i', value: gameState[bitAllocation.name] }]);
+    this.getAllocatedBits('defaults').forEach((bitAllocation: BitAllocation) => {
+      this.sendUdpMessage(`${bitAllocation.bitChunks[0]}`, [{ type: 'i', value: gameState[bitAllocation.name] }]);
     });
 
     this.getgamestate();

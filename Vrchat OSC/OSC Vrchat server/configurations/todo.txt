@@ -27,7 +27,7 @@ Fix highlighting ✓
 
 Version 1.1
 1. Add automatical file transfer to unity
-2. Add automatical material, animation controller, vrc expressions linking to their gameobjects
+2. Add automatical material, animation controller, vrc expressions linking to their gameobjects ✓
 3. Finish UI
  3.1 Finish debug page
  3.2 Fix config view for both configuration and Inputs

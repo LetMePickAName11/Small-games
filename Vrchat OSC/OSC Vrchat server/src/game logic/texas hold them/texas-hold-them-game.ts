@@ -11,14 +11,14 @@ export class TexasHoldThem implements OSCVrChatGameLogic {
       Community_Card_5: this.getCard(null, 4),
       Community_Pool: this.getPool(null),
       Bet_Value: this.getBetValue(),
-      Player_1_Turn: this.getPlayerTurn(1),
-      Player_2_Turn: this.getPlayerTurn(2),
-      Player_3_Turn: this.getPlayerTurn(3),
-      Player_4_Turn: this.getPlayerTurn(4),
-      Player_5_Turn: this.getPlayerTurn(5),
-      Player_6_Turn: this.getPlayerTurn(6),
-      Player_7_Turn: this.getPlayerTurn(7),
-      Player_8_Turn: this.getPlayerTurn(8),
+      Player_1_Turn: this.getPlayerTurn(0),
+      Player_2_Turn: this.getPlayerTurn(1),
+      Player_3_Turn: this.getPlayerTurn(2),
+      Player_4_Turn: this.getPlayerTurn(3),
+      Player_5_Turn: this.getPlayerTurn(4),
+      Player_6_Turn: this.getPlayerTurn(5),
+      Player_7_Turn: this.getPlayerTurn(6),
+      Player_8_Turn: this.getPlayerTurn(7),
       Blind: this.getBlind(),
       Player_1_Card_1: this.getCard(0, 0),
       Player_1_Card_2: this.getCard(0, 1),
@@ -53,6 +53,16 @@ export class TexasHoldThem implements OSCVrChatGameLogic {
     return this._gameInfo.playerTurnIndex === playerIndex ? 1 : 0;
   }
   private getBetValue(): number {
+    if (!this._gameInfo.setup.complete) {
+      return 0;
+    }
+
+    const player = this._playerInfo.find((player) => player.index === this._gameInfo.playerTurnIndex)!;
+
+    if (player.bet !== 0) {
+      return player.bet;
+    }
+
     return this._gameInfo.communityBetSize;
   }
   private getPool(index: number | null): number {
@@ -62,7 +72,7 @@ export class TexasHoldThem implements OSCVrChatGameLogic {
     if (index === null) {
       return this._gameInfo.communityPool;
     }
-    if (index > this._gameInfo.setup.playerCount - 1) {
+    if (index > this._playerInfo.length - 1) {
       return 0;
     }
 
@@ -78,7 +88,7 @@ export class TexasHoldThem implements OSCVrChatGameLogic {
     if (index === null) {
       card = this._gameInfo.communityCards[cardIndex]!;
     }
-    else if (index > this._gameInfo.setup.playerCount - 1) {
+    else if (index > this._playerInfo.length - 1) {
       return this._hiddenCardIndex;
     }
     else {
@@ -131,13 +141,13 @@ ${this._playerInfo.map(pi => this.getPlayerDebugInfo(pi.index))}
   }
 
   private getPlayerDebugInfo(playerIndex: number) {
-    const player = this._playerInfo[playerIndex]!;
+    const player = this._playerInfo.find(player => player.index === playerIndex)!;
     const handRank = this.handRank(player.cards);
     return `
     Player ${playerIndex + 1}:
     ${`Index: ${player.index}`}
     ${`Pool: ${player.pool}`}
-    Cards: ${handRank.type} | high: ${handRank.highValue} | kicker: ${handRank.lowValue}
+    Cards: ${handRank.type} | high: ${handRank.highValue} | low: ${handRank.lowValue} | kicker: ${handRank.kicker}
         ${player.cards[0]!.rank} of ${player.cards[0]!.suit} is ${player.cards[0]!.isFaceDown ? 'facedown' : 'faceup'}
         ${player.cards[1]!.rank} of ${player.cards[1]!.suit} is ${player.cards[1]!.isFaceDown ? 'facedown' : 'faceup'}
     `;
@@ -166,7 +176,7 @@ ${this._playerInfo.map(pi => this.getPlayerDebugInfo(pi.index))}
             bet: 0,
             cards: [],
             gameState: 'Picking',
-            raiseInfo: null,
+            raiseInfo: 1,
           }
         );
       }
@@ -183,16 +193,16 @@ ${this._playerInfo.map(pi => this.getPlayerDebugInfo(pi.index))}
     // Generate a deck
     const deck: Array<Card> = this.generateDeck();
     // Update who is the blind
-    const blindIndex: number = this._gameInfo.blindIndex === this._playerInfo.length ? 0 : this._gameInfo.blindIndex + 1;
+    const blindIndex: number = (this._gameInfo.blindIndex + 1) % this._playerInfo.length;
     // Reset game info
     this._gameInfo = {
       communityPool: 0,
       communityBetSize: 0,
       communityCards: [],
       blindIndex: blindIndex,
-      playerTurnIndex: blindIndex + 1,
+      playerTurnIndex: (blindIndex + 1) % this._playerInfo.length,
       deck: deck,
-      pauseInput: true,
+      pauseInput: false,
       gameState: 'PlayerInput',
       setup: this._gameInfo.setup
     };
@@ -210,10 +220,7 @@ ${this._playerInfo.map(pi => this.getPlayerDebugInfo(pi.index))}
 
     // Mandatory blind bet
     this.bet(blindIndex, 5);
-    // Wait for animations and then start
-    setTimeout(() => {
-      this._gameInfo.pauseInput = false;
-    }, 500);
+    this._playerInfo.find((player) => player.index === blindIndex)!.gameState = 'Call';
 
     return {
       message: null,
@@ -344,7 +351,7 @@ ${this._playerInfo.map(pi => this.getPlayerDebugInfo(pi.index))}
   }
 
   private playerTurn(inputNumber: number): GameLogicResponse {
-    const player = this._playerInfo[this._gameInfo.playerTurnIndex]!;
+    const player = this._playerInfo.find(player => player.index === this._gameInfo.playerTurnIndex!)!;
     let gameLogicResponse: GameLogicResponse | null = null;
 
     if (player.gameState === 'Picking') {
@@ -368,16 +375,15 @@ ${this._playerInfo.map(pi => this.getPlayerDebugInfo(pi.index))}
       }
     }
     else if (player.gameState === 'Raising') {
+      if (player.bet === 0) {
+        player.bet = this._gameInfo.communityBetSize;
+      }
+
       // Increment amount
       if (inputNumber === 0) {
-        if (player.raiseInfo === null) {
-          player.raiseInfo = 1;
-        }
-        else {
-          let currentIndex: number = this._betIntervals.findIndex(player.raiseInfo);
-          currentIndex = currentIndex === this._betIntervals.length - 1 ? 0 : currentIndex + 1;
-          player.raiseInfo = this._betIntervals[currentIndex];
-        }
+        let currentIndex: number = this._betIntervals.findIndex(player.raiseInfo);
+        currentIndex = currentIndex === this._betIntervals.length - 1 ? 0 : currentIndex + 1;
+        player.raiseInfo = this._betIntervals[currentIndex];
       } // Increase
       else if (inputNumber === 1) {
         player.bet += player.raiseInfo;
@@ -389,6 +395,7 @@ ${this._playerInfo.map(pi => this.getPlayerDebugInfo(pi.index))}
       } // Confirm
       else if (inputNumber === 3) {
         this.bet(player.index, player.bet);
+        player.raiseInfo = 1;
         gameLogicResponse = this.iteratePlayerIndex();
       }
     }
@@ -407,27 +414,35 @@ ${this._playerInfo.map(pi => this.getPlayerDebugInfo(pi.index))}
   }
 
   private iteratePlayerIndex(): GameLogicResponse | null {
-    const goToNextStage: boolean = this._gameInfo.blindIndex === this._gameInfo.playerTurnIndex;
+    const goToNextStage: boolean = this._playerInfo.every((player: PlayerInfo) => player.gameState !== 'Picking');
 
     if (goToNextStage) {
       this._gameInfo.playerTurnIndex = this._gameInfo.blindIndex;
       this._playerInfo.forEach((player) => {
+        if (['AllOut', 'Out'].includes(player.gameState)) {
+          return;
+        }
+
         player.gameState = 'Picking';
       });
 
+      if(this._playerInfo.every((player: PlayerInfo) => ['AllOut', 'Out'].includes(player.gameState))){
+        this.reveal();
+        this.dealTheRiver();
+        return this.dealTheTurn();
+      }
       if (this._gameInfo.communityCards[4]!.isFaceDown === false) {
         return this.reveal();
       }
-      else if (this._gameInfo.communityCards[3]!.isFaceDown === false) {
+      if (this._gameInfo.communityCards[3]!.isFaceDown === false) {
         return this.dealTheRiver();
       }
-      else {
-        return this.dealTheTurn();
-      }
+
+      return this.dealTheTurn();
     }
 
-    while (this._playerInfo[this._gameInfo.playerTurnIndex]!.gameState !== 'Picking' || goToNextStage) {
-      this._gameInfo.playerTurnIndex = (this._gameInfo.playerTurnIndex + 1) % this._gameInfo.setup.playerCount;
+    while (this._playerInfo[this._gameInfo.playerTurnIndex]!.gameState !== 'Picking') {
+      this._gameInfo.playerTurnIndex = (this._gameInfo.playerTurnIndex + 1) % this._playerInfo.length;
     }
 
     return null;
@@ -589,8 +604,8 @@ ${this._playerInfo.map(pi => this.getPlayerDebugInfo(pi.index))}
   }
 
   private bet(playerIndex: number, amount: number) {
-    this._playerInfo[playerIndex]!.bet = 0;
-    this._playerInfo[playerIndex]!.pool -= amount;
+    this._playerInfo.find(player => player.index === playerIndex)!.bet = 0;
+    this._playerInfo.find(player => player.index === playerIndex)!.pool -= amount;
     this._gameInfo.communityBetSize = amount;
     this._gameInfo.communityPool += amount;
   }
@@ -656,60 +671,60 @@ ${this._playerInfo.map(pi => this.getPlayerDebugInfo(pi.index))}
   };
 
   private readonly _cardIndexMap: Map<string, number> = new Map<string, number>([
-    ['Ace_Club', 0],
-    ['Two_Club', 1],
-    ['Three_Club', 2],
-    ['Four_Club', 3],
-    ['Five_Club', 4],
-    ['Six_Club', 5],
-    ['Seven_Club', 6],
-    ['Eight_Club', 7],
-    ['Nine_Club', 8],
-    ['Ten_Club', 9],
-    ['Jack_Club', 10],
-    ['Queen_Club', 11],
-    ['King_Club', 12],
-    ['Ace_Diamond', 13],
-    ['Two_Diamond', 14],
-    ['Three_Diamond', 15],
-    ['Four_Diamond', 16],
-    ['Five_Diamond', 17],
-    ['Six_Diamond', 18],
-    ['Seven_Diamond', 19],
-    ['Eight_Diamond', 20],
-    ['Nine_Diamond', 21],
-    ['Ten_Diamond', 22],
-    ['Jack_Diamond', 23],
-    ['Queen_Diamond', 24],
-    ['King_Diamond', 25],
-    ['Ace_Heart', 26],
-    ['Two_Heart', 27],
-    ['Three_Heart', 28],
-    ['Four_Heart', 29],
-    ['Five_Heart', 30],
-    ['Six_Heart', 31],
-    ['Seven_Heart', 32],
-    ['Eight_Heart', 33],
-    ['Nine_Heart', 34],
-    ['Ten_Heart', 35],
-    ['Jack_Heart', 36],
-    ['Queen_Heart', 37],
-    ['King_Heart', 38],
-    ['Ace_Spade', 39],
-    ['Two_Spade', 40],
-    ['Three_Spade', 41],
-    ['Four_Spade', 42],
-    ['Five_Spade', 43],
-    ['Six_Spade', 44],
-    ['Seven_Spade', 45],
-    ['Eight_Spade', 46],
-    ['Nine_Spade', 47],
-    ['Ten_Spade', 48],
-    ['Jack_Spade', 49],
-    ['Queen_Spade', 50],
-    ['King_Spade', 51],
+    ['Ace_Heart', 0],
+    ['Two_Heart', 1],
+    ['Three_Heart', 2],
+    ['Four_Heart', 3],
+    ['Five_Heart', 4],
+    ['Six_Heart', 5],
+    ['Seven_Heart', 6],
+    ['Eight_Heart', 7],
+    ['Nine_Heart', 8],
+    ['Ten_Heart', 9],
+    ['Jack_Heart', 10],
+    ['Queen_Heart', 11],
+    ['King_Heart', 12],
+    ['Ace_Club', 15],
+    ['Two_Club', 16],
+    ['Three_Club', 17],
+    ['Four_Club', 18],
+    ['Five_Club', 19],
+    ['Six_Club', 20],
+    ['Seven_Club', 21],
+    ['Eight_Club', 22],
+    ['Nine_Club', 23],
+    ['Ten_Club', 24],
+    ['Jack_Club', 25],
+    ['Queen_Club', 26],
+    ['King_Club', 27],
+    ['Ace_Diamond', 30],
+    ['Two_Diamond', 31],
+    ['Three_Diamond', 32],
+    ['Four_Diamond', 33],
+    ['Five_Diamond', 34],
+    ['Six_Diamond', 35],
+    ['Seven_Diamond', 36],
+    ['Eight_Diamond', 37],
+    ['Nine_Diamond', 38],
+    ['Ten_Diamond', 39],
+    ['Jack_Diamond', 40],
+    ['Queen_Diamond', 41],
+    ['King_Diamond', 42],
+    ['Ace_Spade', 45],
+    ['Two_Spade', 46],
+    ['Three_Spade', 47],
+    ['Four_Spade', 48],
+    ['Five_Spade', 49],
+    ['Six_Spade', 50],
+    ['Seven_Spade', 51],
+    ['Eight_Spade', 52],
+    ['Nine_Spade', 53],
+    ['Ten_Spade', 54],
+    ['Jack_Spade', 55],
+    ['Queen_Spade', 56],
+    ['King_Spade', 57],
   ]);
-  private readonly _hiddenCardIndex: number = 52;
+  private readonly _hiddenCardIndex: number = 44;
   private readonly _cardRankValueMap = new Map<CardRank, number>([
     ['Ace', 14],
     ['Two', 2],

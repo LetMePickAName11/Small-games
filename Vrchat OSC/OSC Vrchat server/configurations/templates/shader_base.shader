@@ -21,17 +21,15 @@ Shader "Unlit/NewUnlitShader"
         
         __[REPLACEME_VARIABLES]__
         
-        uint ExtractBits(float msb, float lsb, float index, uint bitSize) {
-            // Convert floats to uints to avoid float imprecision problems
-            uint msbChunk = (uint)(msb + 0.1f);
-            uint lsbChunk = (uint)(lsb + 0.1f);
-            uint bitStart = (uint)(index + 0.1f);
-
-            // Combine the two chunks into one 16-bit number
-            uint combinedChunks = (msbChunk << 8) | lsbChunk;
+        uint ExtractBits(uint4 chunks, uint arraySize, uint startIndex, uint bitSize) {
+            // Combine all chunks into a single integer
+            uint combinedChunks = 0; 
+            for (uint i = 0; i < arraySize; i++) {
+                combinedChunks |= (chunks[i] << (8 * (arraySize - 1 - i)));
+            }
 
             // Calculate the actual start bit position from MSB (index 0)
-            uint shiftAmount = 16 - bitStart - bitSize;
+            uint shiftAmount = 8 * arraySize - startIndex - bitSize;
 
             // Shift right to the start bit position
             uint shiftedForExtraction = combinedChunks >> shiftAmount;
@@ -45,6 +43,8 @@ Shader "Unlit/NewUnlitShader"
 
         void vert (inout appdata_full v, out Input o) {
             o.uv_MainTex = v.texcoord.xy;
+            // Example with 2 chunks
+            //ExtractBits(uint4(chunk0 + 0.1, chunk1 + 0.1, 0, 0), 2, StartIndex, BitsSize);
         }
 
         void surf (Input IN, inout SurfaceOutput o) {
