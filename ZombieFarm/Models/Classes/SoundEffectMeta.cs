@@ -1,5 +1,3 @@
-using Microsoft.Xna.Framework.Audio;
-
 namespace ZombieFarm;
 
 public class SoundEffectMeta

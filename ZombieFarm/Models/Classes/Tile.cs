@@ -1,12 +1,17 @@
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-
 namespace ZombieFarm;
 
 public class Tile 
 {
 	public Texture2D Texture;
-	public Layer Layer;
-	public Vector2 Position;
+	public Rectangle Position;
 	public Color Color;
+	public bool HasCollision;
+	public IClickable clickable;
 }
+
+
+public interface IClickable
+{
+	public bool OnClick(GameTime gameTime, MouseEventType clickType);
+}
+

@@ -1,5 +1,3 @@
-using Microsoft.Xna.Framework.Graphics;
-using System;
 namespace ZombieFarm;
 
 public class TextureMeta

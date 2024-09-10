@@ -1,6 +1,3 @@
-using System.Collections.Generic;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
 namespace ZombieFarm;
 
 public class InputHandler
@@ -9,6 +6,8 @@ public class InputHandler
     {
         _window = window;
         _inputHooks = new();
+        _mouseHooks = new();
+        _previousMouseState = Mouse.GetState();
     }
 
     public void Update(GameTime gameTime)
@@ -21,9 +20,16 @@ public class InputHandler
         _update(gameTime);
     }
 
-    public void AddMouseListen(MouseHook mouseHook)
+    public void AddMouseListen(MouseEventType mouseEventType, MouseHook mouseHook)
     {
-        _mouseHook += mouseHook;
+        if(_mouseHooks.ContainsKey(mouseEventType))
+        {
+            _mouseHooks[mouseEventType] += mouseHook;
+            _mouseHookCount++;
+            return;
+        }
+
+        _mouseHooks.Add(mouseEventType, mouseHook);
         _mouseHookCount++;
 
         if (_mouseHookCount != 1)
@@ -34,12 +40,18 @@ public class InputHandler
         _update += ListenForMouse;
     }
 
-    public void RemoveMouse(MouseHook mouseHook)
+    public void RemoveMouse(MouseEventType mouseEventType, MouseHook mouseHook)
     {
-        _mouseHook -= mouseHook;
+        _mouseHooks[mouseEventType] -= mouseHook;
+
+        if (_mouseHooks[mouseEventType] == null)
+        {
+            _mouseHooks.Remove(mouseEventType);
+        }
+
         _mouseHookCount--;
 
-        if (_mouseHookCount != 0)
+        if(_mouseHookCount != 0)
         {
             return;
         }
@@ -91,14 +103,41 @@ public class InputHandler
         _update = null;
         _inputHookCount = 0;
         _mouseHookCount = 0;
-        _mouseHook = null;
+        _mouseHooks = new();
         _inputHooks = new();
     }
 
     private void ListenForMouse(GameTime gameTime)
     {
-        var mouseState = Mouse.GetState();
-        _mouseHook(gameTime, new Point(_window.Position.X + mouseState.X, _window.Position.Y + mouseState.Y), mouseState);
+        var currentMouseState = Mouse.GetState();
+
+        if (currentMouseState.LeftButton == ButtonState.Pressed && _mouseHooks.ContainsKey(MouseEventType.LeftClickDown))
+        {
+            _mouseHooks[MouseEventType.LeftClickDown](gameTime, currentMouseState);
+        }
+        if (currentMouseState.LeftButton == ButtonState.Released && _previousMouseState.LeftButton == ButtonState.Pressed && _mouseHooks.ContainsKey(MouseEventType.LeftClick))
+        {
+            _mouseHooks[MouseEventType.LeftClick](gameTime, currentMouseState);
+        }
+        if (currentMouseState.RightButton == ButtonState.Pressed && _mouseHooks.ContainsKey(MouseEventType.RightClickDown))
+        {
+            _mouseHooks[MouseEventType.RightClickDown](gameTime, currentMouseState);
+        }
+        if (currentMouseState.RightButton == ButtonState.Released && _previousMouseState.RightButton == ButtonState.Pressed && _mouseHooks.ContainsKey(MouseEventType.RightClick))
+        {
+            _mouseHooks[MouseEventType.RightClick](gameTime, currentMouseState);
+        }
+
+        if (currentMouseState.ScrollWheelValue > _previousMouseState.ScrollWheelValue && _mouseHooks.ContainsKey(MouseEventType.ScrollUp))
+        {
+            _mouseHooks[MouseEventType.ScrollUp](gameTime, currentMouseState);
+        }
+        else if (currentMouseState.ScrollWheelValue < _previousMouseState.ScrollWheelValue && _mouseHooks.ContainsKey(MouseEventType.ScrollDown))
+        {
+            _mouseHooks[MouseEventType.ScrollDown](gameTime, currentMouseState);
+        }
+
+        _previousMouseState = currentMouseState;
     }
 
     private void ListenForInputs(GameTime gameTime)
@@ -115,9 +154,11 @@ public class InputHandler
     }
 
     private readonly GameWindow _window;
-    private MouseHook _mouseHook;
     private UpdateDelegate _update;
+    private Dictionary<MouseEventType, MouseHook> _mouseHooks;
     private Dictionary<Keys, InputHook> _inputHooks;
     private int _mouseHookCount = 0;
     private int _inputHookCount = 0;
+
+    private MouseState _previousMouseState;
 }

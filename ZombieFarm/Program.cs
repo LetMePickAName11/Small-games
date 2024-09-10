@@ -1,3 +1,2 @@
-﻿
-using var game = new ZombieFarm.Game1();
+﻿using var game = new ZombieFarm.GameCore();
 game.Run();
