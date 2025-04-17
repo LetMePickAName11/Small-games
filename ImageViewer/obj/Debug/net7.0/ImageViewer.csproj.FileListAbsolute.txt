@@ -1,0 +1,28 @@
+C:\Users\Lucas\Desktop\Small games\Image viewer\bin\Debug\net7.0\ImageViewer.exe
+C:\Users\Lucas\Desktop\Small games\Image viewer\bin\Debug\net7.0\ImageViewer.deps.json
+C:\Users\Lucas\Desktop\Small games\Image viewer\bin\Debug\net7.0\ImageViewer.runtimeconfig.json
+C:\Users\Lucas\Desktop\Small games\Image viewer\bin\Debug\net7.0\ImageViewer.dll
+C:\Users\Lucas\Desktop\Small games\Image viewer\bin\Debug\net7.0\ImageViewer.pdb
+C:\Users\Lucas\Desktop\Small games\Image viewer\obj\Debug\net7.0\ImageViewer.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Lucas\Desktop\Small games\Image viewer\obj\Debug\net7.0\ImageViewer.AssemblyInfoInputs.cache
+C:\Users\Lucas\Desktop\Small games\Image viewer\obj\Debug\net7.0\ImageViewer.AssemblyInfo.cs
+C:\Users\Lucas\Desktop\Small games\Image viewer\obj\Debug\net7.0\ImageViewer.csproj.CoreCompileInputs.cache
+C:\Users\Lucas\Desktop\Small games\Image viewer\obj\Debug\net7.0\ImageViewer.dll
+C:\Users\Lucas\Desktop\Small games\Image viewer\obj\Debug\net7.0\refint\ImageViewer.dll
+C:\Users\Lucas\Desktop\Small games\Image viewer\obj\Debug\net7.0\ImageViewer.pdb
+C:\Users\Lucas\Desktop\Small games\Image viewer\obj\Debug\net7.0\ImageViewer.genruntimeconfig.cache
+C:\Users\Lucas\Desktop\Small games\Image viewer\obj\Debug\net7.0\ref\ImageViewer.dll
+C:\Users\Lucas\Desktop\Small games\ImageViewer\bin\Debug\net7.0\ImageViewer.exe
+C:\Users\Lucas\Desktop\Small games\ImageViewer\bin\Debug\net7.0\ImageViewer.deps.json
+C:\Users\Lucas\Desktop\Small games\ImageViewer\bin\Debug\net7.0\ImageViewer.runtimeconfig.json
+C:\Users\Lucas\Desktop\Small games\ImageViewer\bin\Debug\net7.0\ImageViewer.dll
+C:\Users\Lucas\Desktop\Small games\ImageViewer\bin\Debug\net7.0\ImageViewer.pdb
+C:\Users\Lucas\Desktop\Small games\ImageViewer\obj\Debug\net7.0\ImageViewer.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Lucas\Desktop\Small games\ImageViewer\obj\Debug\net7.0\ImageViewer.AssemblyInfoInputs.cache
+C:\Users\Lucas\Desktop\Small games\ImageViewer\obj\Debug\net7.0\ImageViewer.AssemblyInfo.cs
+C:\Users\Lucas\Desktop\Small games\ImageViewer\obj\Debug\net7.0\ImageViewer.csproj.CoreCompileInputs.cache
+C:\Users\Lucas\Desktop\Small games\ImageViewer\obj\Debug\net7.0\ImageViewer.dll
+C:\Users\Lucas\Desktop\Small games\ImageViewer\obj\Debug\net7.0\refint\ImageViewer.dll
+C:\Users\Lucas\Desktop\Small games\ImageViewer\obj\Debug\net7.0\ImageViewer.pdb
+C:\Users\Lucas\Desktop\Small games\ImageViewer\obj\Debug\net7.0\ImageViewer.genruntimeconfig.cache
+C:\Users\Lucas\Desktop\Small games\ImageViewer\obj\Debug\net7.0\ref\ImageViewer.dll
