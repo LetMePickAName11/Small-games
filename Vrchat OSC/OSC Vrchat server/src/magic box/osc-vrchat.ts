@@ -12,13 +12,16 @@ import { BitAllocation, EightBitChunkName, EightBitChunkNames, WebsocketName } f
 import { FileService } from './file-service';
 
 export class OSCVrChat {
-  constructor(gameLogicCreator: () => OSCVrChatGameLogic) {
+  constructor(gameLogicCreator: () => OSCVrChatGameLogic, userDefinedDataSubDirectory: 'chess' | 'texas_hold_them') {
     this.gameLogicCreator = gameLogicCreator;
     this.gameLogic = this.gameLogicCreator();
 
-    this.bitAllocations = FileService.getFileJson('configurations/auto_generated_files_internal/data_mapped.json');
+    this.dataMappedJsonPath = `configurations/auto_generated_files_internal/${userDefinedDataSubDirectory}/data_mapped.json`;
+    this.inputJsonPath = `configurations/user_defined_data/${userDefinedDataSubDirectory}/input.json`;
+
+    this.bitAllocations = FileService.getFileJson(this.dataMappedJsonPath);
     this.bitAllocationConfigNames = this.bitAllocations.map((bitAllocation: BitAllocation) => bitAllocation.name);
-    this.inputEventNames = FileService.getFileJson('configurations/user_defined_data/input.json');
+    this.inputEventNames = FileService.getFileJson(this.inputJsonPath);
 
     this.validateBitAllocations();
 
@@ -52,6 +55,7 @@ export class OSCVrChat {
 
     this.oscHandler.on('message', this.onMessageRecived.bind(this));
     this.oscHandler.open();
+
     this.updateVrc();
   }
 
@@ -218,7 +222,7 @@ export class OSCVrChat {
   }
 
   private getconfigurations(socket: SocketType): void {
-    const configuration: Array<BitAllocation> = FileService.getFileJson('configurations/auto_generated_files_internal/data_mapped.json');
+    const configuration: Array<BitAllocation> = FileService.getFileJson(this.dataMappedJsonPath);
     socket.emit(WebsocketName.server_send_configurations, configuration);
   }
 
@@ -238,7 +242,7 @@ export class OSCVrChat {
   }
 
   private getinputconfiguration(socket: SocketType): void {
-    const inputs: Array<string> = FileService.getFileJson<Array<string>>('configurations/user_defined_data/input.json')
+    const inputs: Array<string> = FileService.getFileJson<Array<string>>(this.inputJsonPath)
       .map((input: string) => `!${input}`);
 
     socket.emit(WebsocketName.server_send_input_configurations, inputs);
@@ -254,13 +258,13 @@ export class OSCVrChat {
 
   private updateconfigurations(socket: SocketType, ...args: any[]): void {
     const obj = JSON.stringify(args[0]);
-    FileService.writeToFile('configurations/user_defined_data/input.json', obj);
+    FileService.writeToFile(this.inputJsonPath, obj);
     this.getconfigurations(socket);
   }
 
   private updateinputconfiguration(socket: SocketType, ...args: any[]): void {
     const obj = JSON.stringify(args[0]);
-    FileService.writeToFile('configurations/user_defined_data/input.json', obj);
+    FileService.writeToFile(this.inputJsonPath, obj);
     this.getinputconfiguration(socket);
   }
 
@@ -274,6 +278,8 @@ export class OSCVrChat {
     this.updateVrc();
   }
 
+  private dataMappedJsonPath: string;
+  private inputJsonPath: string;
 
   private lastMessageDate = Date.now() - 1000;
   private gamePause: boolean = false;

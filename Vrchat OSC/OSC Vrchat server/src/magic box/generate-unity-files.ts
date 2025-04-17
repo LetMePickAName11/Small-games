@@ -22,17 +22,27 @@ import { FileReference } from '../models/unity_yaml/fileReference';
 
 export class GenerateUnityFiles {
   public generateFiles(): void {
-    const sceneYamlDocuments: Array<YamlDocument> = FileService.parseYamlFile(this.configData.parentFolderPath + this.configData.sceneName);
+    const directoryNames = FileService.getDirectoriesInFolders(this.userInputDirectory);
 
     this.clearDirectories();
-    this.generateDataMapped();
-    this.generateGameObjectMap();
-    this.generateVrcExpressionParamters(sceneYamlDocuments);
-    this.generateAnimations();
-    this.generateAnimatorController(sceneYamlDocuments);
-    this.generateShadersAndMaterials(sceneYamlDocuments);
 
-    FileService.createYamlDocuments(sceneYamlDocuments, this.unityHeader, this.outputExternalDirectory + '/' + this.configData.sceneName);
+    for (let i = 0; i < directoryNames.length; i++) {
+      const directory: string = directoryNames[i]! + '/';
+
+      const inputData: Array<string> = FileService.getFileJson(`${this.userInputDirectory}${directory}input.json`);
+      const configData: ConfigData = FileService.getFileJson(`${this.userInputDirectory}${directory}config.json`);
+
+      const sceneYamlDocuments: Array<YamlDocument> = FileService.parseYamlFile(`${configData.parentFolderPath}${configData.sceneName}`);
+
+      this.generateDataMapped(directory, inputData);
+      this.generateGameObjectMap(directory);
+      this.generateVrcExpressionParamters(directory, inputData, sceneYamlDocuments);
+      this.generateAnimations(directory);
+      this.generateAnimatorController(directory, sceneYamlDocuments);
+      this.generateShadersAndMaterials(directory, sceneYamlDocuments);
+
+      FileService.createYamlDocuments(sceneYamlDocuments, this.unityHeader, `${this.outputExternalDirectory}${directory}${configData.sceneName}`);
+    }
   }
 
 
@@ -43,10 +53,10 @@ export class GenerateUnityFiles {
   }
 
 
-  private generateDataMapped(): void {
+  private generateDataMapped(directory: string, inputData: Array<string>): void {
     let startIndex: number = 0;
     const bitAllocations: Array<BitAllocation> = [];
-    const userDefinedData: Array<BitAllocation> = FileService.getFileJson(this.userInputDirectory + 'data.json');
+    const userDefinedData: Array<BitAllocation> = FileService.getFileJson(`${this.userInputDirectory}${directory}data.json`);
 
     // Sort configData by size in descending order
     const sorteduserDefinedData = userDefinedData.sort((a, b) => b.size - a.size);
@@ -75,7 +85,7 @@ export class GenerateUnityFiles {
     }
 
     let allocatedBitsSize: number = bitAllocations.reduce((acc, val) => acc + val.size, 0);
-    const allocatedInputBitsSize: number = this.inputData.length; // Input data is array of 1-bits
+    const allocatedInputBitsSize: number = inputData.length; // Input data is array of 1-bits
     const overflowBits: number = allocatedBitsSize % 8;
     startIndex += overflowBits;
 
@@ -131,15 +141,15 @@ export class GenerateUnityFiles {
       throw new Error(`Too many bits allocated (limit 256): ${allocatedBitsSize} + ${allocatedInputBitsSize}`);
     }
 
-    FileService.writeToFile(this.outputInternalDirectory + 'data_mapped.json', bitAllocations);
+    FileService.writeToFile(`${this.outputInternalDirectory}${directory}data_mapped.json`, bitAllocations);
   }
 
-  private generateGameObjectMap(): void {
+  private generateGameObjectMap(directory: string): void {
     const gameObjectToShaders: Record<string, Set<Set<string>>> = {};
     const shaderToGameObjectMap: Record<string, string[]> = {};
 
     // Read the JSON data from the file
-    const bitAllocations: Array<BitAllocation> = FileService.getFileJson(this.outputInternalDirectory + 'data_mapped.json');
+    const bitAllocations: Array<BitAllocation> = FileService.getFileJson(`${this.outputInternalDirectory}${directory}data_mapped.json`);
 
     // First, map each game object to all its shader parameters
     for (const allocation of bitAllocations) {
@@ -172,11 +182,11 @@ export class GenerateUnityFiles {
       Object.entries(shaderToGameObjectMap).map(([key, value]) => [key, value.sort()])
     );
 
-    FileService.writeToFile(this.outputInternalDirectory + 'data_game_object_shader_parameter_map.json', finalMap);
+    FileService.writeToFile(`${this.outputInternalDirectory}${directory}data_game_object_shader_parameter_map.json`, finalMap);
   }
 
-  private generateVrcExpressionParamters(sceneYamlDocuments: Array<YamlDocument>): void {
-    const dataMapped: Array<BitAllocation> = FileService.getFileJson(this.outputInternalDirectory + 'data_mapped.json');
+  private generateVrcExpressionParamters(directory: string, inputData: Array<string>, sceneYamlDocuments: Array<YamlDocument>): void {
+    const dataMapped: Array<BitAllocation> = FileService.getFileJson(`${this.outputInternalDirectory}${directory}data_mapped.json`);
 
     const chunks: Array<string> = [];
     const overflowingBits: Array<string> = [];
@@ -247,7 +257,7 @@ export class GenerateUnityFiles {
               defaultValue: defaults.defaultValue,
               networkSynced: 1
             }
-          }).concat(this.inputData.map((input: string) => {
+          }).concat(inputData.map((input: string) => {
             return {
               name: `!${input}`,
               valueType: 2, // 2 == boolean
@@ -273,12 +283,12 @@ export class GenerateUnityFiles {
     };
 
     this.updateSceneObject(sceneYamlDocuments, 'MonoBehaviour', ['expressionsMenu', 'expressionParameters'], 'expressionParameters', { fileID: yamlDocument[0]!.anchor, guid: yamlMetadata.guid, type: 2 });
-    FileService.createYamlDocuments(yamlDocument, this.unityHeader, this.outputExternalDirectory + 'Vrchat/VRCExpressionParameters.asset');
-    FileService.createYamlDocument(yamlMetadata, null, this.outputExternalDirectory + 'Vrchat/VRCExpressionParameters.asset.meta');
+    FileService.createYamlDocuments(yamlDocument, this.unityHeader, `${this.outputExternalDirectory}${directory}Vrchat/VRCExpressionParameters.asset`);
+    FileService.createYamlDocument(yamlMetadata, null, `${this.outputExternalDirectory}${directory}Vrchat/VRCExpressionParameters.asset.meta`);
   }
 
-  private generateAnimations(): void {
-    const data: Array<BitAllocation> = FileService.getFileJson(this.outputInternalDirectory + 'data_mapped.json');
+  private generateAnimations(directory: string): void {
+    const data: Array<BitAllocation> = FileService.getFileJson(`${this.outputInternalDirectory}${directory}data_mapped.json`);
     const uniqueNames: Array<string> = [...new Set(data.flatMap(allocation => allocation.bitChunks))];
 
     const generateFloatCurve = (value: number, attribute: string, path: string): FloatCurve => {
@@ -471,15 +481,15 @@ export class GenerateUnityFiles {
           }
         };
 
-        FileService.createYamlDocuments(animation, this.unityHeader, `${this.outputExternalDirectory}Animations/${name}_${suffix}.anim`);
-        FileService.createYamlDocument(metadata, null, `${this.outputExternalDirectory}Animations/${name}_${suffix}.anim.meta`);
+        FileService.createYamlDocuments(animation, this.unityHeader, `${this.outputExternalDirectory}${directory}Animations/${name}_${suffix}.anim`);
+        FileService.createYamlDocument(metadata, null, `${this.outputExternalDirectory}${directory}Animations/${name}_${suffix}.anim.meta`);
       });
     }
   }
 
-  private generateAnimatorController(sceneYamlDocuments: Array<YamlDocument>): void {
+  private generateAnimatorController(directory: string, sceneYamlDocuments: Array<YamlDocument>): void {
     const mapJsonConfig = () => {
-      const data: Array<BitAllocation> = FileService.getFileJson(this.outputInternalDirectory + 'data_mapped.json');
+      const data: Array<BitAllocation> = FileService.getFileJson(`${this.outputInternalDirectory}${directory}data_mapped.json`);
       const uniqueNames: Set<string> = new Set();
 
       for (const item of data) {
@@ -670,8 +680,8 @@ export class GenerateUnityFiles {
     }
 
     const jsonData: AnimatorData = mapJsonConfig();
-    const animationMetaNames: Array<string> = FileService.getFileNamesInDir(this.outputExternalDirectory + 'Animations').filter((v: string) => v.includes('.meta'));
-    const animationNames: Array<string> = FileService.getFileNamesInDir(this.outputExternalDirectory + 'Animations').filter((v: string) => v.includes('.anim') && !v.includes('.meta'));
+    const animationMetaNames: Array<string> = FileService.getFileNamesInDir(`${this.outputExternalDirectory}${directory}Animations`).filter((v: string) => v.includes('.meta'));
+    const animationNames: Array<string> = FileService.getFileNamesInDir(`${this.outputExternalDirectory}${directory}Animations`).filter((v: string) => v.includes('.anim') && !v.includes('.meta'));
 
     const animatorParameters: Array<AnimationParamter> = jsonData.name.map((name: string) => generateAnimatorParameter(name));
     const animatorLayers: Array<AnimationLayer> = jsonData.name.map((name: string, index: number) => generateAnimatorLayer(name, jsonData.animatorStateMachineId[index]!));
@@ -694,10 +704,10 @@ export class GenerateUnityFiles {
       const blendTreeId: string = jsonData.blendTreeId[i]!;
       const minT: number = jsonData.minThreshold[i]!;
       const maxT: number = jsonData.maxThreshold[i]!;
-      const startAnimationMetaName: string = `${this.outputExternalDirectory}Animations/${animationMetaNames.filter((v: string) => v === `${name}_Start.anim.meta`).find(v => v.includes('_Start'))}`;
-      const endAnimationMetaName: string = `${this.outputExternalDirectory}Animations/${animationMetaNames.filter((v: string) => v === `${name}_End.anim.meta`).find(v => v.includes('_End'))}`;
-      const startAnimationName: string = `${this.outputExternalDirectory}Animations/${animationNames.filter((v: string) => v === `${name}_Start.anim`).find(v => v.includes('_Start'))}`;
-      const endAnimationName: string = `${this.outputExternalDirectory}Animations/${animationNames.filter((v: string) => v === `${name}_End.anim`).find(v => v.includes('_End'))}`;
+      const startAnimationMetaName: string = `${this.outputExternalDirectory}${directory}Animations/${animationMetaNames.filter((v: string) => v === `${name}_Start.anim.meta`).find(v => v.includes('_Start'))}`;
+      const endAnimationMetaName: string = `${this.outputExternalDirectory}${directory}Animations/${animationMetaNames.filter((v: string) => v === `${name}_End.anim.meta`).find(v => v.includes('_End'))}`;
+      const startAnimationName: string = `${this.outputExternalDirectory}${directory}Animations/${animationNames.filter((v: string) => v === `${name}_Start.anim`).find(v => v.includes('_Start'))}`;
+      const endAnimationName: string = `${this.outputExternalDirectory}${directory}Animations/${animationNames.filter((v: string) => v === `${name}_End.anim`).find(v => v.includes('_End'))}`;
       const motionStartGuid: string = FileService.findInFile(startAnimationMetaName, /guid: ([a-f0-9]+)/g).replace('guid: ', '');
       const motionEndGuid: string = FileService.findInFile(endAnimationMetaName, /guid: ([a-f0-9]+)/g).replace('guid: ', '');
       const motionStartFileId: string = FileService.findInFile(startAnimationName, /--- !u!74 &([0-9]*)/g).replace('--- !u!74 &', '');
@@ -751,13 +761,13 @@ export class GenerateUnityFiles {
     });
     this.updateSceneObject(sceneYamlDocuments, 'MonoBehaviour', ['expressionsMenu', 'baseAnimationLayers'], 'baseAnimationLayers', updateValue);
 
-    FileService.createYamlDocuments(yamls, this.unityHeader, this.outputExternalDirectory + 'Animations/FX.controller');
-    FileService.createYamlDocument(metadata, null, this.outputExternalDirectory + 'Animations/FX.controller.meta');
+    FileService.createYamlDocuments(yamls, this.unityHeader, `${this.outputExternalDirectory}${directory}Animations/FX.controller`);
+    FileService.createYamlDocument(metadata, null, `${this.outputExternalDirectory}${directory}Animations/FX.controller.meta`);
   }
 
-  private generateShadersAndMaterials(sceneYamlDocuments: Array<YamlDocument>): void {
-    const dataShaderParamterMap: Array<Array<string>> = FileService.getFileJson(this.outputInternalDirectory + 'data_game_object_shader_parameter_map.json');
-    const dataMapped: Array<BitAllocation> = FileService.getFileJson(this.outputInternalDirectory + 'data_mapped.json');
+  private generateShadersAndMaterials(directory: string, sceneYamlDocuments: Array<YamlDocument>): void {
+    const dataShaderParamterMap: Array<Array<string>> = FileService.getFileJson(`${this.outputInternalDirectory}${directory}data_game_object_shader_parameter_map.json`);
+    const dataMapped: Array<BitAllocation> = FileService.getFileJson(`${this.outputInternalDirectory}${directory}data_mapped.json`);
     const sceneNode: SceneNode = this.createParentChildObject(sceneYamlDocuments);
 
     const generateMaterial = (name: string, shaderGuid: string, m_TexEnvs: Array<{ [key in string]: MTexEnvs }>, m_Ints: Array<{ [key in string]: number }>, m_Floats: Array<{ [key in string]: number }>, m_Colors: Array<{ [key in string]: Color }>): Material => {
@@ -842,8 +852,8 @@ export class GenerateUnityFiles {
       const shaderPropertiesString: string = shaderProperties.sort().join('\n        ');
       const shaderVariablesString: string = shaderVariables.sort().join('\n        ');
 
-      const shaderFilePath: string = this.outputExternalDirectory + `/Materials/Shaders/Shader_${index}.shader`;
-      const shaderMetaFilePath: string = this.outputExternalDirectory + `/Materials/Shaders/Shader_${index}.shader.meta`;
+      const shaderFilePath: string = `${this.outputExternalDirectory}${directory}/Materials/Shaders/Shader_${index}.shader`;
+      const shaderMetaFilePath: string = `${this.outputExternalDirectory}${directory}/Materials/Shaders/Shader_${index}.shader.meta`;
       const shaderGuid: string = this.generateGuid();
       const shaderMetadata: UnityShaderMetadata = {
         fileFormatVersion: 2,
@@ -916,8 +926,8 @@ export class GenerateUnityFiles {
         (node.meshRenderer?.data as { MeshRenderer: any }).MeshRenderer.m_Materials = [
           { fileID: yaml[0]?.anchor, guid: metadata.guid, type: 2 }
         ];
-        FileService.createYamlDocuments(yaml, this.unityHeader, this.outputExternalDirectory + `/Materials/${matNam.replace('/', '_')}.mat`);
-        FileService.createYamlDocument(metadata, null, this.outputExternalDirectory + `/Materials/${matNam.replace('/', '_')}.mat.meta`);
+        FileService.createYamlDocuments(yaml, this.unityHeader, `${this.outputExternalDirectory}${directory}` + `/Materials/${matNam.replace('/', '_')}.mat`);
+        FileService.createYamlDocument(metadata, null, `${this.outputExternalDirectory}${directory}` + `/Materials/${matNam.replace('/', '_')}.mat.meta`);
       }
     }
   }
@@ -1106,9 +1116,6 @@ export class GenerateUnityFiles {
     ['AnimatorStateMachine', '--- !u!1107'],
     ['SceneRoots', '--- !u!1660057539'],
   ]);
-
-  private readonly inputData: Array<string> = FileService.getFileJson(this.userInputDirectory + 'input.json');
-  private readonly configData: ConfigData = FileService.getFileJson(this.userInputDirectory + 'config.json');
 }
 
 

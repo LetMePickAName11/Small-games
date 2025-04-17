@@ -3,8 +3,8 @@ import fs from 'fs-extra';
 import { YamlDocument, YamlParser } from './yaml-parser';
 
 export class FileService {
-  public static getFile(path: string): string {
-    return fs.readFileSync(path, 'utf8');
+  public static getFile(path: string, encoding: string = 'utf8'): string {
+    return fs.readFileSync(path, encoding);
   }
 
   public static getFileJson<T>(path: string): T {
@@ -27,6 +27,12 @@ export class FileService {
 
   public static getFileNamesInDir(directoryPath: string): Array<string> {
     return fs.readdirSync(directoryPath);
+  }
+
+  public static getDirectoriesInFolders(directoryPath: string): Array<string> {
+    return fs.readdirSync(directoryPath, { withFileTypes: true })
+      .filter((dirent: any) => dirent.isDirectory())
+      .map((dirent: any) => dirent.name);
   }
 
   public static clearDirectory(directoryPath: string): void {

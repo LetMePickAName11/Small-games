@@ -20,7 +20,7 @@ Shader "Unlit/NewUnlitShader"
         fixed4 _Color;
         
         __[REPLACEME_VARIABLES]__
-        
+        // TODO replace ExtractBits with a Common_Functions.hlsl that is reference in each file via #include "Common_Functions.hlsl"
         uint ExtractBits(uint4 chunks, uint arraySize, uint startIndex, uint bitSize) {
             // Combine all chunks into a single integer
             uint combinedChunks = 0; 
